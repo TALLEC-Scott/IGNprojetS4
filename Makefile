@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -std=c99 -O2 $(shell pkg-config --cflags sdl2 gtk+-3.0) -
 LDFLAGS =
 LDLIBS = -lm $(shell pkg-config --libs sdl2 gtk+-3.0)
 
-SRC = main.c
+SRC = main.c Tools/tools.c MapProcessing/MapColorisation.c
 OBJ = ${SRC:.c=.o}
 DEP = ${SRC:.c=.d}
 
