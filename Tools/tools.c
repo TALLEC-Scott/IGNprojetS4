@@ -1,4 +1,5 @@
 #include "tools.h"
+#include <string.h>
 
 // Get pixel from coords x, y in BMP file image
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y)
@@ -85,6 +86,38 @@ SDL_Surface* BMP_To_BW(SDL_Surface *image)
       }
     }
   }
-  SDL_FreeSurface(image);
+  SDL_UnlockSurface(image);
   return image;
+}
+
+void BMP_Test(SDL_Surface *image, int **tab)
+{
+  SDL_LockSurface(image);
+  int tab2[5][3] = {
+    {255, 0, 0},
+    {0, 0, 255},
+    {0, 255, 0},
+    {0, 255, 255},
+    {255, 255, 0}
+  };
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      int label = tab[i][j];
+      if(label != 0)
+      {
+         while(label >= 5)
+         {
+           label -= 5;
+         }
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, tab2[label][0],
+               tab2[label][1], tab2[label][2])));
+
+      }
+    }
+  }
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, "Pictures/Results/result.bmp");
+
 }

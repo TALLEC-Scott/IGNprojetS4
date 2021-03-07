@@ -2,7 +2,7 @@
 
 CPPFLAGS = -MMD
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -O2 $(shell pkg-config --cflags sdl2 gtk+-3.0) -Iinclude
+CFLAGS = -g -Wall -Wextra -std=c99 $(shell pkg-config --cflags sdl2 gtk+-3.0) -Iinclude
 LDFLAGS =
 LDLIBS = -lm $(shell pkg-config --libs sdl2 gtk+-3.0)
 
