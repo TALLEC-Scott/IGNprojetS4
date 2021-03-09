@@ -113,11 +113,80 @@ void BMP_Test(SDL_Surface *image, int **tab)
          }
          BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, tab2[label][0],
                tab2[label][1], tab2[label][2])));
-
       }
     }
   }
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/result.bmp");
 
+}
+
+Uint8 Max(Uint8 r, Uint8 g, Uint8 b)
+{
+    if(r >= g && r >= b)
+        return r;
+    if(b >= r && b >= g)
+        return b;
+    if(g >= r && g >= b)
+        return g;
+    return 0;
+}
+
+Uint8 Min(Uint8 r, Uint8 g, Uint8 b)
+{
+    if(r <= g && r <= b)
+        return r;
+    if(b <= r && b <= g)
+        return b;
+    if(g <= r && g <= b)
+        return g;
+    return 0;
+}
+
+double* RGB_To_HSV(double r, double g, double b)
+{
+    double r1, g1, b1, max, min, delta, h, s, v;
+
+    r1 = r / (double)255;
+    g1 = g / (double)255;
+    b1 = b / (double)255;
+
+    max = Max(r1, g1, b1);
+    min = Min(r1, g1, b1);
+    delta = max - min;
+
+    v = max;
+    if(max == (double)0)
+    {
+        s = (double)0;
+    }
+    else
+    {
+        s = delta / max;
+    }
+
+    if(delta == 0)
+    {
+        h = (double)0;
+    }
+    else
+    {
+        switch(max)
+        {
+            case r1:
+                h = (double)60 * (((g1 - b1) / delta)%6);
+                break;
+            case g1:
+                h = (double)60 * (((b1 - r1) / delta) + 2);
+                break;
+            case b1:
+                h = (double)60 * (((r1 - g1) / delta) + 4);
+                break;
+            default:
+                break;
+        }
+    }
+
+    double *array = {h, s, v};
+    return array;
 }
