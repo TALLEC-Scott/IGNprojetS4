@@ -13,4 +13,5 @@ SDL_Surface* BMP_To_BW(SDL_Surface *image);
 void BMP_Test(SDL_Surface *image, int **tab);
 Uint8 Max(Uint8 r, Uint8 g, Uint8 b);
 Uint8 Min(Uint8 r, Uint8 g, Uint8 b);
+void RGB_To_HSV(double r, double g, double b, double array[3]);
 #endif

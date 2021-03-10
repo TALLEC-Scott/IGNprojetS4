@@ -1,27 +1,27 @@
 # Makefile
 
-CPPFLAGS = -MMD
+CPPFLAGS = -Iinclude #-MMD
 CC = gcc
-CFLAGS = -g -Wall -Wextra -std=c99 $(shell pkg-config --cflags sdl2 gtk+-3.0) -Iinclude
+CFLAGS = -g -Wall -Wextra -std=c99 $(shell pkg-config --cflags sdl2 gtk+-3.0)
 LDFLAGS =
 LDLIBS = -lm $(shell pkg-config --libs sdl2 gtk+-3.0)
 
-SRC = main.c Tools/tools.c MapProcessing/MapColorisation.c
+SRC = ${wildcard MapProcessing/.*c Tools/.*c  *.c}
 OBJ = ${SRC:.c=.o}
-DEP = ${SRC:.c=.d}
+#DEP = ${SRC:.c=.d}
 
 all: main
 
 main:${OBJ}
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(SRC) -o main $(LDLIBS)
+	$(CC) $(SRC) $(CFLAGS) $(CPPFLAGS) -o main $(LDLIBS) $(LDFLAGS)
 
 .PHONY: clean
 clean:
 	${RM} ${OBJ}   # remove object files
-	${RM} ${DEP}   # remove dependency files
+#	${RM} ${DEP}   # remove dependency files
 	${RM} main     # remove main program
-	${RM} main.d
+#	${RM} main.d
 
--include ${DEP}
+#-include ${DEP}
 
 # END

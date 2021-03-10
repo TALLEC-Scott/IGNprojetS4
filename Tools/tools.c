@@ -143,7 +143,8 @@ Uint8 Min(Uint8 r, Uint8 g, Uint8 b)
     return 0;
 }
 
-double* RGB_To_HSV(double r, double g, double b)
+// RGB_To_HSV converts r, g, b value to HSV format
+void RGB_To_HSV(double r, double g, double b, double array[3])
 {
     double r1, g1, b1, max, min, delta, h, s, v;
 
@@ -171,22 +172,15 @@ double* RGB_To_HSV(double r, double g, double b)
     }
     else
     {
-        switch(max)
-        {
-            case r1:
-                h = (double)60 * (((g1 - b1) / delta)%6);
-                break;
-            case g1:
-                h = (double)60 * (((b1 - r1) / delta) + 2);
-                break;
-            case b1:
-                h = (double)60 * (((r1 - g1) / delta) + 4);
-                break;
-            default:
-                break;
-        }
-    }
 
-    double *array = {h, s, v};
-    return array;
+        if(max == r1)
+            h = (double)60 * ((int)((g1 - b1) / delta)%6);
+        if(max == g1)
+            h = (double)60 * (((b1 - r1) / delta) + 2);
+        if(max == b1)
+            h = (double)60 * (((r1 - g1) / delta) + 4);
+    }
+    array[0] = h;
+    array[0] = s;
+    array[0] = v;
 }
