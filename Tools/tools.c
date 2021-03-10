@@ -121,7 +121,7 @@ void BMP_Test(SDL_Surface *image, int **tab)
 
 }
 
-Uint8 Max(Uint8 r, Uint8 g, Uint8 b)
+double Max(double r, double g, double b)
 {
     if(r >= g && r >= b)
         return r;
@@ -129,10 +129,10 @@ Uint8 Max(Uint8 r, Uint8 g, Uint8 b)
         return b;
     if(g >= r && g >= b)
         return g;
-    return 0;
+    return (double)0;
 }
 
-Uint8 Min(Uint8 r, Uint8 g, Uint8 b)
+double Min(double r, double g, double  b)
 {
     if(r <= g && r <= b)
         return r;
@@ -140,7 +140,7 @@ Uint8 Min(Uint8 r, Uint8 g, Uint8 b)
         return b;
     if(g <= r && g <= b)
         return g;
-    return 0;
+    return (double)0;
 }
 
 // RGB_To_HSV converts r, g, b value to HSV format
@@ -152,9 +152,13 @@ void RGB_To_HSV(double r, double g, double b, double array[3])
     g1 = g / (double)255;
     b1 = b / (double)255;
 
+    //printf("R1: %f, G1: %f, B1: %f\n", r1, g1, b1);
+
     max = Max(r1, g1, b1);
     min = Min(r1, g1, b1);
     delta = max - min;
+
+    //printf("MAX %f, MIN %f, DELTA %f\n", max, min, delta);
 
     v = max;
     if(max == (double)0)
@@ -172,15 +176,17 @@ void RGB_To_HSV(double r, double g, double b, double array[3])
     }
     else
     {
-
         if(max == r1)
-            h = (double)60 * ((int)((g1 - b1) / delta)%6);
+        {
+            double temp = ((g1 - b1) / delta);
+            h = (double)60 * fmod(temp, (double)6);
+        }
         if(max == g1)
             h = (double)60 * (((b1 - r1) / delta) + 2);
         if(max == b1)
             h = (double)60 * (((r1 - g1) / delta) + 4);
     }
     array[0] = h;
-    array[0] = s;
-    array[0] = v;
+    array[1] = s;
+    array[2] = v;
 }
