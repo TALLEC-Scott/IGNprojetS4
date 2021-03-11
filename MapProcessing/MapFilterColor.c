@@ -3,7 +3,6 @@
 void BMP_Filter(SDL_Surface *image)
 {
     SDL_LockSurface(image);
-    Uint8 h, s, v;
     for(int i = 0; i < image->w; i++)
     {
         for(int j = 0; j < image->h; j++)
@@ -22,20 +21,20 @@ void BMP_Filter(SDL_Surface *image)
             double temp_h = h / (double)100;
 
             // Black colors
-            if(v < 0.5)
+            if(v < 0.6)
             {
               continue;
             }
             
             // White colors
-            if(s < 0.2 && v > 0.8)
+            if(s < 0.17 && v > 0.75)
             {
               continue;
             }
             printf("%f\n", temp_h);
             
             // Brown colors
-            if(temp_h > (double)0 && temp_h < 0.5)
+            if(/*temp_h > (double)0 && temp_h < 0.5*/ h > 20 && h < 50)
             {
               
               BMP_Put_Pixel(image, i, j,
