@@ -24,16 +24,18 @@ int main()
     printf("SDL_SaveBMP failed: %s\n", SDL_GetError());
 
   double r, g, b = 0;
-  r = (double)222;
-  g = (double)184;
-  b = (double)135;
+  r = (double)195;
+  g = (double)191;
+  b = (double)165;
+
   double *array = calloc(3, sizeof(double));
+
   RGB_To_HSV(r, g, b, array);
-  printf("H: %f, S: %f, V: %f", array[0], array[1], array[2]);
+  printf("H: %f, S: %f, V: %f\n", array[0], array[1], array[2]);
   free(array);
   
   Map_Colorisation(image2);
-  BMP_Filter(test);
+  bmp_filter(test);
 
   SDL_FreeSurface(image2);
   SDL_FreeSurface(test);

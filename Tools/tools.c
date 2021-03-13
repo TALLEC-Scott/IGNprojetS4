@@ -190,3 +190,15 @@ void RGB_To_HSV(double r, double g, double b, double array[3])
     array[1] = s;
     array[2] = v;
 }
+
+// bmp_white Puts white pixel everywhere in SDL_Surface *image
+void bmp_white(SDL_Surface *image)
+{
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 255, 255)));
+    }
+  }
+}
