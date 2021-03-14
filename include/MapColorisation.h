@@ -3,7 +3,8 @@
 
 #include "tools.h"
 void Map_Colorisation(SDL_Surface *image);
-void Map_DFS_Fill(SDL_Surface *image, int x, int y, int label,
-    int **tab);
+int map_dfs_finder(SDL_Surface *image, int x, int y, int label,
+    int **tab, int first);
+int map_end(int **tab, int x, int y, int h, int w);
 
 #endif

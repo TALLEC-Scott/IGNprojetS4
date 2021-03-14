@@ -105,7 +105,12 @@ void BMP_Test(SDL_Surface *image, int **tab)
     for(int j = 0; j < image->h; j++)
     {
       int label = tab[i][j];
-      if(label != 0)
+      if(label == -1)
+      {
+        BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 0)));
+
+      }
+      else if(label != 0)
       {
          while(label >= 5)
          {
