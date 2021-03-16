@@ -1,24 +1,9 @@
 #include "MapColorisation.h"
 
-struct point {
-  int x;
-  int y;
-};
-
-struct queue {
-  struct point* *items;
-  int f;
-  int r;
-};
-
-struct queue* create_queue();
-void enqueue(struct queue* q, struct point* p, int *size);
-struct point* dequeue(struct queue* q);
-int is_empty(struct queue* q);
-
-void print_queue(struct queue* q) {
+/*void print_queue(struct queue* q) {
   printf("%i\n", q->r);
-}
+}*/
+
 // create_queue creates and returns a queue
 struct queue* create_queue()
 {
