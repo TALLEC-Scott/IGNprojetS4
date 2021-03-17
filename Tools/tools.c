@@ -126,6 +126,35 @@ void BMP_Test(SDL_Surface *image, int **tab)
 
 }
 
+void bmp_test2(SDL_Surface *image, int **tab)
+{
+  SDL_LockSurface(image);
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      int label = tab[i][j];
+      if(label == -1)
+      {
+        BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 0)));
+
+      }
+      else if(label == 1500)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
+      }
+      else if(label == 1000)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 165, 0)));
+      }
+    }
+  }
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, "Pictures/Results/elevation.bmp");
+
+}
+
+
 double Max(double r, double g, double b)
 {
     if(r >= g && r >= b)
