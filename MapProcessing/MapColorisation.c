@@ -6,6 +6,7 @@
 
 void map_elevation_colorize(int **h, int **tab, int label, int elevation,
     int w, int h2);
+void mark(int **tab, int label, int w, int h);
 
 // create_queue creates and returns a queue
 struct queue* create_queue()
@@ -189,21 +190,61 @@ void Map_Colorisation(SDL_Surface *image)
 
   int elevation = 1500;
 
+  int* size_q = malloc(sizeof(int*));
+  *size_q = 0;
+
+  struct queue_int* q  = create_queue_int();
+
   for(int i = 0; i < size; i++)
   {
     if(node[i][0] == 1)
     {
-      int *next = map_elevation(image, tab, h, node[i][1], elevation);
+      enqueue_int(q, node[i][1], size_q);
+      /*int *next = map_elevation(image, tab, h, node[i][1], elevation);
       printf("LABEL : %i\n", node[i][1]);
       elevation -= 500;
       label = next[0];
       printf("LABEL 2 : %i\n", label);
-      next = map_elevation(image, tab, h, label, elevation);
+      next = map_elevation(image, tab, h, label, elevation);*/
     }
+  }
+  int counter = *size_q;
+  int counter_temp = 0;
+  while(!is_empty_int(q))
+  {
+    if(counter == 0)
+    {
+      elevation -= 100;
+      if(elevation == 0)
+        elevation = -100;
+      counter = counter_temp;
+      counter_temp = 0;
+    }
+    label = dequeue_int(q);
+    int *next = map_elevation(image, tab, h, label, elevation);
+    //printf("Label : %i\n", label);
+
+    if(next == NULL)
+    {
+      free(next);
+      counter--;
+      continue;
+    }
+    size_t len = sizeof(next)/sizeof(int) -1;
+    //printf("Len : %i\n", (int)len);
+    for(int i = 0; i < (int)len; i++)
+    {
+      enqueue_int(q, next[i], size_q);
+      //printf("next : %i\n", next[i]);
+      counter_temp++;
+    }
+    free(next);
+    counter--;
   }
 
   bmp_test2(image, h);
 
+  free(size_q);
   for(int i = 0; i < image->w; i++)
   {
     free(tab[i]);
@@ -231,34 +272,26 @@ int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
   {
     for(int j = 0; j < image->h; j++)
     {
-      
       Uint32 pixel = BMP_Get_Pixel(image, i, j);
       Uint8 r, g, b;
       SDL_GetRGB(pixel, image->format, &r, &g, &b);
 
       if(tab[i][j] == label && r == 255)
       {
-        next = bfs_elevation(image, i, j, label, tab);
+        next = bfs_elevation(image, i, j, label, tab, h);
         map_elevation_colorize(h, tab, label, elevation, image->w, image->h);
-
-        list[size-1] = next;
-        size++;
-        list = realloc(list, size* sizeof(int));
-
+        if(next != -1)
+        {
+          list[size-1] = next;
+          size++;
+          list = realloc(list, size* sizeof(int));
+        } 
       }
-     /* else if(tab[i][j] == label)
-      {
-        //printf("test");
-         //next = dfs_elevation(image, i, j, tab, label, 0);
-                  printf("Test : %i\n", next);
-
-         list[size-1] = next;
-         size++;
-         list = realloc(list, size* sizeof(int));
-      }*/
     }
   }
   clean_label(tab, image->w, image->h, label);
+  if(size == 1)
+    return NULL;
   return list;
 }
 
@@ -270,7 +303,7 @@ void map_elevation_colorize(int **h, int **tab, int label, int elevation,
   {
     for(int j = 0; j < h2; j++)
     {
-      if(tab[i][j] == label && h[i][j] != elevation)
+      if((tab[i][j] == label || tab[i][j] == -1) && h[i][j] != elevation)
       {
         h[i][j] = elevation;
       }
@@ -280,7 +313,7 @@ void map_elevation_colorize(int **h, int **tab, int label, int elevation,
 
 // bfs_elevation -> TEST
 int bfs_elevation(SDL_Surface *image, int x, int y, int label,
-    int **tab)
+    int **tab, int **h2)
 {
   int w = image->w;
   int h = image->h;
@@ -293,6 +326,8 @@ int bfs_elevation(SDL_Surface *image, int x, int y, int label,
   p->x = x;
   p->y = y;
   enqueue(q, p, size);
+
+  int res = -1;
 
   int n[4][2] = 
   {
@@ -323,19 +358,33 @@ int bfs_elevation(SDL_Surface *image, int x, int y, int label,
           tab[xt+n[i][0]][yt+n[i][1]] = -1;
           enqueue(q, node, size);
         }
-        else if(tab[xt+n[i][0]][yt+n[i][1]] != -1)
+        else if(tab[xt+n[i][0]][yt+n[i][1]] != -1 &&
+            h2[xt+n[i][0]][yt+n[i][1]] == 0 && res == -1)
         {
-          free(p);
-          free(q);
-          return tab[xt+n[i][0]][yt+n[i][1]];
+          //mark(tab, label, w, h);
+          res = tab[xt+n[i][0]][yt+n[i][1]];
         }
       }
     }
     free(p);
   }
   free(q);
-  return -1;
+  free(size);
+  printf("Res : %i\n", res);
+  return res;
 }
+
+/*void mark(int **tab, int label, int w, int h)
+{
+  for(int i = 0; i < w; i++)
+  {
+    for(int j = 0; j < h; j++)
+    {
+      if(tab[i][j] == label)
+        tab[i][j] = -1;
+    }
+  }
+}*/
 
 
 int dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
