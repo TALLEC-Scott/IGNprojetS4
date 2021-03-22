@@ -7,6 +7,8 @@
 void map_elevation_colorize(int **h, int **tab, int label, int elevation,
     int w, int h2);
 void mark(int **tab, int label, int w, int h);
+int is_present(int* list, int size, int x);
+
 
 // create_queue creates and returns a queue
 struct queue* create_queue()
@@ -210,6 +212,10 @@ void Map_Colorisation(SDL_Surface *image)
   }
   int counter = *size_q;
   int counter_temp = 0;
+
+  int *size_e = malloc(sizeof(int));
+  *size_e = 1;
+
   while(!is_empty_int(q))
   {
     if(counter == 0)
@@ -221,29 +227,34 @@ void Map_Colorisation(SDL_Surface *image)
       counter_temp = 0;
     }
     label = dequeue_int(q);
-    int *next = map_elevation(image, tab, h, label, elevation);
+    *size_e = 1;
+    int *next = map_elevation(image, tab, h, label, elevation, size_e);
+    printf("Elevation %i\n", elevation);
     //printf("Label : %i\n", label);
 
-    if(next == NULL)
+    if(next == NULL || *size_e == 1)
     {
       free(next);
       counter--;
       continue;
     }
-    size_t len = sizeof(next)/sizeof(int) -1;
-    //printf("Len : %i\n", (int)len);
-    for(int i = 0; i < (int)len; i++)
+    //printf("Len : %i\n", *size_e -1);
+    for(int i = 0; i < *size_e; i++)
     {
-      enqueue_int(q, next[i], size_q);
-      //printf("next : %i\n", next[i]);
-      counter_temp++;
+      if(next[i] != 0)
+      {
+        enqueue_int(q, next[i], size_q);
+        //printf("next : %i\n", next[i]);
+        counter_temp++;
+      }
+      
     }
     free(next);
     counter--;
   }
 
   bmp_test2(image, h);
-
+  free(size_e);
   free(size_q);
   for(int i = 0; i < image->w; i++)
   {
@@ -262,12 +273,11 @@ void Map_Colorisation(SDL_Surface *image)
 }
 
 int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
-    int elevation)
+    int elevation, int* size)
 {
   
-  int *list = malloc(sizeof(int));
-  int size = 1;
-  int next = 0;
+  int *list = calloc(1, (sizeof(int)));
+
   for(int i = 0; i < image->w; i++)
   {
     for(int j = 0; j < image->h; j++)
@@ -278,19 +288,13 @@ int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
 
       if(tab[i][j] == label && r == 255)
       {
-        next = bfs_elevation(image, i, j, label, tab, h);
+        bfs_elevation(image, i, j, label, tab, h, list, size);
         map_elevation_colorize(h, tab, label, elevation, image->w, image->h);
-        if(next != -1)
-        {
-          list[size-1] = next;
-          size++;
-          list = realloc(list, size* sizeof(int));
-        } 
       }
     }
   }
   clean_label(tab, image->w, image->h, label);
-  if(size == 1)
+  if(list[0] == 0)
     return NULL;
   return list;
 }
@@ -312,8 +316,8 @@ void map_elevation_colorize(int **h, int **tab, int label, int elevation,
 }
 
 // bfs_elevation -> TEST
-int bfs_elevation(SDL_Surface *image, int x, int y, int label,
-    int **tab, int **h2)
+void bfs_elevation(SDL_Surface *image, int x, int y, int label,
+    int **tab, int **h2, int* list, int* size_2)
 {
   int w = image->w;
   int h = image->h;
@@ -326,8 +330,6 @@ int bfs_elevation(SDL_Surface *image, int x, int y, int label,
   p->x = x;
   p->y = y;
   enqueue(q, p, size);
-
-  int res = -1;
 
   int n[4][2] = 
   {
@@ -359,10 +361,17 @@ int bfs_elevation(SDL_Surface *image, int x, int y, int label,
           enqueue(q, node, size);
         }
         else if(tab[xt+n[i][0]][yt+n[i][1]] != -1 &&
-            h2[xt+n[i][0]][yt+n[i][1]] == 0 && res == -1)
+            h2[xt+n[i][0]][yt+n[i][1]] == 0)
         {
           //mark(tab, label, w, h);
-          res = tab[xt+n[i][0]][yt+n[i][1]];
+          if(!is_present(list, *size_2, tab[xt+n[i][0]][yt+n[i][1]]))
+          {
+            //printf("Label : %i\n", tab[xt+n[i][0]][yt+n[i][1]]);
+            list[*size_2-1] = tab[xt+n[i][0]][yt+n[i][1]];
+            *size_2 += 1;
+            list = realloc(list, *size_2* sizeof(int));
+          }
+
         }
       }
     }
@@ -370,8 +379,16 @@ int bfs_elevation(SDL_Surface *image, int x, int y, int label,
   }
   free(q);
   free(size);
-  printf("Res : %i\n", res);
-  return res;
+}
+
+int is_present(int* list, int size, int x)
+{
+  for(int i = 0; i <= size-2; i++)
+  {
+    if(list[i] == x)
+      return 1;
+  }
+  return 0;
 }
 
 /*void mark(int **tab, int label, int w, int h)

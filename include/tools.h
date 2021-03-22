@@ -16,4 +16,5 @@ double Min(double r, double g, double b);
 void RGB_To_HSV(double r, double g, double b, double array[3]);
 void bmp_white(SDL_Surface *image);
 void bmp_test2(SDL_Surface *image, int **tab);
+size_t len_array_int(int *array);
 #endif
