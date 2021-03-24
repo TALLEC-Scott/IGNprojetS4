@@ -143,10 +143,30 @@ void bmp_test2(SDL_Surface *image, int **tab)
       {
          BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
       }
+      else if(label == 1400)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 56, 0)));
+      }
+      else if(label == 1300)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 127, 0)));
+      }
+      else if(label == 1200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 180, 0)));
+      }
+      else if(label == 1100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 213, 0)));
+      }
       else if(label == 1000)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 165, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 0)));
       }
+
+
+
+
     }
   }
   SDL_UnlockSurface(image);
@@ -235,4 +255,13 @@ void bmp_white(SDL_Surface *image)
       BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 255, 255)));
     }
   }
+}
+
+size_t len_array_int(int *array)
+{
+  size_t len = 0;
+  for(len = 0; array[len] != '0'; len++)
+  {
+  }
+  return len;
 }
