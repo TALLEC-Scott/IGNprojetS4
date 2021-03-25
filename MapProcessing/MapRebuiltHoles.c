@@ -1,16 +1,26 @@
 #include "MapRebuiltHoles.h"
 #include <stdio.h>
 
+//print list of end_pts
+void print_list(struct end_pts *list)
+{
+  for (; list->next; list = list->next)
+  {
+	printf("x: %i, y: %i\n", list->x, list->y);
+  }
+}
+
 //test if a pixel is black
 int is_black(SDL_Surface *image, int x, int y)
 {
-	Uint32 pixel = BMP_Get_Pixel(image, x, y);
-	Uint8 r, g, b;
-	SDL_GetRGB(pixel, image->format, &r, &g, &b);
-	if (r==0 && g==0 && b==0)
-		return 1;
-	return 0;
+  Uint32 pixel = BMP_Get_Pixel(image, x, y);
+  Uint8 r, g, b;
+  SDL_GetRGB(pixel, image->format, &r, &g, &b);
+  if (r==0 && g==0 && b==0)
+	return 1;
+  return 0;
 }
+
 
 //test if a pixel correspond to filter
 int is_in_filter(SDL_Surface *image, int x, int y)
@@ -117,8 +127,8 @@ void clean_point(SDL_Surface *image)
 
 
 //search end of a line
-void rec_moore(SDL_Surface *image, int **mark, int clock[8][2], 
-		int x, int y, int i)
+void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
+		int x, int y, int i, struct end_pts *list)
 {
   mark[x][y] = 1;
   int new_x, new_y, i2;
@@ -139,25 +149,33 @@ void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
 			{
 				if (i2%2 == 0)
 					rec_moore(image, mark, clock,
-						new_x,new_y, (i2+6)%8);
+						new_x,new_y, (i2+6)%8, list);
 				else
 					rec_moore(image, mark, clock,
-						new_x, new_y, (i2+5)%8);
+						new_x, new_y, (i2+5)%8,list);
 				end = 0;
 			}
 		}
 	}
   }
   if (end == 1)
+  {
 	BMP_Put_Pixel(image, x, y, (SDL_MapRGB(image->format,255,0,0)));
+	struct end_pts *nw = malloc(sizeof(struct end_pts));
+	nw->x = x;
+	nw->y = y;
+	nw->next = NULL;
+	nw->first = list->first;
+	nw->prev = list;
+	list->next = nw;
+	list = list->next;
+	printf("test: x: %i, y: %i\n",x,y);
+  }
 }
 
 //mark end of lines
-void moore(SDL_Surface *image)
+void moore(SDL_Surface *image, struct end_pts *list)
 {
-  SDL_LockSurface(image);
-  clean_point(image);
-  thinning(image);
   int **mark = NULL;
   mark = (int**)calloc(image->w, sizeof(int*));
   for(int i = 0; i < image->w; i++)
@@ -181,13 +199,33 @@ void moore(SDL_Surface *image)
 	{
 		if (mark[i][j] == 0 && is_black(image, i ,j) == 1)
 		{
-			rec_moore(image, mark, clock, i, j, 0);
+			rec_moore(image, mark, clock, i, j, 0, list);
 		}
 	}
   }
   for (int i=0; i<image->w; i++)
 	free(mark[i]);
   free(mark);
+}
+
+void rebuilt_lines(SDL_Surface *image)
+{
+  SDL_LockSurface(image);
+  clean_point(image);
+  thinning(image);
+  struct end_pts *list_end = malloc(sizeof(struct end_pts));;
+  list_end->x = -1;
+  list_end->y = -1;
+  list_end->next = NULL;
+  list_end->first = list_end;
+  list_end->prev = NULL;
+  moore(image, list_end);
+  print_list(list_end->first);
+  struct end_pts *first = list_end->first;
+  list_end = list_end->prev;
+  for (;list_end; list_end = list_end->prev)
+	free(list_end->next);
+  free(first);
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }
