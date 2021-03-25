@@ -42,6 +42,10 @@ int dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
 void clean_label(int **tab, int w, int h, int label);
 void bfs_elevation(SDL_Surface *image, int x, int y, int label,
     int **tab, int **h2, int* list, int* size_2);
+void map_elevation_colorize(int **h, int **tab, int label, int elevation,
+    int w, int h2);
+void mark(int **tab, int label, int w, int h);
+int is_present(int* list, int size, int x);
 
 // Queue INT
 int dequeue_int(struct queue_int* q);

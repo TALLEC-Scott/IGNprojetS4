@@ -1,4 +1,5 @@
 #include "tools.h"
+#include "MapColorisation.h"
 #include <string.h>
 
 // Get pixel from coords x, y in BMP file image
@@ -265,3 +266,123 @@ size_t len_array_int(int *array)
   }
   return len;
 }
+
+// create_queue creates and returns a queue
+struct queue* create_queue()
+{
+  struct queue* q = malloc(sizeof(struct queue));
+  q->items = calloc(0, sizeof(struct point*));
+  q->f = -1;
+  q->r = -1;
+  return q;
+}
+
+// create_queue_int creates and returns a queue
+struct queue_int* create_queue_int()
+{
+  struct queue_int* q = malloc(sizeof(struct queue_int));
+  q->data = calloc(0, sizeof(int));
+  q->f = -1;
+  q->r = -1;
+  return q;
+}
+
+// is_empty_int returns 1 if is empty else 0;
+int is_empty_int(struct queue_int *q)
+{
+  if(q->r == -1)
+    return 1;
+  return 0;
+}
+
+// is_empty returns 1 if is empty else 0;
+int is_empty(struct queue *q)
+{
+  if(q->r == -1)
+    return 1;
+  return 0;
+}
+
+// enqueue enqueues a struct point p into a struct queue q
+void enqueue(struct queue* q, struct point* p, int *size)
+{
+  if(q->r == *size-1)
+  {
+    *size +=1;
+    void *temp = realloc(q->items, *size * sizeof(struct point*));
+    if(temp == NULL)
+      printf("An error occured !\n");
+
+    q->items = temp;
+  }
+  if(q->f == -1)
+    q->f = 0;
+  q->r += 1;
+  q->items[q->r] = p;
+}
+
+// enqueue_int enqueues a struct point p into a struct queue q
+void enqueue_int(struct queue_int* q, int i, int *size)
+{
+  if(q->r == *size-1)
+  {
+    *size +=1;
+    void *temp = realloc(q->data, *size * sizeof(int));
+    if(temp == NULL)
+      printf("An error occured !\n");
+
+    q->data = temp;
+  }
+  if(q->f == -1)
+    q->f = 0;
+  q->r += 1;
+  q->data[q->r] = i;
+}
+
+// dequeue return the last element of the queue q
+struct point* dequeue(struct queue* q)
+{
+  struct point* p;
+  if(is_empty(q))
+  {
+    return NULL;
+  }
+  else
+  {
+    p = q->items[q->f];
+    q->f++;
+    if(q->f > q->r)
+    {
+      q->f = -1;
+      q->r = -1;
+    }
+  }
+  //print_queue(q);
+  return p;
+}
+
+// dequeue_int return the last element of the queue q
+int dequeue_int(struct queue_int* q)
+{
+  int i;
+  if(is_empty_int(q))
+  {
+    return -1;
+  }
+  else
+  {
+    i = q->data[q->f];
+    q->f++;
+    if(q->f > q->r)
+    {
+      q->f = -1;
+      q->r = -1;
+    }
+  }
+  //print_queue(q);
+  return i;
+}
+
+
+
+
