@@ -198,10 +198,10 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
   *size = 0;
 
   struct queue* q = create_queue();
-  struct point* p = malloc(sizeof(struct point));
-  p->x = x;
-  p->y = y;
-  enqueue(q, p, size);
+  struct point p;
+  p.x = x;
+  p.y = y;
+  enqueue(q, &p, size);
 
   int n[4][2] = 
   {
@@ -226,11 +226,11 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
         SDL_GetRGB(pixel, image->format, &r, &g, &b);*/
         if(tab[xt+n[i][0]][yt+n[i][1]] == label)
         {
-          struct point* node = malloc(sizeof(struct point));
-          node->x = xt+n[i][0];
-          node->y = yt+n[i][1];
+          struct point node;
+          node.x = xt+n[i][0];
+          node.y = yt+n[i][1];
           tab[xt+n[i][0]][yt+n[i][1]] = -1;
-          enqueue(q, node, size);
+          enqueue(q, &node, size);
         }
         else if(tab[xt+n[i][0]][yt+n[i][1]] != -1 &&
             h2[xt+n[i][0]][yt+n[i][1]] == 0)
@@ -247,7 +247,6 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
         }
       }
     }
-    free(p);
   }
   free(q);
   free(size);
