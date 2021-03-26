@@ -1,5 +1,6 @@
 #include "MapRebuiltHoles.h"
 #include <stdio.h>
+#include <stdlib.h>
 VEC(list)
 
 //print list of end_pts
@@ -11,17 +12,6 @@ void print_list(vector_list *end)
 	prnt = end->data[i];
 	printf("x: %i, y: %i\n",prnt.x, prnt.y);
   }
-}
-
-//test if a pixel is black
-int is_black(SDL_Surface *image, int x, int y)
-{
-  Uint32 pixel = BMP_Get_Pixel(image, x, y);
-  Uint8 r, g, b;
-  SDL_GetRGB(pixel, image->format, &r, &g, &b);
-  if (r==255 && g==255 && b==255)
-	return 0;
-  return 1;
 }
 
 
@@ -215,6 +205,7 @@ void rebuilt_lines(SDL_Surface *image)
   moore(image, &end_list);
   print_list(&end_list);
   delete_vec(end_list);
+  //BMP_Draw_Line(image,0,0,150,300, (SDL_MapRGB(image->format,255,0,0)));
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }
