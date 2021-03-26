@@ -131,6 +131,8 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   		BMP_Put_Pixel(image, x, y, pixel);
   	}
   }
+  //BMP_Put_Pixel(image, x1, y1, (SDL_MapRGB(image->format,0,255,0)));
+  BMP_Put_Pixel(image, x2, y2, (SDL_MapRGB(image->format,0,0,0)));
 }
 
 // Convert BMP file image into black and white BMP

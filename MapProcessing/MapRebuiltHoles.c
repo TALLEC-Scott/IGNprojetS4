@@ -1,6 +1,7 @@
 #include "MapRebuiltHoles.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 VEC(list)
 
 //print list of end_pts
@@ -10,7 +11,7 @@ void print_list(vector_list *end)
   for (size_t i = 0; i<end->element_count; i++)
   {
 	prnt = end->data[i];
-	printf("x: %i, y: %i\n",prnt.x, prnt.y);
+	printf("x: %i, y: %i, state: %i\n",prnt.x, prnt.y, prnt.state);
   }
 }
 
@@ -126,6 +127,7 @@ void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
   mark[x][y] += 1;
   int new_x, new_y, i2;
   int end = 1;
+  int test = 0;
   for (int j = 0; j<8 && end==1; j++)
   {
 	i2 = (i+j)%8;
@@ -135,9 +137,19 @@ void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
 	{
 		if (j == 6)
   		{
-			BMP_Put_Pixel(image, x, y, (SDL_MapRGB(image->format,255,0,0)));
-			struct end_pts nw = (struct end_pts){.x = x, .y = y, .state = 0};
-			push_back_for_list(end_list, nw);
+  			for (size_t k=0; k<end_list->element_count; k++)
+  			{
+  				if (end_list->data[k].x == x && end_list->data[k].y == y)
+  					test = 1;
+  			}
+  			if (test == 0)
+  			{
+				BMP_Put_Pixel(image, x, y, (SDL_MapRGB(image->format,255,0,0)));
+				struct end_pts nw = (struct end_pts){.x = x, .y = y, \
+				.state = 0, .link_x = -1, .link_y = -1};
+				push_back_for_list(end_list, nw);
+			}
+			test = 0;
   		}
 		if (mark[new_x][new_y] > 1)
 			end = 0;
@@ -196,16 +208,82 @@ void moore(SDL_Surface *image, vector_list *end_list)
   free(mark);
 }
 
+//find the point of the list which is closer to (x,y) point and draw the line
+void euclidian(SDL_Surface *image, vector_list *pts, int x, int y)
+{
+  float min_d, new_d;
+  size_t mini;
+  min_d = image->w * image->h;
+  struct end_pts pt;
+  for (size_t i = 0; i<pts->element_count; i++)
+  {
+	pt = pts->data[i];
+	if ((pt.x != x || pt.y != y) && (pt.link_x != x || pt.link_y != y))
+	{
+		new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y)));
+		if (i >= pts->element_count-4)
+			new_d *= 2;
+		if (new_d >1 && new_d < min_d)
+		{
+			min_d = new_d;
+			mini = i;
+		}
+	}
+  }
+  pts->data[mini].state = 1;
+  pts->data[mini].link_x = x;
+  pts->data[mini].link_y = y;
+  BMP_Draw_Line(image,x,y,pts->data[mini].x,pts->data[mini].y, (SDL_MapRGB(image->format,0,0,0)));
+}
+
+//link points which are end of lines between them or the edge
+void link_pts(SDL_Surface *image, vector_list *pts)
+{
+  struct end_pts pt;
+  for (size_t i = 0; i<pts->element_count; i++)
+  {
+  	pt =  pts->data[i];
+  	if (pt.state == 0)
+  	{
+  		pts->data[i].state = 1;
+  		struct end_pts nw1 = (struct end_pts){.x = 0, .y = pt.y, .state = 0};
+		push_back_for_list(pts, nw1);
+		struct end_pts nw2 = (struct end_pts){.x = image->w-1, .y = pt.y, .state = 0};
+		push_back_for_list(pts, nw2);
+		struct end_pts nw3 = (struct end_pts){.x = pt.x, .y = 0, .state = 0};
+		push_back_for_list(pts, nw3);
+		struct end_pts nw4 = (struct end_pts){.x = pt.x, .y = image->h-1, .state = 0};
+		push_back_for_list(pts, nw4);
+  		euclidian(image, pts, pt.x, pt.y);
+  		pts->element_count -= 4;
+  	}
+  }
+}
+
+//transform the image to white and black image
+void white_black(SDL_Surface *image)
+{
+  for (int i = 0; i<image->w; i++)
+  {
+  	for (int j = 0; j<image->h; j++)
+  	{
+  		if (is_black(image, i, j) == 1)
+  			BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format,0,0,0)));
+  	}
+  }
+}
+
 void rebuilt_lines(SDL_Surface *image)
 {
   SDL_LockSurface(image);
+  white_black(image);
   clean_point(image);
   thinning(image);
   vector_list end_list = vector_of_list(0);
   moore(image, &end_list);
-  print_list(&end_list);
+  link_pts(image, &end_list);
+  //print_list(&end_list);
   delete_vec(end_list);
-  //BMP_Draw_Line(image,0,0,150,300, (SDL_MapRGB(image->format,255,0,0)));
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }
