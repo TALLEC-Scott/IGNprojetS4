@@ -1,12 +1,15 @@
 #include "MapRebuiltHoles.h"
 #include <stdio.h>
+VEC(list)
 
 //print list of end_pts
-void print_list(struct end_pts *list)
+void print_list(vector_list *end)
 {
-  for (; list->next; list = list->next)
+  struct end_pts prnt;
+  for (size_t i = 0; i<end->element_count; i++)
   {
-	printf("x: %i, y: %i\n", list->x, list->y);
+	prnt = end->data[i];
+	printf("x: %i, y: %i\n",prnt.x, prnt.y);
   }
 }
 
@@ -16,9 +19,9 @@ int is_black(SDL_Surface *image, int x, int y)
   Uint32 pixel = BMP_Get_Pixel(image, x, y);
   Uint8 r, g, b;
   SDL_GetRGB(pixel, image->format, &r, &g, &b);
-  if (r==0 && g==0 && b==0)
-	return 1;
-  return 0;
+  if (r==255 && g==255 && b==255)
+	return 0;
+  return 1;
 }
 
 
@@ -128,20 +131,25 @@ void clean_point(SDL_Surface *image)
 
 //search end of a line
 void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
-		int x, int y, int i, struct end_pts *list)
+		int x, int y, int i, vector_list *end_list)
 {
-  mark[x][y] = 1;
+  mark[x][y] += 1;
   int new_x, new_y, i2;
   int end = 1;
   for (int j = 0; j<8 && end==1; j++)
   {
 	i2 = (i+j)%8;
-	//printf("x: %i, y: %i\ni: %i, j: %i, i2: %i\n",x,y,i,j,i2);
 	new_x = x+clock[i2][0];
-	new_y = x+clock[i2][1];
+	new_y = y+clock[i2][1];
 	if (new_x>=0 && new_x<image->w && new_y>=0 && new_y<image->h)
 	{
-		if (mark[new_x][new_y] != 0)
+		if (j == 6)
+  		{
+			BMP_Put_Pixel(image, x, y, (SDL_MapRGB(image->format,255,0,0)));
+			struct end_pts nw = (struct end_pts){.x = x, .y = y, .state = 0};
+			push_back_for_list(end_list, nw);
+  		}
+		if (mark[new_x][new_y] > 1)
 			end = 0;
 		else
 		{
@@ -149,32 +157,24 @@ void rec_moore(SDL_Surface *image, int **mark, int clock[8][2],
 			{
 				if (i2%2 == 0)
 					rec_moore(image, mark, clock,
-						new_x,new_y, (i2+6)%8, list);
+						new_x,new_y, (i2+6)%8, end_list);
 				else
 					rec_moore(image, mark, clock,
-						new_x, new_y, (i2+5)%8,list);
+						new_x, new_y, (i2+5)%8,end_list);
 				end = 0;
 			}
 		}
 	}
-  }
-  if (end == 1)
-  {
-	BMP_Put_Pixel(image, x, y, (SDL_MapRGB(image->format,255,0,0)));
-	struct end_pts *nw = malloc(sizeof(struct end_pts));
-	nw->x = x;
-	nw->y = y;
-	nw->next = NULL;
-	nw->first = list->first;
-	nw->prev = list;
-	list->next = nw;
-	list = list->next;
-	printf("test: x: %i, y: %i\n",x,y);
+	else
+	{
+		end = 0;
+		if (mark[x][y] < 2)
+			rec_moore(image, mark, clock, x, y, (i2+3)%8, end_list);
+	}
   }
 }
 
-//mark end of lines
-void moore(SDL_Surface *image, struct end_pts *list)
+void moore(SDL_Surface *image, vector_list *end_list)
 {
   int **mark = NULL;
   mark = (int**)calloc(image->w, sizeof(int*));
@@ -197,10 +197,8 @@ void moore(SDL_Surface *image, struct end_pts *list)
   {
 	for (int j = 0; j<image->h; j++)
 	{
-		if (mark[i][j] == 0 && is_black(image, i ,j) == 1)
-		{
-			rec_moore(image, mark, clock, i, j, 0, list);
-		}
+		if (mark[i][j] < 2 && is_black(image, i ,j) == 1)
+			rec_moore(image, mark, clock, i, j, 0, end_list);
 	}
   }
   for (int i=0; i<image->w; i++)
@@ -213,19 +211,10 @@ void rebuilt_lines(SDL_Surface *image)
   SDL_LockSurface(image);
   clean_point(image);
   thinning(image);
-  struct end_pts *list_end = malloc(sizeof(struct end_pts));;
-  list_end->x = -1;
-  list_end->y = -1;
-  list_end->next = NULL;
-  list_end->first = list_end;
-  list_end->prev = NULL;
-  moore(image, list_end);
-  print_list(list_end->first);
-  struct end_pts *first = list_end->first;
-  list_end = list_end->prev;
-  for (;list_end; list_end = list_end->prev)
-	free(list_end->next);
-  free(first);
+  vector_list end_list = vector_of_list(0);
+  moore(image, &end_list);
+  print_list(&end_list);
+  delete_vec(end_list);
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }
