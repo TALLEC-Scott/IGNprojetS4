@@ -15,7 +15,6 @@ nav
 {
 	font-size: 1em;
 	margin: auto;
-	height: 50px;
 	width: 50%;
 	max-width: 500px;
 	display: flex;
@@ -51,4 +50,36 @@ a
 a:visited
 {
 	color: green;
+}
+
+ul
+{
+	width: 80%;
+	margin: auto;
+	padding: 50px 0 50px 0;
+	list-style-type: none;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	grid-gap: 15px;
+}
+
+li
+{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+img
+{
+	object-fit: contain;
+}
+
+.introduction
+{
+	margin: auto;
+	margin-left: 20px;
+	text-align: center;
 }
