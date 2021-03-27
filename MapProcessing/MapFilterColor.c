@@ -49,7 +49,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
             v = array[2];
 
             //printf("H: %f, S: %f, V: %f\n", h, s, v);
-            double temp_h = h / (double)100;
+
             // Black colors
             if(v < 0.6)
             {
@@ -66,7 +66,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
 
             }
             // Road
-            if(h > 40 && v > 0.9)
+            if(h > 40 && v > 0.9 && s > 0.19 && h < 80)
             {
               BMP_Put_Pixel(image, i, j,
                   (SDL_MapRGB(image->format, 255, 255, 255)));
@@ -75,7 +75,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
               continue;
             }
             // White colors
-            if(s < 0.17 && v > 0.75)
+            if(s < 0.17 && v > 0.85)
             {
               continue;
             }
