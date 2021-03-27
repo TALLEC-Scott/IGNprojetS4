@@ -1,6 +1,7 @@
 #include "tools.h"
 #include "MapColorisation.h"
 #include <string.h>
+#include <stdlib.h>
 
 // Get pixel from coords x, y in BMP file image
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y)
@@ -60,6 +61,78 @@ void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel)
       *(Uint32 *)p = pixel;
       break;
   }
+}
+
+//Draw a line between 2 points (x1,y1) and (x2,y2) in BMP file image (algo of Bresenham)
+void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pixel)
+{
+  int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
+  if (abs(x2-x1) < abs(y2-y1))
+  {
+  	if (y1 > y2)
+  	{
+  		int tmp_x = x1;
+  		int tmp_y = y1;
+  		x1 = x2;
+  		y1 = y2;
+  		x2 = tmp_x;
+  		y2 = tmp_y;
+  	}
+  	incr_x = x2 > x1 ? 1 : -1;
+  	dy = y2 - y1;
+  	dx = abs(x2 - x1);
+  	d = 2*dx - dy;
+  	incr1 = 2 * (dx-dy);
+  	incr2 = 2 * dx;
+  	x = x1;
+  	y = y1;
+  	BMP_Put_Pixel(image, x, y, pixel);
+  	for (y = y1+1; y<=y2; y++)
+  	{
+  		if (d >= 0)
+  		{
+  			x += incr_x;
+  			d += incr1;
+  		}
+  		else
+  			d += incr2;
+  		BMP_Put_Pixel(image, x, y, pixel);
+  	}
+  }
+  else
+  {
+  	if (x1 > x2)
+  	{
+  		int tmp_x = x1;
+  		int tmp_y = y1;
+  		x1 = x2;
+  		y1 = y2;
+  		x2 = tmp_x;
+  		y2 = tmp_y;
+  	}
+  	incr_y = y2 > y1 ? 1 : -1;
+  	dx = x2 - x1;
+  	dy = abs(y2 - y1);
+  	d = 2*dy - dx;
+  	incr1 = 2 * (dy-dx);
+  	incr2 = 2 * dx;
+  	x = x1;
+  	y = y1;
+  	BMP_Put_Pixel(image, x, y, pixel);
+  	for (x = x1+1; x<=x2; x++)
+  	{
+  		if (d >= 0)
+  		{
+  			y += incr_y;
+  			d += incr1;
+  		}
+  		else
+  			d += incr2;
+  		BMP_Put_Pixel(image, x, y, pixel);
+  	}
+  }
+  //BMP_Put_Pixel(image, x1, y1, (SDL_MapRGB(image->format,0,255,0)));
+  BMP_Put_Pixel(image, x2, y2, (SDL_MapRGB(image->format,0,0,0)));
 }
 
 // Convert BMP file image into black and white BMP
@@ -256,6 +329,17 @@ void bmp_white(SDL_Surface *image)
       BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 255, 255)));
     }
   }
+}
+
+//test if a pixel is black
+int is_black(SDL_Surface *image, int x, int y)
+{
+  Uint32 pixel = BMP_Get_Pixel(image, x, y);
+  Uint8 r, g, b;
+  SDL_GetRGB(pixel, image->format, &r, &g, &b);
+  if (r==255 && g==255 && b==255)
+	return 0;
+  return 1;
 }
 
 size_t len_array_int(int *array)
