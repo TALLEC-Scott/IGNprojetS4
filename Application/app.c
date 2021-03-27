@@ -19,7 +19,9 @@ typedef struct {
     GtkWindow *window;
     GtkButton *open;
     GtkButton *launch;
+    GtkButton *color_button;
     GtkWidget *dfc;
+    GtkWidget *color_dialog;
     GtkScale *rotate_scale;
     GtkScale *zoom_scale;
     Image image;
@@ -210,6 +212,23 @@ gboolean on_save(GtkButton *button, gpointer user_data)
     return TRUE;
 }
 
+gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
+{
+    Ui *ui = user_data;
+    gtk_widget_show(ui->color_dialog);
+
+    if (gtk_dialog_run(GTK_DIALOG(ui->color_dialog)) == GTK_RESPONSE_OK)
+    {
+        printf("color selected\nnot used (TODO)\n");
+        fflush(stdout);
+    }
+
+
+    gtk_widget_hide(ui->color_dialog);
+
+    return TRUE;
+}
+
 // Handler for the launch button
 gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data __attribute((unused)))
 {
@@ -260,6 +279,10 @@ int main (int argc, char *argv[])
                 "image"));
     GtkTextView *outputText = GTK_TEXT_VIEW(gtk_builder_get_object(builder,
                 "output_text"));
+    GtkButton *color_button = GTK_BUTTON(gtk_builder_get_object(builder,
+                "color"));
+    GtkWidget *color_dialog = GTK_WIDGET(gtk_builder_get_object(builder,
+                "color_dialog"));
 
     // Initialise data structure
     Ui ui =
@@ -267,6 +290,8 @@ int main (int argc, char *argv[])
         .window = window,
         .open = open,
         .dfc = dfc,
+        .color_button = color_button,
+        .color_dialog = color_dialog,
         .rotate_scale = rotate_scale,
         .zoom_scale = zoom_scale,
         .launch = launch,
@@ -291,6 +316,7 @@ int main (int argc, char *argv[])
     g_signal_connect(area, "draw", G_CALLBACK(on_draw), &ui);
     g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
+    g_signal_connect(color_button, "clicked", G_CALLBACK(on_color), &ui);
 
     // Frees builder
     g_object_unref(builder);

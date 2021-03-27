@@ -1,4 +1,4 @@
-CFLAGS = `pkg-config --cflags gtk+-3.0` -rdynamic -Wall -Wextra -std=c99
+CFLAGS = `pkg-config --cflags gtk+-3.0` -rdynamic -Wall -Wextra -std=c99 -g
 LDLIBS = `pkg-config --libs gtk+-3.0` -lSDL_gfx -lSDL -lm -Wno-stringop-overflow
 EXE = app
 SRC = app.c

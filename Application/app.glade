@@ -7,6 +7,69 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkColorSelectionDialog" id="color_dialog">
+    <property name="can-focus">False</property>
+    <property name="type-hint">dialog</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <child internal-child="cancel_button">
+              <object class="GtkButton">
+                <property name="can-focus">False</property>
+                <property name="receives-default">False</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child internal-child="ok_button">
+              <object class="GtkButton">
+                <property name="can-focus">False</property>
+                <property name="receives-default">False</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child internal-child="help_button">
+              <object class="GtkButton">
+                <property name="can-focus">False</property>
+                <property name="receives-default">False</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+                <property name="secondary">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child internal-child="color_selection">
+          <object class="GtkColorSelection">
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkFileFilter" id="filefilter1">
     <patterns>
       <pattern>*.bmp</pattern>
@@ -203,67 +266,29 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <!-- n-columns=2 n-rows=2 -->
-              <object class="GtkGrid">
+              <object class="GtkScrolledWindow">
+                <property name="width-request">250</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="hadjustment">area_adjustement</property>
+                <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="width-request">250</property>
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
+                    <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="hadjustment">area_adjustement</property>
-                    <property name="shadow-type">in</property>
                     <child>
-                      <object class="GtkViewport">
+                      <object class="GtkDrawingArea" id="image">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
-                        <child>
-                          <object class="GtkDrawingArea" id="image">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="hexpand">True</property>
-                            <property name="vexpand">True</property>
-                          </object>
-                        </child>
                       </object>
                     </child>
                   </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                    <property name="width">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScale" id="zoom_scale">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="adjustment">zoom_adjustement</property>
-                    <property name="round-digits">1</property>
-                    <property name="digits">2</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="width-request">75</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Zoom</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
                 </child>
               </object>
               <packing>
@@ -273,17 +298,18 @@
               </packing>
             </child>
             <child>
-              <!-- n-columns=2 n-rows=3 -->
+              <!-- n-columns=2 n-rows=4 -->
               <object class="GtkGrid">
                 <property name="width-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
                   <object class="GtkLabel">
+                    <property name="width-request">75</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="margin-bottom">5</property>
-                    <property name="label" translatable="yes">Rotation</property>
+                    <property name="label" translatable="yes">Zoom</property>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -292,23 +318,38 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkScale" id="rotate_scale">
-                    <property name="width-request">200</property>
+                  <object class="GtkScale" id="zoom_scale">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="halign">center</property>
                     <property name="vexpand">True</property>
                     <property name="orientation">vertical</property>
-                    <property name="adjustment">scale_adjustement</property>
+                    <property name="adjustment">zoom_adjustement</property>
                     <property name="inverted">True</property>
-                    <property name="fill-level">180</property>
-                    <property name="round-digits">3</property>
-                    <property name="digits">0</property>
-                    <property name="value-pos">right</property>
+                    <property name="restrict-to-fill-level">False</property>
+                    <property name="fill-level">3</property>
+                    <property name="round-digits">2</property>
+                    <property name="digits">2</property>
+                    <property name="value-pos">left</property>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
                     <property name="top-attach">1</property>
                     <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="launch_analysis">
+                    <property name="label" translatable="yes">Launch Analysis</property>
+                    <property name="width-request">50</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -325,17 +366,17 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="launch_analysis">
-                    <property name="label" translatable="yes">Launch Analysis</property>
-                    <property name="width-request">50</property>
+                  <object class="GtkButton" id="color">
+                    <property name="label">gtk-select-color</property>
                     <property name="visible">True</property>
-                    <property name="sensitive">False</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="use-stock">True</property>
                   </object>
                   <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
+                    <property name="width">2</property>
                   </packing>
                 </child>
               </object>
@@ -403,6 +444,50 @@
             <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-left">5</property>
+                <property name="margin-start">5</property>
+                <property name="label" translatable="yes">Rotation</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScale" id="rotate_scale">
+                <property name="width-request">200</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="adjustment">scale_adjustement</property>
+                <property name="fill-level">180</property>
+                <property name="round-digits">0</property>
+                <property name="digits">0</property>
+                <property name="has-origin">False</property>
+                <property name="value-pos">right</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
