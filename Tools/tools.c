@@ -111,11 +111,11 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   		y2 = tmp_y;
   	}
   	incr_y = y2 > y1 ? 1 : -1;
-  	dx = x2 - x1;
+  	dx = x2 - x1; 
   	dy = abs(y2 - y1);
-  	d = 2*dy - dx;
+  	d = 2*dy - dx; 
   	incr1 = 2 * (dy-dx);
-  	incr2 = 2 * dx;
+  	incr2 = 2 * dy;
   	x = x1;
   	y = y1;
   	BMP_Put_Pixel(image, x, y, pixel);
@@ -131,7 +131,7 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   		BMP_Put_Pixel(image, x, y, pixel);
   	}
   }
-  //BMP_Put_Pixel(image, x1, y1, (SDL_MapRGB(image->format,0,255,0)));
+  
   BMP_Put_Pixel(image, x2, y2, (SDL_MapRGB(image->format,0,0,0)));
 }
 
