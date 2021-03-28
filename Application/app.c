@@ -24,6 +24,7 @@ typedef struct {
     GtkWidget *color_dialog;
     GtkScale *rotate_scale;
     GtkScale *zoom_scale;
+    GdkRGBA rgba;
     Image image;
     GtkTextView *outputText;
     GtkButton *save;
@@ -216,13 +217,22 @@ gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
 {
     Ui *ui = user_data;
     gtk_widget_show(ui->color_dialog);
+    GdkRGBA rgba = {0, 0, 0, 0};
 
     if (gtk_dialog_run(GTK_DIALOG(ui->color_dialog)) == GTK_RESPONSE_OK)
     {
-        printf("color selected\nnot used (TODO)\n");
-        fflush(stdout);
-    }
+        GtkWidget *colorSelection =
+            gtk_color_selection_dialog_get_color_selection(
+                    GTK_COLOR_SELECTION_DIALOG(ui->color_dialog));
+        
+        gtk_color_selection_get_current_rgba(
+                GTK_COLOR_SELECTION(colorSelection), &rgba);
 
+        ui->rgba = rgba;
+        
+        printf("color:\nr: %f\ng: %f\nb: %f\na: %f\n", rgba.red,
+                rgba.green, rgba.blue, rgba.alpha);
+    }
 
     gtk_widget_hide(ui->color_dialog);
 

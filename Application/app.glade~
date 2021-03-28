@@ -2,19 +2,33 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkColorSelectionDialog">
+  <object class="GtkAdjustment" id="area_adjustement">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkColorSelectionDialog" id="color_dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">topographic line color picker</property>
+    <property name="destroy-with-parent">True</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
             <child internal-child="cancel_button">
               <object class="GtkButton">
-                <property name="can-focus">False</property>
-                <property name="receives-default">False</property>
+                <property name="label" translatable="yes">_Cancel</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="valign">baseline</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -24,8 +38,12 @@
             </child>
             <child internal-child="ok_button">
               <object class="GtkButton">
-                <property name="can-focus">False</property>
-                <property name="receives-default">False</property>
+                <property name="label" translatable="yes">_Select</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="valign">baseline</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -35,8 +53,12 @@
             </child>
             <child internal-child="help_button">
               <object class="GtkButton">
-                <property name="can-focus">False</property>
-                <property name="receives-default">False</property>
+                <property name="label" translatable="yes">_Help</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="valign">baseline</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -55,6 +77,7 @@
         <child internal-child="color_selection">
           <object class="GtkColorSelection">
             <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -64,11 +87,6 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkAdjustment" id="area_adjustement">
-    <property name="upper">100</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
   </object>
   <object class="GtkFileFilter" id="filefilter1">
     <patterns>
@@ -87,8 +105,8 @@
     <property name="page-increment">10</property>
   </object>
   <object class="GtkAdjustment" id="zoom_adjustement">
-    <property name="lower">0.01</property>
-    <property name="upper">3</property>
+    <property name="lower">0.5</property>
+    <property name="upper">15</property>
     <property name="value">1</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
