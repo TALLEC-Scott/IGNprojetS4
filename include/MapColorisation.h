@@ -37,11 +37,11 @@ int is_empty(struct queue* q);
 void clean(int **tab, int w, int h);
 int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
     int elevation, int* size);
-int dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
-    int next);
+void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
+    int **h, int elevation, int *new_label);
 void clean_label(int **tab, int w, int h, int label);
 void bfs_elevation(SDL_Surface *image, int x, int y, int label,
-    int **tab, int **h2, int* list, int* size_2);
+    int **tab, int **h2, int* list, int* size_2i, int elevation);
 void map_elevation_colorize(int **h, int **tab, int label, int elevation,
     int w, int h2);
 void mark(int **tab, int label, int w, int h);
