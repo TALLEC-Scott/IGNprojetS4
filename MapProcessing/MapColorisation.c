@@ -1,7 +1,7 @@
 #include "MapColorisation.h"
 
 // Map_Colorisation : Colors topographic line in BMP image file
-void Map_Colorisation(SDL_Surface *image)
+void Map_Colorisation(SDL_Surface *image, int **bp)
 {
   SDL_LockSurface(image);
   int **tab = NULL;
@@ -32,7 +32,7 @@ void Map_Colorisation(SDL_Surface *image)
       SDL_GetRGB(pixel, image->format, &r, &g, &b);
       if(r == 255 && tab[i][j] == 0)
       {
-        bfs_test(image, i, j, label, tab, res);
+        bfs_test(image, i, j, label, tab, res, bp);
 
 
         //int close = map_dfs_finder(image, i, j, label, tab, 1);
@@ -124,25 +124,50 @@ void Map_Colorisation(SDL_Surface *image)
     free(next);
     counter--;
   }
+  bmp_test3(image, bp, h);
+  
+  // BP matrix of elevation of blakc pixel
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(bp[i][j] == 1)
+      {
+        bp[i][j] = h[i][j];
+      }
+    }
+  }
 
   bmp_test2(image, h);
+
+  /* FREE */
+
   free(size_e);
   free(size_q);
+
   for(int i = 0; i < image->w; i++)
   {
     free(tab[i]);
+    free(h[i]);
   }
   free(tab);
+  free(h);
+
   for(int j = 0; j < size; j++)
   {
     free(node[j]);
   }
   free(node);
+
   free(res);
+
+  /* END FREE */
+
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/image.bmp");
   printf("[MAP COLORISATION] Successful saved\n");
 }
+
 
 int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
     int elevation, int* size)
@@ -344,7 +369,7 @@ int dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
 // [res] array stores informations about this zone and if this is a circle
 // it stores the number of black lines
 void bfs_test(SDL_Surface *image, int x, int y, int label,
-    int **tab, int *res)
+    int **tab, int *res, int **bp)
 {
   int w = image->w;
   int h = image->h;
@@ -393,7 +418,7 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
         }
         else if(tab[xt+n[i][0]][yt+n[i][1]] == 0)
         {
-          dfs(image, xt+n[i][0], yt+n[i][1], tab, label);
+          dfs(image, xt+n[i][0], yt+n[i][1], tab, label, bp);
           count += 1;
         }
       }
@@ -410,7 +435,7 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
 }
 
 // dfs into black pixel in bmp image
-void dfs(SDL_Surface *image, int x, int y, int **tab, int label)
+void dfs(SDL_Surface *image, int x, int y, int **tab, int label, int **bp)
 {
   Uint8 r, g, b; 
   Uint32 pixel = BMP_Get_Pixel(image, x, y);
@@ -421,45 +446,46 @@ void dfs(SDL_Surface *image, int x, int y, int **tab, int label)
   if(r == 0 && tab[x][y] == 0)
   {
     tab[x][y] = label;
+    bp[x][y] = 1;
 
     if(x-1 >= 0)
     {
-      dfs(image, x-1, y, tab, label);
+      dfs(image, x-1, y, tab, label, bp);
     }
 
     if(x+1 < w)
     {
-     dfs(image, x+1, y, tab, label);
+     dfs(image, x+1, y, tab, label, bp);
     }
 
     if(y-1 >= 0)
     {
-      dfs(image, x, y-1, tab, label);
+      dfs(image, x, y-1, tab, label, bp);
     }
 
     if(y+1 < h)
     {
-      dfs(image, x, y+1, tab, label);
+      dfs(image, x, y+1, tab, label, bp);
     }
 
     if(x+1 < w && y+1 < h)
     {
-      dfs(image, x+1, y+1, tab, label);
+      dfs(image, x+1, y+1, tab, label, bp);
     }
 
     if(x+1 < w && y-1 >= 0)
     {
-      dfs(image, x+1, y-1, tab, label);
+      dfs(image, x+1, y-1, tab, label, bp);
     }
 
     if(x-1 >= 0 && y+1 < h)
     {
-      dfs(image, x-1, y+1, tab, label);
+      dfs(image, x-1, y+1, tab, label, bp);
     }
 
     if(x-1 >= 0 && y-1 >=0)
     {
-      dfs(image, x-1, y-1, tab, label);
+      dfs(image, x-1, y-1, tab, label, bp);
     }
   }
 }
