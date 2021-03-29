@@ -23,13 +23,13 @@ struct queue_int {
   int r;
 };
 
-void Map_Colorisation(SDL_Surface *image);
+void Map_Colorisation(SDL_Surface *image, int **bp);
 int map_dfs_finder(SDL_Surface *image, int x, int y, int label,
 int **tab, int first);
 int map_end(int **tab, int x, int y, int h, int w);
-void dfs(SDL_Surface *image, int x, int y, int **tab, int label);
+void dfs(SDL_Surface *image, int x, int y, int **tab, int label, int **bp);
 void bfs_test(SDL_Surface *image, int x, int y, int label,
-    int **tab, int *res);
+    int **tab, int *res, int **bp);
 struct queue* create_queue();
 void enqueue(struct queue* q, struct point* p, int *size);
 struct point* dequeue(struct queue* q);
