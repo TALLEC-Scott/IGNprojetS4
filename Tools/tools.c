@@ -237,10 +237,6 @@ void bmp_test2(SDL_Surface *image, int **tab)
       {
          BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 0)));
       }
-
-
-
-
     }
   }
   SDL_UnlockSurface(image);
@@ -467,6 +463,50 @@ int dequeue_int(struct queue_int* q)
   return i;
 }
 
+void bmp_test3(SDL_Surface *image, int **tab, int **h)
+{
+  SDL_LockSurface(image);
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      int label = 0;
+      if(tab[i][j] == 1)
+      {
+        tab[i][j] = h[i][j];
+        label = tab[i][j];
+      
+      if(label == 1500)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
+      }
+      else if(label == 1400)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 56, 0)));
+      }
+      else if(label == 1300)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 127, 0)));
+      }
+      else if(label == 1200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 180, 0)));
+      }
+      else if(label == 1100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 213, 0)));
+      }
+      else if(label == 1000)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 0)));
+      }
+      }
+
+    }
+  }
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, "Pictures/Results/elevation_matrice.bmp");
+}
 
 
 
