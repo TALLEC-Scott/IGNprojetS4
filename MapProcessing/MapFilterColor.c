@@ -80,7 +80,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
               continue;
             }
             // Brown colors
-            if(h > 30 && h < 50 && s > 0.12)
+            if(h > 30 && h < 50 && v > 0.60 && (s > 0.19 || (s > 0.15 && h > 43)))
             {
               BMP_Put_Pixel(image, i, j,
                   (SDL_MapRGB(image->format, 255, 0, 0)));
