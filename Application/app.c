@@ -8,8 +8,6 @@ typedef struct {
     cairo_surface_t *image_surface;
     GdkPixbuf *pixbuf;
     cairo_format_t format;
-    double rotation;
-    double zoom;
     int width;
     int height;
     char* filename;
@@ -24,9 +22,11 @@ typedef struct {
     GtkWidget *color_dialog;
     GtkScale *rotate_scale;
     GtkScale *zoom_scale;
+    double rotation;
+    double zoom;
     GdkRGBA rgba;
-    Image image;
-    GtkTextView *outputText;
+    Image image_input;
+    Image image_output;
     GtkButton *save;
 } Ui;
 
@@ -39,8 +39,10 @@ gboolean on_image_load(GtkButton *button, gpointer user_data)
     // Name of file to open from dialog box
     gchar *file_name = calloc(200, sizeof(char));
     
-    GdkPixbuf *pixbuf_load = NULL;
+    GdkPixbuf *pixbuf_input_load = NULL;
+    GdkPixbuf *pixbuf_output_load = NULL;
     GError *error = NULL;
+    GError *error2 = NULL;
 
     // Show the "Open Image" dialog box
     gtk_widget_show(ui->dfc);
@@ -52,42 +54,72 @@ gboolean on_image_load(GtkButton *button, gpointer user_data)
         file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ui->dfc));
         if (file_name != NULL) {
             //gtk_image_set_from_file(GTK_IMAGE(ui->img_main), file_name);
-            pixbuf_load = gdk_pixbuf_new_from_file(file_name, &error);
-            if (!error)
+            pixbuf_input_load = gdk_pixbuf_new_from_file(file_name, &error);
+            pixbuf_output_load = gdk_pixbuf_new_from_file(file_name, &error2);
+            if (!error && !error2)
             {
-                //Save the pixbuf in user data
-                ui->image.pixbuf = pixbuf_load;
-                ui->image.format = (gdk_pixbuf_get_has_alpha (ui->image.pixbuf)
+                //Save the pixbuf in user data for input
+                ui->image_input.pixbuf = pixbuf_input_load;
+                ui->image_input.format = (gdk_pixbuf_get_has_alpha (ui->image_input.pixbuf)
                         ) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
-                ui->image.width = gdk_pixbuf_get_width(ui->image.pixbuf);
-                ui->image.height = gdk_pixbuf_get_height(ui->image.pixbuf);
+                ui->image_input.width = gdk_pixbuf_get_width(ui->image_input.pixbuf);
+                ui->image_input.height = gdk_pixbuf_get_height(ui->image_input.pixbuf);
+
+                //Same for output
+                ui->image_output.pixbuf = pixbuf_output_load;
+                ui->image_output.format = (gdk_pixbuf_get_has_alpha (
+                            ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 :
+                    CAIRO_FORMAT_RGB24;
+                ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
+                ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
 
                 // Resize the drawing area to trigger scrollbars
-                gtk_widget_set_size_request(GTK_WIDGET(ui->image.area),
-                        ui->image.width, ui->image.height);
-
-                ui->image.image_surface = cairo_image_surface_create(
-                        ui->image.format, ui->image.width, ui->image.height);
-
-                cairo_t *cr = cairo_create(ui->image.image_surface);
-                gdk_cairo_set_source_pixbuf(cr, ui->image.pixbuf, 0, 0);
-
-                cairo_paint(cr);
-
-                gtk_widget_queue_draw_area(GTK_WIDGET(ui->image.area), 0, 0,
-                        ui->image.width, ui->image.height);
+                gtk_widget_set_size_request(GTK_WIDGET(ui->image_input.area),
+                        ui->image_input.width, ui->image_input.height);
+                gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
+                        ui->image_output.width, ui->image_output.height);
                 
-                strcpy(ui->image.filename, file_name);
+                //Create cairo surfaces for zoom and rotation
+                ui->image_input.image_surface = cairo_image_surface_create(
+                        ui->image_input.format, ui->image_input.width,
+                        ui->image_input.height);
+                ui->image_output.image_surface = cairo_image_surface_create(
+                        ui->image_output.format, ui->image_output.width,
+                        ui->image_output.height);
+
+                cairo_t *cr = cairo_create(ui->image_input.image_surface);
+                cairo_t *cr2 = cairo_create(ui->image_output.image_surface);
+                
+                //Links the surfaces to the pixbuf
+                gdk_cairo_set_source_pixbuf(cr, ui->image_input.pixbuf, 0, 0);
+                gdk_cairo_set_source_pixbuf(cr2, ui->image_output.pixbuf, 0, 0);
+
+                //Draws the surfaces
+                cairo_paint(cr);
+                cairo_paint(cr2);
+
+                gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_input.area), 0,
+                        0, ui->image_input.width, ui->image_input.height);
+                gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0,
+                        0, ui->image_output.width, ui->image_output.height);
+
+                strcpy(ui->image_input.filename, file_name);
                 
                 gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
             }
             else
-                g_critical(error->message);
+            {
+                if (error)
+                    g_critical(error->message);
+                if (error2)
+                    g_critical(error2->message);
+            }
         }
     }
 
     free(file_name);
     free(error);
+    free(error2);
     
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
@@ -95,23 +127,51 @@ gboolean on_image_load(GtkButton *button, gpointer user_data)
     return TRUE;
 }
 
-gboolean on_draw(GtkWidget *area, cairo_t *cr, gpointer user_data)
+gboolean on_draw_input(GtkWidget *area, cairo_t *cr, gpointer user_data)
 {
     Ui *ui = user_data;
 
-    if(ui->image.pixbuf != NULL)
+    if(ui->image_input.pixbuf != NULL)
     {
+        gtk_widget_set_size_request(GTK_WIDGET(ui->image_input.area),
+                ui->image_input.width * ui->zoom,
+                ui->image_input.height * ui->zoom);
         int width = gtk_widget_get_allocated_width(GTK_WIDGET(area));
         int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
 
         cairo_translate(cr, width/2.0, height/2.0);
-        cairo_rotate(cr, ui->image.rotation);
-        cairo_scale(cr, ui->image.zoom, ui->image.zoom);
+        cairo_rotate(cr, ui->rotation);
+        cairo_scale(cr, ui->zoom, ui->zoom);
         cairo_translate(cr, -width/2.0, -height/2.0);
 
-        cairo_set_source_surface(cr, ui->image.image_surface,
-                width/2.0 - ui->image.width/2.0,
-                height/2.0 - ui->image.height/2.0);
+        cairo_set_source_surface(cr, ui->image_input.image_surface,
+                width/2.0 - ui->image_input.width/2.0,
+                height/2.0 - ui->image_input.height/2.0);
+        cairo_paint(cr);
+    }
+
+    return FALSE;
+}
+
+gboolean on_draw_output(GtkWidget *area, cairo_t *cr, gpointer user_data)
+{
+    Ui *ui = user_data;
+    if (ui->image_output.pixbuf != NULL)
+    {
+        gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
+                ui->image_output.width * ui->zoom,
+                ui->image_output.height * ui->zoom);
+        int width = gtk_widget_get_allocated_width(GTK_WIDGET(area));
+        int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
+
+        cairo_translate(cr, width/2.0, height/2.0);
+        cairo_rotate(cr, ui->rotation);
+        cairo_scale(cr, ui->zoom, ui->zoom);
+        cairo_translate(cr, -width/2.0, -height/2.0);
+
+        cairo_set_source_surface(cr, ui->image_output.image_surface,
+                width/2.0 - ui->image_output.width/2.0,
+                height/2.0 - ui->image_output.height/2.0);
         cairo_paint(cr);
     }
 
@@ -124,14 +184,18 @@ gboolean on_rotate_scale_change_value(GtkScale* scale, gpointer user_data)
     Ui *ui = user_data;
     
     // Saves the value of angle in radiants
-    ui->image.rotation = gtk_range_get_value(GTK_RANGE(scale)) * G_PI / 180;
+    ui->rotation = gtk_range_get_value(GTK_RANGE(scale)) * G_PI / 180;
 
-    int width = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image.area));
-    int height = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image.area));
+    int width_in = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image_input.area));
+    int height_in = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image_input.area));
+    int width_out = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image_output.area));
+    int height_out = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image_output.area));
 
     // Redraws the rotated image
-    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image.area), 0, 0,
-            width, height);
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_input.area), 0, 0,
+            width_in, height_in);
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0, 0,
+            width_out, height_out);
 
     return TRUE;
 }
@@ -142,18 +206,23 @@ gboolean on_zoom_scale_change_value(GtkScale* scale, gpointer user_data)
     Ui *ui = user_data;
 
     // Saves the value of zoom
-    ui->image.zoom = gtk_range_get_value(GTK_RANGE(scale));
+    ui->zoom = gtk_range_get_value(GTK_RANGE(scale));
     
-    int width = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image.area));
-    int height = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image.area));
+    int width_in = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image_input.area));
+    int height_in = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image_input.area));
+    int width_out = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image_output.area));
+    int height_out = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image_output.area));
 
     // Redraws the zoomed image
-    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image.area), 0, 0,
-            width, height);
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_input.area), 0, 0,
+            width_in, height_in);
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0, 0,
+            width_out, height_out);
 
     return TRUE;
 }
 
+/*
 // Handler for the save button
 gboolean on_save(GtkButton *button, gpointer user_data)
 {
@@ -212,6 +281,8 @@ gboolean on_save(GtkButton *button, gpointer user_data)
         
     return TRUE;
 }
+*/
+
 
 gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
 {
@@ -285,10 +356,10 @@ int main (int argc, char *argv[])
                 "rotate_scale"));
     GtkScale* zoom_scale = GTK_SCALE(gtk_builder_get_object(builder,
                 "zoom_scale"));
-    GtkDrawingArea *area = GTK_DRAWING_AREA(gtk_builder_get_object(builder,
-                "image"));
-    GtkTextView *outputText = GTK_TEXT_VIEW(gtk_builder_get_object(builder,
-                "output_text"));
+    GtkDrawingArea *area_input = GTK_DRAWING_AREA(gtk_builder_get_object(builder,
+                "image_input"));
+    GtkDrawingArea *area_output = GTK_DRAWING_AREA(gtk_builder_get_object(
+                builder, "image_output"));
     GtkButton *color_button = GTK_BUTTON(gtk_builder_get_object(builder,
                 "color"));
     GtkWidget *color_dialog = GTK_WIDGET(gtk_builder_get_object(builder,
@@ -304,17 +375,21 @@ int main (int argc, char *argv[])
         .color_dialog = color_dialog,
         .rotate_scale = rotate_scale,
         .zoom_scale = zoom_scale,
+        .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
+        .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .launch = launch,
         .save = save,
-        .outputText = outputText,
-        .image =
+        .image_input =
         {
-            .area = area,
-            .rotation = 0,
-            .zoom = 1.00,
+            .area = area_input,
             .filename = calloc(200, sizeof(char))
+        },
+        .image_output = 
+        {
+            .area = area_output,
+            .filename = NULL
         }
-    }; 
+    };
 
     // Connects signal handlers.
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -323,8 +398,9 @@ int main (int argc, char *argv[])
                 on_rotate_scale_change_value), &ui);
     g_signal_connect(zoom_scale, "value-changed", G_CALLBACK(
                 on_zoom_scale_change_value), &ui);
-    g_signal_connect(area, "draw", G_CALLBACK(on_draw), &ui);
-    g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
+    g_signal_connect(area_input, "draw", G_CALLBACK(on_draw_input), &ui);
+    g_signal_connect(area_output, "draw", G_CALLBACK(on_draw_output), &ui);
+    //g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
     g_signal_connect(color_button, "clicked", G_CALLBACK(on_color), &ui);
 
@@ -337,7 +413,7 @@ int main (int argc, char *argv[])
     // Runs the main loop.
     gtk_main();
 
-    free(ui.image.filename);
+    free(ui.image_input.filename);
 
     // Exits.
     return 0;

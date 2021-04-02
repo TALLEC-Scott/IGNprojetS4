@@ -2,7 +2,12 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkAdjustment" id="area_adjustement">
+  <object class="GtkAdjustment" id="area_height_adjustement">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="area_width_adjustement">
     <property name="upper">100</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
@@ -284,13 +289,14 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="width-request">250</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="hadjustment">area_adjustement</property>
+                <property name="hadjustment">area_width_adjustement</property>
+                <property name="vadjustment">area_height_adjustement</property>
                 <property name="shadow-type">in</property>
                 <child>
                   <object class="GtkViewport">
@@ -299,7 +305,7 @@
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkDrawingArea" id="image">
+                      <object class="GtkDrawingArea" id="image_input">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
@@ -345,7 +351,7 @@
                     <property name="adjustment">zoom_adjustement</property>
                     <property name="inverted">True</property>
                     <property name="restrict-to-fill-level">False</property>
-                    <property name="fill-level">3</property>
+                    <property name="fill-level">15</property>
                     <property name="round-digits">2</property>
                     <property name="digits">2</property>
                     <property name="value-pos">left</property>
@@ -405,54 +411,33 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkScrolledWindow" id="scrolledwindow2">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="hadjustment">area_width_adjustement</property>
+                <property name="vadjustment">area_height_adjustement</property>
+                <property name="shadow-type">in</property>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="vadjustment">text_adjustement</property>
-                    <property name="shadow-type">in</property>
+                    <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkTextView" id="output_text">
+                      <object class="GtkDrawingArea" id="image_output">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="vscroll-policy">natural</property>
-                        <property name="wrap-mode">word-char</property>
-                        <property name="justification">fill</property>
-                        <property name="left-margin">5</property>
-                        <property name="right-margin">5</property>
-                        <property name="top-margin">5</property>
-                        <property name="bottom-margin">5</property>
-                        <property name="indent">10</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
                       </object>
                     </child>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="save_text">
-                    <property name="label">gtk-save-as</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="use-stock">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
               </packing>
@@ -510,6 +495,12 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkSizeGroup">
+    <widgets>
+      <widget name="scrolledwindow1"/>
+      <widget name="scrolledwindow2"/>
+    </widgets>
   </object>
   <object class="GtkFileChooserDialog" id="dlg_file_choose">
     <property name="can-focus">False</property>
