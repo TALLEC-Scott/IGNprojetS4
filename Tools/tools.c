@@ -64,7 +64,7 @@ void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel)
 }
 
 //Draw a line between 2 points (x1,y1) and (x2,y2) in BMP file image (algo of Bresenham)
-void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pixel)
+void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel)
 {
   int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
   if (abs(x2-x1) < abs(y2-y1))
@@ -86,7 +86,7 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   	incr2 = 2 * dx;
   	x = x1;
   	y = y1;
-  	BMP_Put_Pixel(image, x, y, pixel);
+  	image->pict[x][y] = pixel;
   	for (y = y1+1; y<=y2; y++)
   	{
   		if (d >= 0)
@@ -96,7 +96,7 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   		}
   		else
   			d += incr2;
-  		BMP_Put_Pixel(image, x, y, pixel);
+  		image->pict[x][y] = pixel;
   	}
   }
   else
@@ -118,7 +118,7 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   	incr2 = 2 * dy;
   	x = x1;
   	y = y1;
-  	BMP_Put_Pixel(image, x, y, pixel);
+  	image->pict[x][y] = pixel;
   	for (x = x1+1; x<=x2; x++)
   	{
   		if (d >= 0)
@@ -128,11 +128,10 @@ void BMP_Draw_Line(SDL_Surface *image, int x1, int y1, int x2, int y2, Uint32 pi
   		}
   		else
   			d += incr2;
-  		BMP_Put_Pixel(image, x, y, pixel);
+  		image->pict[x][y] = pixel;
   	}
   }
-  
-  BMP_Put_Pixel(image, x2, y2, (SDL_MapRGB(image->format,0,0,0)));
+  image->pict[x2][y2] = pixel;
 }
 
 // Convert BMP file image into black and white BMP
