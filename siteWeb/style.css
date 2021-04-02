@@ -1,65 +1,120 @@
 body
 {
-	background-image: url("images/topo2.png");
-	background-color: #EEEDE0;
+	
+	background-color: #383838;
 	font-family: cursive;
 	font-size: 1.2em;
+	color: white;
 }
 
 header
 {
-	background: url("images/elf&mer.png") no-repeat left,
+	/*background: url("images/elf&mer.png") no-repeat left,
 				url("images/japon2.png") no-repeat right;
 	background-size: contain;
-	text-align: center;
+	text-align: center;*/
+	/*background-image: url("images/topo2.png");*/
+	height: 250px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 0 50px 0 50px;
+	align-items: center;
+}
+
+#title
+{
+	display: flex;
+	flex-direction: row;
+}
+
+#title img
+{
+	width: 50px;
+	height: 50px;
+	align-self: center;
 }
 
 nav
 {
-	font-size: 1em;
-	margin: auto;
-	width: 50%;
-	max-width: 500px;
+	width: 100%;
+	font-size: 0.75em;
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: space-around;
+	justify-content: space-between;
 	align-items: center;
 }
 
-nav a:hover
+#nav_links
 {
-	transition: background-color .5s;
-	background-color: rgba(150, 150, 150, .4);
-	opacity: 1;
+	background-color: #252525;
+	border-radius: 15px;
+	padding: 10px;
 }
 
 h1
 {
-	margin-bottom: 2%;
-	font-size: 4em;
+	width: 200px;
+	margin-left: 3%;
+	font-size: 2em;
+}
+
+h2
+{
+	padding-bottom: 5px;
+	border-bottom: 3px solid rgb(200, 200, 200);
+}
+
+nav a:hover
+{
+	transition: background-color .25s;
+	background-color: rgba(150, 150, 150, .4);
+	opacity: 1;
+}
+
+a
+{
+	color: white;
+	text-decoration: none;
 }
 
 nav a
 {
 	border-radius: 10px;
 	padding: 5px;
-	transition: background-color.5s;
-	text-decoration: none;
+	transition: background-color .25s;
 	font-size: 1.8em;
 	opacity: 0.75;
 }
 
 a:visited
 {
-	color: green;
+	color: white;
+}
+
+#download
+{
+	transition: background-color .25s;
+	background-color: #303030;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+#download:hover
+{
+	transition: background-color .25s;
+	background-color: #505050;
+}
+
+#groupe
+{
+	margin: 50px auto 50px auto;
+	width: 80%;
 }
 
 ul
 {
-	width: 80%;
 	margin: auto;
-	padding: 50px 0 50px 0;
 	list-style-type: none;
 	display: flex;
 	flex-direction: column;
@@ -75,7 +130,7 @@ li
 	justify-content: space-between;
 }
 
-img
+li img
 {
 	--index: 0;
 	position: relative;
