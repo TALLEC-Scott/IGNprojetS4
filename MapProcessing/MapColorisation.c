@@ -173,7 +173,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   free(res);
 
   /* END FREE */
-
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/image.bmp");
   printf("[MAP COLORISATION] Successful saved\n");
