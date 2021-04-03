@@ -90,6 +90,13 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         }
     }
 
+    SDL_Surface *lines = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+    bmp_white(lines);
+
+    rebuilt_lines(lines, array_topo);
+
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);

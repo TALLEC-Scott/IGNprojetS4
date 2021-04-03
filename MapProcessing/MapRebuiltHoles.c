@@ -402,7 +402,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
 }
 
 
-void rebuilt_lines(SDL_Surface *image)
+void rebuilt_lines(SDL_Surface *image, int **tab)
 {
   SDL_LockSurface(image);
   struct image_pict *pict = malloc(sizeof(struct image_pict));
@@ -413,7 +413,7 @@ void rebuilt_lines(SDL_Surface *image)
   {
   	for (int j = 0; j<image->h; j++)
   	{
-  		if (is_black(image,i,j) == 1)
+  		if (tab[i][j] == 1)
   			pict->pict[i][j] = 1;
   	}
   }

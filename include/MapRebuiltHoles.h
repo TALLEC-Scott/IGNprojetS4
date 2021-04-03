@@ -28,6 +28,6 @@ int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2,int cpt, 
 int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2);
 void euclidian(struct image_pict *image, vector_list *pts, int x, int y);
 void link_pts(struct image_pict *image, vector_list *pts);
-void rebuilt_lines(SDL_Surface *image);
+void rebuilt_lines(SDL_Surface *image, int **tab);
 
 #endif

@@ -214,11 +214,11 @@ void bmp_test2(SDL_Surface *image, int **tab)
       }
       else if(label == 1500)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 128, 0, 0)));
       }
       else if(label == 1400)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 56, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
       }
       else if(label == 1300)
       {
@@ -226,16 +226,61 @@ void bmp_test2(SDL_Surface *image, int **tab)
       }
       else if(label == 1200)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 180, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 102, 0)));
       }
       else if(label == 1100)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 213, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 153, 51)));
       }
       else if(label == 1000)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 204, 102)));
       }
+      else if(label == 900)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 255, 153)));
+      }
+      else if(label == 800)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 204, 255, 153)));
+      }
+      else if(label == 700)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 153, 255, 153)));
+      }
+      else if(label == 600)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 102, 255, 153)));
+      }
+      else if(label == 500)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 153)));
+      }
+      else if(label == 400)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 255)));
+      }
+      else if(label == 300)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 204, 255)));
+      }
+      else if(label == 200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 102, 204)));
+      }
+      else if(label == 100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 51, 204)));
+      }
+      else if(label == -100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 153)));
+      }
+      else if(label == -200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 102)));
+      }
+
     }
   }
   SDL_UnlockSurface(image);
