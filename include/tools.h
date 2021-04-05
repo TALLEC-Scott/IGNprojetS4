@@ -8,11 +8,8 @@
 #include <math.h>
 #include "MapRebuiltHoles.h"
 
-
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y);
 void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel);
-void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel);
-SDL_Surface* BMP_To_BW(SDL_Surface *image);
 void BMP_Test(SDL_Surface *image, int **tab);
 double Max(double r, double g, double b);
 double Min(double r, double g, double b);
