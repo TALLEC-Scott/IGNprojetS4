@@ -17,6 +17,7 @@ typedef struct {
     GtkWindow *window;
     GtkButton *open;
     GtkButton *launch;
+    GtkButton *step;
     GtkButton *color_button;
     GtkWidget *dfc;
     GtkWidget *color_dialog;
@@ -24,6 +25,7 @@ typedef struct {
     GtkScale *zoom_scale;
     double rotation;
     double zoom;
+    int state;
     GdkRGBA rgba;
     Image image_input;
     Image image_output;
@@ -106,6 +108,7 @@ gboolean on_image_load(GtkButton *button, gpointer user_data)
                 strcpy(ui->image_input.filename, file_name);
                 
                 gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
+                gtk_widget_set_sensitive(GTK_WIDGET(ui->step), TRUE);
             }
             else
             {
@@ -317,6 +320,11 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
     return TRUE;
 }
 
+gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data __attribute__((unused)))
+{
+    return TRUE;
+}
+
 int main (int argc, char *argv[])
 {
     // App only launches whitout parameters
@@ -351,6 +359,7 @@ int main (int argc, char *argv[])
     GtkButton* open = GTK_BUTTON(gtk_builder_get_object(builder, "open"));
     GtkButton* launch = GTK_BUTTON(gtk_builder_get_object(builder,
                 "launch_analysis"));
+    GtkButton* step = GTK_BUTTON(gtk_builder_get_object(builder, "step"));
     GtkButton* save = GTK_BUTTON(gtk_builder_get_object(builder, "save_text"));
     GtkScale* rotate_scale = GTK_SCALE(gtk_builder_get_object(builder,
                 "rotate_scale"));
@@ -378,7 +387,9 @@ int main (int argc, char *argv[])
         .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .launch = launch,
+        .step = step,
         .save = save,
+        .state = 0,
         .image_input =
         {
             .area = area_input,
@@ -402,6 +413,7 @@ int main (int argc, char *argv[])
     g_signal_connect(area_output, "draw", G_CALLBACK(on_draw_output), &ui);
     //g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
+    g_signal_connect(step, "clicked", G_CALLBACK(on_step), &ui);
     g_signal_connect(color_button, "clicked", G_CALLBACK(on_color), &ui);
 
     // Frees builder
