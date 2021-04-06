@@ -34,7 +34,7 @@ int main()
   printf("H: %f, S: %f, V: %f\n", array[0], array[1], array[2]);
   free(array);
   
-  Map_Colorisation(image2);
+  Map_Colorisation(image2, NULL);
   bmp_filter(test);
 
   SDL_FreeSurface(image2);
