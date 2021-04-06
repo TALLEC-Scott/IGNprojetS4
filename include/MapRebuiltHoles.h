@@ -9,7 +9,7 @@ struct end_pts {
 	int state;
 };
 typedef struct end_pts list;
-VEC_header(list);
+VEC_header(list)
 
 struct image_pict {
 	int** pict;

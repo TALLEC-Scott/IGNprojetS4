@@ -1,4 +1,5 @@
 #include "MapColorisation.h"
+#include <err.h>
 
 // Map_Colorisation : Colors topographic line in BMP image file
 void Map_Colorisation(SDL_Surface *image, int **bp)
@@ -52,12 +53,20 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   }
   int *M = NULL;
   M = calloc(label+1, sizeof(int));
+  if(M == NULL)
+  {
+    errx(EXIT_FAILURE, "invalid calloc M");
+  }
   printf("Label %i\n", label);
 
   //BMP_Test(image, tab);
 
   int **h = NULL;
   h = (int**)calloc(image->w, sizeof(int*));
+  if(h == NULL)
+  {
+    errx(EXIT_FAILURE, "invalid calloc h");
+  }
   for(int k = 0; k < image->w; k++)
   {
     h[k] = (int*)calloc(image->h, sizeof(int));
@@ -92,6 +101,10 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   int counter_temp = 0;
 
   int *size_e = malloc(sizeof(int));
+  if(size_e == NULL)
+  {
+    errx(EXIT_FAILURE, "invalid malloc size_e");
+  }
   *size_e = 1;
   int label_temp = 0;
 
@@ -113,7 +126,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
 
     if(next == NULL || *size_e == 1)
     {
-      free(next);
+      //free(next);
       counter--;
       continue;
     }
@@ -132,6 +145,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
       
     }
     free(next);
+    next = NULL;
     counter--;
   }
   bmp_test3(image, bp, h);
@@ -184,6 +198,10 @@ int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
 {
   
   int *list = calloc(1, (sizeof(int)));
+  if(list == NULL)
+  {
+    errx(EXIT_FAILURE, "Invalid calloc list");
+  }
 
   for(int i = 0; i < image->w; i++)
   {
@@ -229,16 +247,20 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
   int w = image->w;
   int h = image->h;
   int* size = malloc(sizeof(int*));
+  if(size == NULL)
+  {
+    errx(EXIT_FAILURE, "Invalid malloc size");
+  }
   Uint8 r, g, b;
   Uint32 pixel;
 
   *size = 0;
 
   struct queue* q = create_queue();
-  struct point p;
-  p.x = x;
-  p.y = y;
-  enqueue(q, &p, size);
+  struct point* p = malloc(sizeof(struct point));
+  p->x = x;
+  p->y = y;
+  enqueue(q, p, size);
 
   int n[4][2] = 
   {
@@ -268,14 +290,13 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
         if(tab[xt+n[i][0]][yt+n[i][1]] == label &&
             h2[xt+n[i][0]][yt+n[i][1]] == 0 &&r == 255)
         {
-          struct point node;
-          node.x = xt+n[i][0];
-          node.y = yt+n[i][1];
+          struct point* node = malloc(sizeof(struct point));
+          node->x = xt+n[i][0];
+          node->y = yt+n[i][1];
           //tab[xt+n[i][0]][yt+n[i][1]] = -1;
 
-          //
           h2[xt+n[i][0]][yt+n[i][1]] = elevation;
-          enqueue(q, &node, size);
+          enqueue(q, node, size);
         }
         else if(/*tab[xt+n[i][0]][yt+n[i][1]] != -1*/ r == 0 &&
             h2[xt+n[i][0]][yt+n[i][1]] == 0)
@@ -291,6 +312,10 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
             list[*size_2-1] = tab[xt+n[i][0]][yt+n[i][1]];
             *size_2 += 1;
             list = realloc(list, *size_2* sizeof(int));
+            if(list == NULL)
+            {
+              errx(EXIT_FAILURE, "invalid realloc list");
+            }
           }
 
           if(new_label != 0 && !is_present(list, *size_2, new_label))
@@ -299,12 +324,17 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
             list[*size_2-1] = new_label;
             *size_2 += 1;
             list = realloc(list, *size_2* sizeof(int));
+            if(list == NULL)
+            {
+              errx(EXIT_FAILURE, "invalid realloc list");
+            }
           }
-
         }
       }
     }
+    //free(p);
   }
+  free(q->items);
   free(q);
   free(size);
 }
@@ -460,7 +490,9 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
     res[0] = nb; 
     res[1] = count;
   }
+  free(q->items);
   free(q);
+  free(size);
 }
 
 // dfs into black pixel in bmp image

@@ -117,7 +117,6 @@ void bmp_create(SDL_Surface *image, int **array, char *name)
   printf("%s [DONE]\n", res);
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, res);
-  SDL_FreeSurface(image);
 }
 
 

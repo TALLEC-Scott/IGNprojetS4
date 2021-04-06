@@ -106,7 +106,6 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-
     rebuilt_lines(lines, array_topo);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
@@ -131,6 +130,9 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
 
     // Free Surface
     free(array);
+    SDL_FreeSurface(pic_river);
+    SDL_FreeSurface(pic_road);
+    SDL_FreeSurface(pic_topo);
     SDL_UnlockSurface(image);
     SDL_SaveBMP(image, "Pictures/Results/ign.bmp");
 }
