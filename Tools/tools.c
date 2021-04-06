@@ -508,13 +508,6 @@ void bmp_test3(SDL_Surface *image, int **tab, int **h)
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/elevation_matrice.bmp");
 }
-/*  Row-major implementation of 2D arrays /*
-typedef struct _2D_arrays {
-
-	size_t cols;
-	size_t rows;
-	int *data[]; /*1D array of int type (can be changed) */
-} _2D_array;
 
 int get_2D_array_x_y (_2D_array *M, size_t x, size_t y){
 
