@@ -10,6 +10,7 @@
 
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y);
 void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel);
+void bmp_create(SDL_Surface *image, int **array, char *name);
 void BMP_Test(SDL_Surface *image, int **tab);
 double Max(double r, double g, double b);
 double Min(double r, double g, double b);
