@@ -80,7 +80,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
               continue;
             }
             // Brown colors
-            if(h > 30 && h < 50 && s > 0.12)
+            if(h > 30 && h < 50 && v > 0.60 && (s > 0.19 || (s > 0.15 && h > 43)))
             {
               BMP_Put_Pixel(image, i, j,
                   (SDL_MapRGB(image->format, 255, 0, 0)));
@@ -89,6 +89,13 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
             }
         }
     }
+
+    SDL_Surface *lines = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+    
+
+    rebuilt_lines(lines, array_topo);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,
@@ -112,30 +119,5 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
 
     SDL_UnlockSurface(image);
     SDL_SaveBMP(image, "Pictures/Results/ign.bmp");
-}
-
-// bmp_create Puts pixel of array in image and saves it as BMP
-void bmp_create(SDL_Surface *image, int **array, char *name)
-{
-  SDL_LockSurface(image);
-  for(int i = 0; i < image->w; i++)
-  {
-    for(int j = 0; j < image->h; j++)
-    {
-      if(array[i][j] != 0)
-      {
-        BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 0, 0, 0)));
-
-      }
-    }
-  }
-
-  char res[30] = "Pictures/Results/";
-  strcat(res, name);
-  printf("%s [DONE]\n", res);
-  SDL_UnlockSurface(image);
-  SDL_SaveBMP(image, res);
-  SDL_FreeSurface(image);
 }
 

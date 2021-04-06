@@ -33,10 +33,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
       if(r == 255 && tab[i][j] == 0)
       {
         bfs_test(image, i, j, label, tab, res, bp);
-
-
         //int close = map_dfs_finder(image, i, j, label, tab, 1);
-        if(res[0])
+        if(res[0] && res[0] != -1)
         {
           //printf("FIND\n");
           //printf("NB : %i\n", res[1]);
@@ -156,7 +154,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
 
   free(size_e);
   free(size_q);
-  //free(M);
+  free(M);
 
   for(int i = 0; i < image->w; i++)
   {
@@ -175,7 +173,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   free(res);
 
   /* END FREE */
-
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/image.bmp");
   printf("[MAP COLORISATION] Successful saved\n");
@@ -394,6 +391,8 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
   int* size = malloc(sizeof(int*));
   Uint8 r, g, b;
   Uint32 pixel;
+  int nb_pixel = 0;
+  int label_nb_pixel = -1;
 
   *size = 0;
 
@@ -431,11 +430,16 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
           node->y = yt+n[i][1];
           tab[xt+n[i][0]][yt+n[i][1]] = label;
           enqueue(q, node, size);
+          nb_pixel += 1;
         }
         else if(tab[xt+n[i][0]][yt+n[i][1]] == 0)
         {
           dfs(image, xt+n[i][0], yt+n[i][1], tab, label, bp);
           count += 1;
+        }
+        else
+        {
+          label_nb_pixel = tab[xt+n[i][0]][yt+n[i][1]];
         }
       }
       else
@@ -445,9 +449,18 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
     }
     free(p);
   }
+  if(nb_pixel <= 30)
+  {
+    remove_label(image, tab, w, h, label, bp, label_nb_pixel);
+    res[0] = -1;
+    res[1] = -1;
+  }
+  else
+  {
+    res[0] = nb; 
+    res[1] = count;
+  }
   free(q);
-  res[0] = nb; 
-  res[1] = count;
 }
 
 // dfs into black pixel in bmp image
@@ -549,5 +562,31 @@ void clean_label(int **tab, int w, int h, int label)
     }
   }
 }
+
+// Replace all pixel with label "label" with black pixel and reset her label
+void remove_label(SDL_Surface *image, int **tab, int w, int h, int label,
+    int **bp, int label2)
+{
+  for(int i = 0; i < w; i++)
+  {
+    for(int j = 0; j < h; j++)
+    {
+      if(tab[i][j] == label)
+      {
+        bp[i][j] = 1;
+        if(label2 == -1)
+        {
+          tab[i][j] = 0;
+        }
+        else
+        {
+          tab[i][j] = label2;
+        }
+        BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 0)));
+      }
+    }
+  }
+}
+
 
 

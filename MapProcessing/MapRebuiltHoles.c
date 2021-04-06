@@ -4,6 +4,78 @@
 #include <math.h>
 VEC(list)
 
+//Draw a line between 2 points (x1,y1) and (x2,y2) in BMP file image (algo of Bresenham)
+void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel)
+{
+  int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
+  if (abs(x2-x1) < abs(y2-y1))
+  {
+  	if (y1 > y2)
+  	{
+  		int tmp_x = x1;
+  		int tmp_y = y1;
+  		x1 = x2;
+  		y1 = y2;
+  		x2 = tmp_x;
+  		y2 = tmp_y;
+  	}
+  	incr_x = x2 > x1 ? 1 : -1;
+  	dy = y2 - y1;
+  	dx = abs(x2 - x1);
+  	d = 2*dx - dy;
+  	incr1 = 2 * (dx-dy);
+  	incr2 = 2 * dx;
+  	x = x1;
+  	y = y1;
+  	image->pict[x][y] = pixel;
+  	for (y = y1+1; y<=y2; y++)
+  	{
+  		if (d >= 0)
+  		{
+  			x += incr_x;
+  			d += incr1;
+  		}
+  		else
+  			d += incr2;
+  		image->pict[x][y] = pixel;
+  	}
+  }
+  else
+  {
+  	if (x1 > x2)
+  	{
+  		int tmp_x = x1;
+  		int tmp_y = y1;
+  		x1 = x2;
+  		y1 = y2;
+  		x2 = tmp_x;
+  		y2 = tmp_y;
+  	}
+  	incr_y = y2 > y1 ? 1 : -1;
+  	dx = x2 - x1; 
+  	dy = abs(y2 - y1);
+  	d = 2*dy - dx; 
+  	incr1 = 2 * (dy-dx);
+  	incr2 = 2 * dy;
+  	x = x1;
+  	y = y1;
+  	image->pict[x][y] = pixel;
+  	for (x = x1+1; x<=x2; x++)
+  	{
+  		if (d >= 0)
+  		{
+  			y += incr_y;
+  			d += incr1;
+  		}
+  		else
+  			d += incr2;
+  		image->pict[x][y] = pixel;
+  	}
+  }
+  image->pict[x1][y1] = pixel;
+  image->pict[x2][y2] = pixel;
+}
+
 //print list of end_pts
 void print_list(vector_list *end)
 {
@@ -218,7 +290,7 @@ void neigh(struct image_pict *image, vector_list *end_list)
 		}
 		if (count < 2)
   		{
-  			image->pict[x][y] = 1;
+  			image->pict[x][y] = 2;
 			struct end_pts nw = (struct end_pts){.x = x, .y = y, .state = 0};
 			push_back_for_list(end_list, nw);
   		}
@@ -402,7 +474,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
 }
 
 
-void rebuilt_lines(SDL_Surface *image)
+void rebuilt_lines(SDL_Surface *image, int **tab)
 {
   SDL_LockSurface(image);
   struct image_pict *pict = malloc(sizeof(struct image_pict));
@@ -413,7 +485,7 @@ void rebuilt_lines(SDL_Surface *image)
   {
   	for (int j = 0; j<image->h; j++)
   	{
-  		if (is_black(image,i,j) == 1)
+  		if (tab[i][j] == 1)
   			pict->pict[i][j] = 1;
   	}
   }
@@ -422,6 +494,10 @@ void rebuilt_lines(SDL_Surface *image)
   thinning(pict);
   vector_list end_list = vector_of_list(0);
   neigh(pict, &end_list);
+  SDL_Surface *pic_neigh = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+  bmp_create(pic_neigh, pict->pict, "neigh.bmp");
   while (end_list.element_count != 0)
   {
   	link_pts(pict, &end_list);
@@ -430,22 +506,10 @@ void rebuilt_lines(SDL_Surface *image)
   	neigh(pict, &end_list);
   }
   delete_vec(end_list);
-  for(int i = 0; i < image->w; i++)
-  {
-    for(int j = 0; j < image->h; j++)
-    {
-      if(pict->pict[i][j] == 0)
-        BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 255, 255, 255)));
-      else
-      	BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 0, 0, 0)));
-    }
-  }
-  for(int i = 0; i < image->w; i++)
+  bmp_create(image, pict->pict, "holes.bmp");
+  for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);
   free(pict);
   SDL_UnlockSurface(image);
-  SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }

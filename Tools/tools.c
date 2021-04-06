@@ -63,77 +63,6 @@ void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel)
   }
 }
 
-//Draw a line between 2 points (x1,y1) and (x2,y2) in BMP file image (algo of Bresenham)
-void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel)
-{
-  int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
-  if (abs(x2-x1) < abs(y2-y1))
-  {
-  	if (y1 > y2)
-  	{
-  		int tmp_x = x1;
-  		int tmp_y = y1;
-  		x1 = x2;
-  		y1 = y2;
-  		x2 = tmp_x;
-  		y2 = tmp_y;
-  	}
-  	incr_x = x2 > x1 ? 1 : -1;
-  	dy = y2 - y1;
-  	dx = abs(x2 - x1);
-  	d = 2*dx - dy;
-  	incr1 = 2 * (dx-dy);
-  	incr2 = 2 * dx;
-  	x = x1;
-  	y = y1;
-  	image->pict[x][y] = pixel;
-  	for (y = y1+1; y<=y2; y++)
-  	{
-  		if (d >= 0)
-  		{
-  			x += incr_x;
-  			d += incr1;
-  		}
-  		else
-  			d += incr2;
-  		image->pict[x][y] = pixel;
-  	}
-  }
-  else
-  {
-  	if (x1 > x2)
-  	{
-  		int tmp_x = x1;
-  		int tmp_y = y1;
-  		x1 = x2;
-  		y1 = y2;
-  		x2 = tmp_x;
-  		y2 = tmp_y;
-  	}
-  	incr_y = y2 > y1 ? 1 : -1;
-  	dx = x2 - x1; 
-  	dy = abs(y2 - y1);
-  	d = 2*dy - dx; 
-  	incr1 = 2 * (dy-dx);
-  	incr2 = 2 * dy;
-  	x = x1;
-  	y = y1;
-  	image->pict[x][y] = pixel;
-  	for (x = x1+1; x<=x2; x++)
-  	{
-  		if (d >= 0)
-  		{
-  			y += incr_y;
-  			d += incr1;
-  		}
-  		else
-  			d += incr2;
-  		image->pict[x][y] = pixel;
-  	}
-  }
-  image->pict[x2][y2] = pixel;
-}
-
 // Convert BMP file image into black and white BMP
 SDL_Surface* BMP_To_BW(SDL_Surface *image)
 {
@@ -162,6 +91,35 @@ SDL_Surface* BMP_To_BW(SDL_Surface *image)
   SDL_UnlockSurface(image);
   return image;
 }
+
+// bmp_create Puts pixel of array in image and saves it as BMP
+void bmp_create(SDL_Surface *image, int **array, char *name)
+{
+  SDL_LockSurface(image);
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(array[i][j] == 0)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 255, 255, 255)));
+      if(array[i][j] == 1)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 0, 0, 0)));
+      if(array[i][j] == 2)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 255, 0, 0)));
+    }
+  }
+
+  char res[30] = "Pictures/Results/";
+  strcat(res, name);
+  printf("%s [DONE]\n", res);
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, res);
+  SDL_FreeSurface(image);
+}
+
 
 void BMP_Test(SDL_Surface *image, int **tab)
 {
@@ -214,11 +172,11 @@ void bmp_test2(SDL_Surface *image, int **tab)
       }
       else if(label == 1500)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 128, 0, 0)));
       }
       else if(label == 1400)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 56, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 0, 0)));
       }
       else if(label == 1300)
       {
@@ -226,16 +184,61 @@ void bmp_test2(SDL_Surface *image, int **tab)
       }
       else if(label == 1200)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 180, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 102, 0)));
       }
       else if(label == 1100)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 213, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 153, 51)));
       }
       else if(label == 1000)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 204, 102)));
       }
+      else if(label == 900)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 255, 153)));
+      }
+      else if(label == 800)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 204, 255, 153)));
+      }
+      else if(label == 700)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 153, 255, 153)));
+      }
+      else if(label == 600)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 102, 255, 153)));
+      }
+      else if(label == 500)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 153)));
+      }
+      else if(label == 400)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 255, 255)));
+      }
+      else if(label == 300)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 204, 255)));
+      }
+      else if(label == 200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 102, 204)));
+      }
+      else if(label == 100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 51, 204)));
+      }
+      else if(label == -100)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 153)));
+      }
+      else if(label == -200)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 102)));
+      }
+
     }
   }
   SDL_UnlockSurface(image);

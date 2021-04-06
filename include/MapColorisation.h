@@ -46,6 +46,9 @@ void map_elevation_colorize(int **h, int **tab, int label, int elevation,
     int w, int h2);
 void mark(int **tab, int label, int w, int h);
 int is_present(int* list, int size, int x);
+void remove_label(SDL_Surface *image, int **tab, int w, int h, int label,
+    int **bp, int label2);
+
 
 // Queue INT
 int dequeue_int(struct queue_int* q);
