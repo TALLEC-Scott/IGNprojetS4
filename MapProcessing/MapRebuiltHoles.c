@@ -1,4 +1,5 @@
 #include "MapRebuiltHoles.h"
+#include "MapColorisation.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -506,10 +507,26 @@ void rebuilt_lines(SDL_Surface *image, int **tab)
   	neigh(pict, &end_list);
   }
   delete_vec(end_list);
+
+  int **bp = NULL;
+  bp = (int**)calloc(image->w, sizeof(int*));
+  for(int k = 0; k < image->w; k++)
+  {
+    bp[k] = (int*)calloc(image->h, sizeof(int));
+  }
+
+  /*for(int i = 0; i < image->w; i++)
+  {
+    free(bp[i]);
+  }
+  free(bp);*/
+
   bmp_create(image, pict->pict, "holes.bmp");
+  Map_Colorisation(image, bp);
   for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);
   free(pict);
   SDL_UnlockSurface(image);
+  SDL_FreeSurface(image);
 }

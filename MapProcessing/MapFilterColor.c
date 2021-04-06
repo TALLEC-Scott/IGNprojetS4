@@ -27,12 +27,25 @@ void bmp_filter(SDL_Surface *image)
   }
 
   filter(image, topo, river, road);
+
+  // free
+  for(int i = 0; i < image->w; i++)
+  {
+    free(topo[i]);
+    free(river[i]);
+    free(road[i]);
+  }
+
+  free(topo);
+  free(river);
+  free(road);
 }
 
 // filter Converts all rgb values to HSV in order to filters colors
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
     int **array_road)
 {
+    double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
     for(int i = 0; i < image->w; i++)
     {
@@ -42,7 +55,6 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
             Uint8 r, g, b;
             double h, s, v;
             SDL_GetRGB(pixel, image->format, &r, &g, &b);
-            double *array = calloc(3, sizeof(double));
             RGB_To_HSV(r, g, b, array);
             h = array[0];
             s = array[1];
@@ -94,7 +106,6 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-
     rebuilt_lines(lines, array_topo);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
@@ -117,6 +128,11 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
     bmp_create(pic_road, array_road, "road.bmp");
     bmp_create(pic_topo, array_topo, "topo.bmp");
 
+    // Free Surface
+    free(array);
+    SDL_FreeSurface(pic_river);
+    SDL_FreeSurface(pic_road);
+    SDL_FreeSurface(pic_topo);
     SDL_UnlockSurface(image);
     SDL_SaveBMP(image, "Pictures/Results/ign.bmp");
 }

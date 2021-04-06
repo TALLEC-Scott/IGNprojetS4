@@ -1,7 +1,11 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
-#include <SDL/SDL.h>
 #include <string.h>
+#include "../include/MapColorisation.h"
+#include "../include/MapFilterColor.h"
+#include "../include/MapRebuiltHoles.h"
+#include "../include/tools.h"
+#include "../include/vector.h"
 
 typedef struct {
     GtkDrawingArea *area;
@@ -39,7 +43,7 @@ gboolean on_image_load(GtkButton *button, gpointer user_data)
     Ui *ui = user_data;
     
     // Name of file to open from dialog box
-    gchar *file_name = calloc(200, sizeof(char));
+    gchar *file_name = calloc(500, sizeof(char));
     
     GdkPixbuf *pixbuf_input_load = NULL;
     GdkPixbuf *pixbuf_output_load = NULL;
@@ -314,14 +318,110 @@ gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
 }
 
 // Handler for the launch button
-gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data __attribute((unused)))
+gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data)
 {
+    Ui *ui = user_data;
+
+    SDL_Surface *image;
+    image = SDL_LoadBMP(ui->image_input.filename);
+
+    printf("filename: %s\n", ui->image_input.filename);
+
+    SDL_Surface *test;
+    test = SDL_LoadBMP("Pictures/map_ign_2.bmp");
+
+    if(image == NULL)
+    {
+        printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+        return TRUE;
+    }
+
+    SDL_Surface *image2 = BMP_To_BW(image);
+    if (image2 == NULL)
+    {
+        printf("SDL_LoadBMP image2 failed: %s\n", SDL_GetError());
+        return TRUE;
+    }
+
+    double r = ui->rgba.red * 255,
+           g = ui->rgba.green * 255,
+           b = ui->rgba.blue * 255;
+
+    //bmp_filter(image);
+    
+    GError *error = NULL;
+
+    ui->image_output.pixbuf = gdk_pixbuf_new_from_file("Pictures/Results/image.bmp", &error);
+    ui->image_output.format = (gdk_pixbuf_get_has_alpha (
+                ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 : 
+        CAIRO_FORMAT_RGB24;
+    ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
+    ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
+    
+    cairo_t *cr2 = cairo_create(ui->image_output.image_surface);
+                
+    //Links the surfaces to the pixbuf
+    gdk_cairo_set_source_pixbuf(cr2, ui->image_output.pixbuf, 0, 0);
+
+    //Draws the surfaces
+    cairo_paint(cr2);
+    
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0,
+                        0, ui->image_output.width, ui->image_output.height);
+
+    /*
+    Uint32 src_format = image->format->format;
+    Uint32 dst_format;
+
+    gboolean has_alpha = SDL_ISPIXELFORMAT_ALPHA(src_format);
+    if (has_alpha)
+        dst_format = SDL_PIXELFORMAT_RGBA32;
+    else
+        dst_format = SDL_PIXELFORMAT_RGB24;
+    
+    int rowstride = gdk_pixbuf_get_rowstride(ui->image_output.pixbuf);
+    guchar *pixels;
+
+    pixels = gdk_pixbuf_get_pixels(ui->image_output.pixbuf);
+
+    SDL_LockSurface(image);
+
+    SDL_ConvertPixels(image->w, image->h, src_format,
+            image->pixels, image->pitch,
+            dst_format, pixels, rowstride);
+    SDL_UnlockSurface(image);
+
+    int width_out = gtk_widget_get_allocated_width(GTK_WIDGET(ui->image_output.area));
+    int height_out = gtk_widget_get_allocated_height(GTK_WIDGET(ui->image_output.area));
+
+    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0, 0,
+            width_out, height_out);
+    */
+
+    SDL_FreeSurface(image);
+    SDL_FreeSurface(test);
 
     return TRUE;
 }
 
-gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data __attribute__((unused)))
+gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data)
 {
+    Ui *ui = user_data;
+
+    switch(ui->state)
+    {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        default:
+            break;
+    }
+
     return TRUE;
 }
 
@@ -344,7 +444,7 @@ int main (int argc, char *argv[])
     // Gets gtk builder from the glade file
     GtkBuilder* builder = gtk_builder_new();
     GError* error = NULL;
-    if (gtk_builder_add_from_file(builder, "app.glade", &error) == 0)
+    if (gtk_builder_add_from_file(builder, "Application/app.glade", &error) == 0)
     {
         g_printerr("Error loading file: %s\n", error->message);
         g_clear_error(&error);
@@ -390,10 +490,16 @@ int main (int argc, char *argv[])
         .step = step,
         .save = save,
         .state = 0,
+        .rgba =
+        {
+            .red = -1,
+            .green = -1,
+            .blue = -1
+        },
         .image_input =
         {
             .area = area_input,
-            .filename = calloc(200, sizeof(char))
+            .filename = calloc(500, sizeof(char))
         },
         .image_output = 
         {

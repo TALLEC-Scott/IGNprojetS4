@@ -117,7 +117,6 @@ void bmp_create(SDL_Surface *image, int **array, char *name)
   printf("%s [DONE]\n", res);
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, res);
-  SDL_FreeSurface(image);
 }
 
 
@@ -510,5 +509,13 @@ void bmp_test3(SDL_Surface *image, int **tab, int **h)
   SDL_SaveBMP(image, "Pictures/Results/elevation_matrice.bmp");
 }
 
+int get_2D_array_x_y (_2D_array *M, size_t x, size_t y){
 
+	return *(M->data)[y * M->cols + x];
+}
+
+void set_2D_array_x_y (_2D_array *M, size_t x, size_t y, size_t new_val){
+
+	*M->data[y * M->cols + x] = new_val;
+}
 

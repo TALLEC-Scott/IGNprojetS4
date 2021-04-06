@@ -2,26 +2,24 @@
 
 CPPFLAGS = -Iinclude #-MMD
 CC = gcc
-CFLAGS = -g -fsanitize=address -Wall -Wextra -std=c99 $(shell pkg-config --cflags sdl2 gtk+-3.0)
+CFLAGS = $(shell pkg-config --cflags sdl2 gtk+-3.0) -rdynamic -Wall -Wextra -Wno-deprecated-declarations -std=c99 -g
 LDFLAGS =
-LDLIBS = -lm $(shell pkg-config --libs sdl2 gtk+-3.0)
+LDLIBS = -lm -Wno-stringop-overflow $(shell pkg-config --libs sdl2 gtk+-3.0)
 
-SRC = ${wildcard MapProcessing/*.c Tools/*.c  *.c}
+EXE = app
+SRC = ${wildcard Application/app.c MapProcessing/*.c Tools/*.c} 
 OBJ = ${SRC:.c=.o}
-#DEP = ${SRC:.c=.d}
 
-all: main
+all: app
 
-main:${OBJ}
-	$(CC) $(SRC) $(CFLAGS) $(CPPFLAGS) -o main $(LDLIBS) $(LDFLAGS)
+app:${OBJ}
+	$(CC) $(SRC) $(CFLAGS) $(CPPFLAGS) -o $(EXE) $(LDLIBS) $(LDFLAGS)
 
-.PHONY: clean
+.PHONY:
+	clean
+
 clean:
-	${RM} ${OBJ}   # remove object files
-#	${RM} ${DEP}   # remove dependency files
-	${RM} main     # remove main program
-#	${RM} main.d
-
-#-include ${DEP}
+	$(RM) $(OBJ)
+	$(RM) $(EXE)
 
 # END
