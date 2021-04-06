@@ -2,7 +2,7 @@ body
 {
 	
 	background-color: #383838;
-	font-family: cursive;
+	font-family: myroboto;
 	font-size: 1.2em;
 	color: white;
 }
@@ -106,23 +106,29 @@ a:visited
 	background-color: #505050;
 }
 
-#groupe
+section
 {
 	margin: 50px auto 50px auto;
 	width: 80%;
+	text-align: justify;
 }
 
 ul
+{	
+	display: flex;
+	list-style-type: none;
+	flex-direction: column;
+}
+
+#membres
 {
 	margin: auto;
-	list-style-type: none;
-	display: flex;
-	flex-direction: column;
+
 	flex-wrap: nowrap;
 	grid-gap: 15px;
 }
 
-li
+.personne
 {
 	display: flex;
 	flex-wrap: nowrap;
@@ -130,7 +136,39 @@ li
 	justify-content: space-between;
 }
 
-li img
+#outils
+{
+	margin: auto;
+	padding: auto;
+	width: 90%;
+}
+
+
+.links_content
+{
+	padding-top: 30px;
+	background-color: #424242;
+	border-radius: 15px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	text-align: center;
+}
+
+.links_content a
+{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+div a img
+{
+	width: 250px;
+	height: auto;
+}
+
+.personne img
 {
 	--index: 0;
 	position: relative;
@@ -138,6 +176,30 @@ li img
 	border-radius: 50px;
 	animation: slidein 2s ease-out both;
 	animation-delay: calc(0.2s * var(--index));
+}
+
+#files_list
+{
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: left;
+}
+
+.files
+{
+	transition: background-color .25s;
+	background-color: #424242;
+	border-radius: 15px;
+	margin: auto;
+	padding: 10px;
+	align-self: middle;
+}
+
+.files:hover
+{
+	transition: background-color .25s;
+	background-color: #606060;
 }
 
 .introduction
@@ -158,4 +220,10 @@ li img
 		left: 0;
 		transform: rotate(0deg);
 	}
+}
+
+@font-face
+{
+	font-family: myroboto;
+	src: url("Roboto/Roboto-Regular.ttf");
 }
