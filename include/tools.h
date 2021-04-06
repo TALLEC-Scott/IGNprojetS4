@@ -20,4 +20,6 @@ void bmp_test2(SDL_Surface *image, int **tab);
 int is_black(SDL_Surface *image, int x, int y);
 size_t len_array_int(int *array);
 void bmp_test3(SDL_Surface *image, int **tab, int **h);
+int get_2D_array_x_y (_2D_array *M, size_t x, size_t y);
+void set_2D_array_x_y (_2D_array *M, size_t x, size_t y, size_t new_val);
 #endif
