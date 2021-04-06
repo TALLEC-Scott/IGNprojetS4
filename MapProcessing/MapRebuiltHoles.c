@@ -72,6 +72,7 @@ void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, i
   		image->pict[x][y] = pixel;
   	}
   }
+  image->pict[x1][y1] = pixel;
   image->pict[x2][y2] = pixel;
 }
 
@@ -289,7 +290,7 @@ void neigh(struct image_pict *image, vector_list *end_list)
 		}
 		if (count < 2)
   		{
-  			image->pict[x][y] = 1;
+  			image->pict[x][y] = 2;
 			struct end_pts nw = (struct end_pts){.x = x, .y = y, .state = 0};
 			push_back_for_list(end_list, nw);
   		}
@@ -493,6 +494,10 @@ void rebuilt_lines(SDL_Surface *image, int **tab)
   thinning(pict);
   vector_list end_list = vector_of_list(0);
   neigh(pict, &end_list);
+  SDL_Surface *pic_neigh = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+  bmp_create(pic_neigh, pict->pict, "neigh.bmp");
   while (end_list.element_count != 0)
   {
   	link_pts(pict, &end_list);
@@ -501,22 +506,10 @@ void rebuilt_lines(SDL_Surface *image, int **tab)
   	neigh(pict, &end_list);
   }
   delete_vec(end_list);
-  for(int i = 0; i < image->w; i++)
-  {
-    for(int j = 0; j < image->h; j++)
-    {
-      if(pict->pict[i][j] == 0)
-        BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 255, 255, 255)));
-      else
-      	BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 0, 0, 0)));
-    }
-  }
-  for(int i = 0; i < image->w; i++)
+  bmp_create(image, pict->pict, "holes.bmp");
+  for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);
   free(pict);
   SDL_UnlockSurface(image);
-  SDL_SaveBMP(image, "Pictures/Results/holes.bmp");
 }

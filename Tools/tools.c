@@ -92,6 +92,35 @@ SDL_Surface* BMP_To_BW(SDL_Surface *image)
   return image;
 }
 
+// bmp_create Puts pixel of array in image and saves it as BMP
+void bmp_create(SDL_Surface *image, int **array, char *name)
+{
+  SDL_LockSurface(image);
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(array[i][j] == 0)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 255, 255, 255)));
+      if(array[i][j] == 1)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 0, 0, 0)));
+      if(array[i][j] == 2)
+        BMP_Put_Pixel(image, i, j,
+                  (SDL_MapRGB(image->format, 255, 0, 0)));
+    }
+  }
+
+  char res[30] = "Pictures/Results/";
+  strcat(res, name);
+  printf("%s [DONE]\n", res);
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, res);
+  SDL_FreeSurface(image);
+}
+
+
 void BMP_Test(SDL_Surface *image, int **tab)
 {
   SDL_LockSurface(image);
