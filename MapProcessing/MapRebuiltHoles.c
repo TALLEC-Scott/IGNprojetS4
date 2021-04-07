@@ -475,7 +475,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
 }
 
 
-void rebuilt_lines(SDL_Surface *image, int **tab)
+void rebuilt_lines(SDL_Surface *image, int **tab, int **bp)
 {
   SDL_LockSurface(image);
   struct image_pict *pict = malloc(sizeof(struct image_pict));
@@ -508,12 +508,12 @@ void rebuilt_lines(SDL_Surface *image, int **tab)
   }
   delete_vec(end_list);
 
-  int **bp = NULL;
+  /*int **bp = NULL;
   bp = (int**)calloc(image->w, sizeof(int*));
   for(int k = 0; k < image->w; k++)
   {
     bp[k] = (int*)calloc(image->h, sizeof(int));
-  }
+  }*/
 
   /*for(int i = 0; i < image->w; i++)
   {

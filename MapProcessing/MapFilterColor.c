@@ -2,7 +2,7 @@
 
 // bmp_filter initializes array for stores all the informations about
 // the ign map
-void bmp_filter(SDL_Surface *image, int r, int g, int b)
+void bmp_filter(SDL_Surface *image, int r, int g, int b, int **bp)
 {
 
   int **topo = NULL;
@@ -26,7 +26,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b)
     road[i] = (int*)calloc(image->h, sizeof(int*));
   }
 
-  filter(image, topo, river, road, r, g, b);
+  filter(image, topo, river, road, r, g, b, bp);
 
   // free
   for(int i = 0; i < image->w; i++)
@@ -43,7 +43,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b)
 
 // filter Converts all rgb values to HSV in order to filters colors
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
-    int **array_road, int r1, int g1, int b1)
+    int **array_road, int r1, int g1, int b1, int **bp)
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
@@ -122,7 +122,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-    rebuilt_lines(lines, array_topo);
+    rebuilt_lines(lines, array_topo, bp);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,

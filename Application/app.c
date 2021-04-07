@@ -34,6 +34,7 @@ typedef struct {
     Image image_input;
     Image image_output;
     GtkButton *save;
+    int **bp;
 } Ui;
 
 // File --> Open
@@ -339,7 +340,13 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
            g = ui->rgba.green * 255,
            b = ui->rgba.blue * 255;
 
-    bmp_filter(image);
+    ui->bp = (int**)calloc(image->w, sizeof(int*));
+    for(int k = 0; k < image->w; k++)
+    {
+      ui->bp[k] = (int*)calloc(image->h, sizeof(int));
+    }
+
+    bmp_filter(image, -1, -1, -1, ui->bp);
     
     GError *error = NULL;
 
@@ -497,7 +504,8 @@ int main (int argc, char *argv[])
         {
             .area = area_output,
             .filename = NULL
-        }
+        },
+        .bp = NULL
     };
 
     // Connects signal handlers.
