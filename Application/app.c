@@ -37,9 +37,8 @@ typedef struct {
 } Ui;
 
 // File --> Open
-gboolean on_image_load(GtkButton *button, gpointer user_data)
+gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_data)
 {
-    (void)button;
     Ui *ui = user_data;
     
     // Name of file to open from dialog box
@@ -328,7 +327,7 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
     printf("filename: %s\n", ui->image_input.filename);
 
     SDL_Surface *test;
-    test = SDL_LoadBMP("Pictures/map_ign_2.bmp");
+    test = SDL_LoadBMP("/home/yann/Documents/EPITA/Cours/2020_spe/s4/IGNprojetS4/Pictures/map_ign_2.bmp");
 
     if(image == NULL)
     {
@@ -336,18 +335,11 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
         return TRUE;
     }
 
-    SDL_Surface *image2 = BMP_To_BW(image);
-    if (image2 == NULL)
-    {
-        printf("SDL_LoadBMP image2 failed: %s\n", SDL_GetError());
-        return TRUE;
-    }
-
     double r = ui->rgba.red * 255,
            g = ui->rgba.green * 255,
            b = ui->rgba.blue * 255;
 
-    //bmp_filter(image);
+    bmp_filter(image);
     
     GError *error = NULL;
 
