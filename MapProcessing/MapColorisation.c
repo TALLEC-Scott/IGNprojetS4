@@ -479,7 +479,7 @@ void bfs_test(SDL_Surface *image, int x, int y, int label,
     }
     free(p);
   }
-  if(nb_pixel <= 30)
+  if(nb_pixel <= 55)
   {
     remove_label(image, tab, w, h, label, bp, label_nb_pixel);
     res[0] = -1;
