@@ -237,6 +237,15 @@ void bmp_test2(SDL_Surface *image, int **tab)
       {
          BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 102)));
       }
+      else if(label == -300)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 77)));
+      }
+      else if(label == -400)
+      {
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 0, 0, 26)));
+      }
+
 
     }
   }
