@@ -2,7 +2,7 @@
 
 // bmp_filter initializes array for stores all the informations about
 // the ign map
-void bmp_filter(SDL_Surface *image)
+void bmp_filter(SDL_Surface *image, int r, int g, int b)
 {
 
   int **topo = NULL;
@@ -26,7 +26,7 @@ void bmp_filter(SDL_Surface *image)
     road[i] = (int*)calloc(image->h, sizeof(int*));
   }
 
-  filter(image, topo, river, road);
+  filter(image, topo, river, road, r, g, b);
 
   // free
   for(int i = 0; i < image->w; i++)
@@ -43,7 +43,7 @@ void bmp_filter(SDL_Surface *image)
 
 // filter Converts all rgb values to HSV in order to filters colors
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
-    int **array_road)
+    int **array_road, int r1, int g1, int b1)
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
@@ -53,51 +53,67 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         {
             Uint32 pixel = BMP_Get_Pixel(image, i, j);
             Uint8 r, g, b;
-            double h, s, v;
-            SDL_GetRGB(pixel, image->format, &r, &g, &b);
-            RGB_To_HSV(r, g, b, array);
-            h = array[0];
-            s = array[1];
-            v = array[2];
-
-            //printf("H: %f, S: %f, V: %f\n", h, s, v);
-
-            // Black colors
-            if(v < 0.6)
+                        SDL_GetRGB(pixel, image->format, &r, &g, &b);
+            if(1)
             {
-              continue;
-            }
-            // River
-            if(h > 190 && v > 0.8)
-            {
-              BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 0, 255, 0)));
+              double h, s, v;
+              RGB_To_HSV(r, g, b, array);
+              h = array[0];
+              s = array[1];
+              v = array[2];
 
-              array_river[i][j] = 1;
-              continue;
+              //printf("H: %f, S: %f, V: %f\n", h, s, v);
 
-            }
-            // Road
-            if(h > 40 && v > 0.9 && s > 0.19 && h < 80)
-            {
-              BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 255, 255, 255)));
+              // Black colors
+              if(v < 0.6)
+              {
+                continue;
+              }
+              // River
+              if(h > 190 && v > 0.8)
+              {
+                BMP_Put_Pixel(image, i, j,
+                    (SDL_MapRGB(image->format, 0, 255, 0)));
+                array_river[i][j] = 1;
+                continue;
+              }
+              // Road
+              if(h > 40 && v > 0.9 && s > 0.19 && h < 80)
+              {
+                BMP_Put_Pixel(image, i, j,
+                    (SDL_MapRGB(image->format, 255, 255, 255)));
+                array_road[i][j] = 1;
+                continue;
+              }
+              // White colors
+              if(s < 0.17 && v > 0.87)
+              {
+                continue;
+              }
+              // Brown colors
+              if(h > 30 && h < 50 && v > 0.60 && (s > 0.197 || (s > 0.15 && h > 43) || (s > 0.14 && h > 47) || (s > 0.13 && h > 53) || (s > 0.165 && h > 38)) && r1 == -1)
+              {
+                BMP_Put_Pixel(image, i, j,
+                    (SDL_MapRGB(image->format, 255, 0, 0)));
 
-              array_road[i][j] = 1;
-              continue;
-            }
-            // White colors
-            if(s < 0.17 && v > 0.85)
-            {
-              continue;
-            }
-            // Brown colors
-            if(h > 30 && h < 50 && v > 0.60 && (s > 0.19 || (s > 0.15 && h > 43)))
-            {
-              BMP_Put_Pixel(image, i, j,
-                  (SDL_MapRGB(image->format, 255, 0, 0)));
+                array_topo[i][j] = 1;
+              }
+              else
+              {
+                double h1, s1, v1;
+                RGB_To_HSV(r1, g1, b1, array);
+                h1 = array[0];
+                s1 = array[1];
+                v1 = array[2];
+                if(h < h1 +10 && h > h1 -10 && s < s1 +0.1 && s > s1 -0.1 && v < v1 +0.15 && v > v1 -0.15)
+                {
+                  BMP_Put_Pixel(image, i, j,
+                    (SDL_MapRGB(image->format, 255, 0, 0)));
 
-              array_topo[i][j] = 1;
+                  array_topo[i][j] = 1;
+
+                }
+              }
             }
         }
     }
