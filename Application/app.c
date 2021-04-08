@@ -23,6 +23,7 @@ typedef struct {
     GtkButton *launch;
     GtkButton *step;
     GtkButton *color_button;
+    GtkButton *modelise;
     GtkWidget *dfc;
     GtkWidget *color_dialog;
     GtkScale *rotate_scale;
@@ -33,7 +34,6 @@ typedef struct {
     GdkRGBA rgba;
     Image image_input;
     Image image_output;
-    GtkButton *save;
     int **bp;
 } Ui;
 
@@ -335,11 +335,12 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
         return TRUE;
     }
-
+    
+    /*
     double r = ui->rgba.red * 255,
            g = ui->rgba.green * 255,
            b = ui->rgba.blue * 255;
-
+    */
     ui->bp = (int**)calloc(image->w, sizeof(int*));
     for(int k = 0; k < image->w; k++)
     {
@@ -397,6 +398,8 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
             width_out, height_out);
     */
 
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
+
     SDL_FreeSurface(image);
     SDL_FreeSurface(test);
 
@@ -420,6 +423,15 @@ gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data)
         default:
             break;
     }
+
+    return TRUE;
+}
+
+gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_data)
+{
+    Ui *ui = user_data;
+
+    // point matrix: ui->bp (double pointer) 
 
     return TRUE;
 }
@@ -459,7 +471,8 @@ int main (int argc, char *argv[])
     GtkButton* launch = GTK_BUTTON(gtk_builder_get_object(builder,
                 "launch_analysis"));
     GtkButton* step = GTK_BUTTON(gtk_builder_get_object(builder, "step"));
-    GtkButton* save = GTK_BUTTON(gtk_builder_get_object(builder, "save_text"));
+    GtkButton* modelise = GTK_BUTTON(gtk_builder_get_object(builder,
+                "modelise"));
     GtkScale* rotate_scale = GTK_SCALE(gtk_builder_get_object(builder,
                 "rotate_scale"));
     GtkScale* zoom_scale = GTK_SCALE(gtk_builder_get_object(builder,
@@ -487,7 +500,7 @@ int main (int argc, char *argv[])
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .launch = launch,
         .step = step,
-        .save = save,
+        .modelise = modelise,
         .state = 0,
         .rgba =
         {
@@ -521,6 +534,7 @@ int main (int argc, char *argv[])
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
     g_signal_connect(step, "clicked", G_CALLBACK(on_step), &ui);
     g_signal_connect(color_button, "clicked", G_CALLBACK(on_color), &ui);
+    g_signal_connect(modelise, "clicked", G_CALLBACK(on_modelise), &ui);
 
     // Frees builder
     g_object_unref(builder);
