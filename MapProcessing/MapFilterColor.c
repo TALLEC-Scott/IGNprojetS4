@@ -78,7 +78,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
                 continue;
               }
               // Road
-              if(h > 40 && v > 0.9 && s > 0.19 && h < 80)
+              if((h > 40 && v > 0.9 && s > 0.19 && h < 80) || (h == 0 && s == 0 && v == 1))
               {
                 BMP_Put_Pixel(image, i, j,
                     (SDL_MapRGB(image->format, 255, 255, 255)));
