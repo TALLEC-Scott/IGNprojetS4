@@ -173,7 +173,7 @@ void SpecialKeys(int key) //camera rotation
 int execute_function(int argc, char **argv, SDL_Surface *im)
 {
 	
-	image = im;
+	image = im; //it's to use SDL_Surface *im as a global ref
     /* Pierre-Corentin stuff
         float c = eye[2];
         radius = c; */
@@ -187,25 +187,19 @@ int execute_function(int argc, char **argv, SDL_Surface *im)
         bp[k] = (int *)calloc(image->h, sizeof(int));
     }
     Map_Colorisation(image, bp);
-    printf("1 \n");
     glutInit(&argc, argv);             // Initialize GLUT
-    printf("2 \n");
     glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
     glutInitWindowSize(640, 480);     // Set the window's initial width & height
     glutInitWindowPosition(500, 50);  // Position the window's initial top-left corner
     glutCreateWindow(title);          // Create window with the given title
     glutDisplayFunc(display);         // Register callback handler for window re-paint event
-    printf("3 \n");
     glutReshapeFunc(reshape);
     glutIdleFunc(display); // Register callback handler for window re-size event
-    printf("4 \n");
     glutKeyboardFunc(keyboard);
     glutSpecialFunc(SpecialKeys);
     initGL();       // Our own OpenGL initialization
     
-    printf("5 \n");
     glutMainLoop(); // Enter the infinite event-processing loop
-    printf("5 \n");
     free_bm(bp, image);
     return 0;
 }
