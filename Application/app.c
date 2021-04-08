@@ -1,11 +1,12 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 #include <string.h>
-#include "../include/MapColorisation.h"
-#include "../include/MapFilterColor.h"
-#include "../include/MapRebuiltHoles.h"
-#include "../include/tools.h"
-#include "../include/vector.h"
+#include "MapColorisation.h"
+#include "MapFilterColor.h"
+#include "MapRebuiltHoles.h"
+#include "tools.h"
+#include "vector.h"
+#include "Open_GL_exec.h"
 
 typedef struct {
     GtkDrawingArea *area;
@@ -431,8 +432,16 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
 {
     Ui *ui = user_data;
 
-    // point matrix: ui->bp (double pointer) 
+    // point matrix: ui->bp (double pointer)
+    SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
+    char *argv = {
+        "main",
+        NULL};
+    execute_function(NULL, NULL, image, ui->bp);
+
+    free(argv);
+    SDL_FreeSurface(image);
     return TRUE;
 }
 

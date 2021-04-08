@@ -7,7 +7,7 @@ LDFLAGS =
 LDLIBS = -lm -lGL -lGLU -lglut -Wno-stringop-overflow $(shell pkg-config --libs sdl2 gtk+-3.0)
 
 EXE = app
-SRC = ${wildcard Application/app.c MapProcessing/*.c Tools/*.c} 
+SRC = ${wildcard Application/app.c MapProcessing/*.c Modelling/*.c Tools/*.c} 
 OBJ = ${SRC:.c=.o}
 
 all: app

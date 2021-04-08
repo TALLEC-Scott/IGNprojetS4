@@ -9,7 +9,7 @@ void display();
 void reshape(GLsizei width, GLsizei height);
 void keyboard(unsigned char key);
 void SpecialKeys(int key);
-int execute_function(int argc, char** argv,SDL_Surface * image);
+int execute_function(int argc, char** argv,SDL_Surface *im, int** bps);
 
 
 
