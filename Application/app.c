@@ -435,12 +435,8 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
     // point matrix: ui->bp (double pointer)
     SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
-    char *argv = {
-        "main",
-        NULL};
-    execute_function(NULL, NULL, image, ui->bp);
+    execute_function(0, NULL, image, ui->bp);
 
-    free(argv);
     SDL_FreeSurface(image);
     return TRUE;
 }

@@ -116,7 +116,7 @@ void reshape(GLsizei width, GLsizei height)
     gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
-void keyboard(unsigned char key) //camera translation
+void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribute__((unused))) //camera translation
 {
     switch (key)
     {
@@ -143,8 +143,9 @@ void keyboard(unsigned char key) //camera translation
     }
 }
 
-void SpecialKeys(int key) //camera rotation
+void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
 {
+
     //float fraction = 0.1f; //rotate speed
     switch (key)
     {
@@ -170,7 +171,7 @@ void SpecialKeys(int key) //camera rotation
     }
 }
 
-int execute_function(int argc, char **argv, SDL_Surface *im, int** bps)
+int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
 {
 	image = im; //it's to use SDL_Surface *im as a global ref
         bp = bps;
