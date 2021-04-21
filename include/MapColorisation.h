@@ -2,6 +2,7 @@
 #define MAPCOLORISATION_H
 
 #include "tools.h"
+#include <err.h>
 
 // Point
 struct point {
@@ -9,19 +10,19 @@ struct point {
   int y;
 };
 
-// Queue
+// Queue point
 struct queue {
-  struct point* *items;
-  int f;
-  int r;
+  struct point val;
+  struct queue *next;
 };
 
-// Queue
+// Queue int
 struct queue_int {
-  int *data;
-  int f;
-  int r;
+  int val;
+  struct queue_int *next;
 };
+
+
 
 void Map_Colorisation(SDL_Surface *image, int **bp);
 int map_dfs_finder(SDL_Surface *image, int x, int y, int label,
@@ -30,10 +31,6 @@ int map_end(int **tab, int x, int y, int h, int w);
 void dfs(SDL_Surface *image, int x, int y, int **tab, int label, int **bp);
 void bfs_test(SDL_Surface *image, int x, int y, int label,
     int **tab, int *res, int **bp);
-struct queue* create_queue();
-void enqueue(struct queue* q, struct point* p, int *size);
-struct point* dequeue(struct queue* q);
-int is_empty(struct queue* q);
 void clean(int **tab, int w, int h);
 int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
     int elevation, int* size);
@@ -49,11 +46,25 @@ int is_present(int* list, int size, int x);
 void remove_label(SDL_Surface *image, int **tab, int w, int h, int label,
     int **bp, int label2);
 
+// Queue int
+struct queue_int* dequeue_int(struct queue_int* start, int *pval);
+struct queue_int* enqueue_int(struct queue_int* start, int val);
+void  empty_int(struct queue_int** pstart);
+int is_empty_int(struct queue_int* start);
 
-// Queue INT
-int dequeue_int(struct queue_int* q);
-void enqueue_int(struct queue_int* q, int i, int *size);
-int is_empty_int(struct queue_int *q);
-struct queue_int* create_queue_int();
+// Queue point
+struct queue* enqueue(struct queue* start, struct point val);
+struct queue* dequeue(struct queue* start, struct point *pval);
+void empty(struct queue** pstart);
+int is_empty(struct queue* start);
+
+void map_remplace_label(int **h22, int **tab, int w, int h, int label_old,
+    int new);
+void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new, int w, int h);
+void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
+int label, int label_old, struct point *list, int *size);
+int is_present2(struct point *list, int size, int x);
+
+
 
 #endif

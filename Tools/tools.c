@@ -357,121 +357,119 @@ size_t len_array_int(int *array)
   return len;
 }
 
-// create_queue creates and returns a queue
-struct queue* create_queue()
-{
-  struct queue* q = malloc(sizeof(struct queue));
-  q->items = calloc(0, sizeof(struct point*));
-  q->f = -1;
-  q->r = -1;
-  return q;
-}
-
-// create_queue_int creates and returns a queue
-struct queue_int* create_queue_int()
-{
-  struct queue_int* q = malloc(sizeof(struct queue_int));
-  q->data = calloc(0, sizeof(int));
-  q->f = -1;
-  q->r = -1;
-  return q;
-}
-
 // is_empty_int returns 1 if is empty else 0;
-int is_empty_int(struct queue_int *q)
+void empty_int(struct queue_int** pstart)
 {
-  if(q->r == -1)
-    return 1;
-  return 0;
+  while(*pstart != NULL)
+  {
+    *pstart = dequeue_int(*pstart, NULL);
+  }
 }
 
 // is_empty returns 1 if is empty else 0;
-int is_empty(struct queue *q)
+void empty(struct queue** pstart)
 {
-  if(q->r == -1)
-    return 1;
-  return 0;
+  while(*pstart != NULL)
+  {
+    *pstart = dequeue(*pstart, NULL);
+  }
 }
 
 // enqueue enqueues a struct point p into a struct queue q
-void enqueue(struct queue* q, struct point* p, int *size)
+struct queue* enqueue(struct queue* start, struct point val)
 {
-  if(q->r == *size-1)
-  {
-    *size +=1;
-    void *temp = realloc(q->items, *size * sizeof(struct point*));
-    if(temp == NULL)
-      printf("An error occured !\n");
+    struct queue *q = malloc(sizeof(struct queue));
+    if(q == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc the queue");
+    }
+    q->val = val;
 
-    q->items = temp;
-  }
-  if(q->f == -1)
-    q->f = 0;
-  q->r += 1;
-  q->items[q->r] = p;
+    if(start == NULL)
+    {
+      q->next = q;
+    }
+    else
+    {
+      q->next = start->next;
+      start->next = q;
+    }
+    return q;
 }
 
 // enqueue_int enqueues a struct point p into a struct queue q
-void enqueue_int(struct queue_int* q, int i, int *size)
+struct queue_int* enqueue_int(struct queue_int* start, int val)
 {
-  if(q->r == *size-1)
-  {
-    *size +=1;
-    void *temp = realloc(q->data, *size * sizeof(int));
-    if(temp == NULL)
-      printf("An error occured !\n");
+    struct queue_int *q = malloc(sizeof(struct queue_int));
+    if(q == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc the queue");
+    }
+    q->val = val;
 
-    q->data = temp;
-  }
-  if(q->f == -1)
-    q->f = 0;
-  q->r += 1;
-  q->data[q->r] = i;
+    if(start == NULL)
+    {
+      q->next = q;
+    }
+    else
+    {
+      q->next = start->next;
+      start->next = q;
+    }
+    return q;
 }
 
 // dequeue return the last element of the queue q
-struct point* dequeue(struct queue* q)
+struct queue* dequeue(struct queue* start, struct point *pval)
 {
-  struct point* p;
-  if(is_empty(q))
+  if(start == NULL)
+    return NULL;
+  struct queue *q = start->next;
+  if(start->next == start)
   {
+    *pval = q->val;
+    free(start);
     return NULL;
   }
-  else
-  {
-    p = q->items[q->f];
-    q->f++;
-    if(q->f > q->r)
-    {
-      q->f = -1;
-      q->r = -1;
-    }
-  }
-  //print_queue(q);
-  return p;
+  *pval = q->val;
+  start->next = q->next;
+  free(q);
+  q = NULL;
+  return start;
 }
 
 // dequeue_int return the last element of the queue q
-int dequeue_int(struct queue_int* q)
+struct queue_int* dequeue_int(struct queue_int* start, int *pval)
 {
-  int i;
-  if(is_empty_int(q))
+  if(start == NULL)
+    return NULL;
+  struct queue_int *q = start->next;
+  if(start->next == start)
   {
-    return -1;
+    *pval = q->val;
+    free(start);
+    return NULL;
   }
-  else
-  {
-    i = q->data[q->f];
-    q->f++;
-    if(q->f > q->r)
-    {
-      q->f = -1;
-      q->r = -1;
-    }
-  }
-  //print_queue(q);
-  return i;
+  *pval = q->val;
+  start->next = q->next;
+  free(q);
+  q = NULL;
+  return start;
 }
+
+// is_empty returns 1 if queue is empty, 0 otherwise
+int is_empty(struct queue* start)
+{
+  return start == NULL;
+}
+
+// is_empty returns 1 if queue is empty, 0 otherwise
+int is_empty_int(struct queue_int* start)
+{
+  return start == NULL;
+}
+
+
 
 void bmp_test3(SDL_Surface *image, int **tab, int **h)
 {
