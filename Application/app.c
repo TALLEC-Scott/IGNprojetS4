@@ -337,18 +337,18 @@ gboolean on_launch(GtkButton* button __attribute__((unused)), gpointer user_data
         return TRUE;
     }
     
-    /*
+    
     double r = ui->rgba.red * 255,
            g = ui->rgba.green * 255,
            b = ui->rgba.blue * 255;
-    */
+    
     ui->bp = (int**)calloc(image->w, sizeof(int*));
     for(int k = 0; k < image->w; k++)
     {
       ui->bp[k] = (int*)calloc(image->h, sizeof(int));
     }
 
-    bmp_filter(image, -1, -1, -1, ui->bp);
+    bmp_filter(image, r, g, b, ui->bp);
     
     GError *error = NULL;
 

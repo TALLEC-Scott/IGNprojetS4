@@ -38,7 +38,7 @@ void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
     int **h, int elevation, int *new_label);
 void clean_label(int **tab, int w, int h, int label);
 void bfs_elevation(SDL_Surface *image, int x, int y, int label,
-    int **tab, int **h2, int* list, int* size_2i, int elevation);
+    int **tab, int **h2, int* list, int* size_2i, int elevation, int total);
 void map_elevation_colorize(int **h, int **tab, int label, int elevation,
     int w, int h2);
 void mark(int **tab, int label, int w, int h);
@@ -60,7 +60,8 @@ int is_empty(struct queue* start);
 
 void map_remplace_label(int **h22, int **tab, int w, int h, int label_old,
     int new);
-void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new, int w, int h);
+void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
+    int w, int h, int manual);
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
 int label, int label_old, struct point *list, int *size);
 int is_present2(struct point *list, int size, int x);

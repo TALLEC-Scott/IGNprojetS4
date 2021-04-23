@@ -47,14 +47,17 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
+    printf("r %i\n", r1);
     for(int i = 0; i < image->w; i++)
     {
         for(int j = 0; j < image->h; j++)
         {
             Uint32 pixel = BMP_Get_Pixel(image, i, j);
             Uint8 r, g, b;
-                        SDL_GetRGB(pixel, image->format, &r, &g, &b);
-            if(1)
+            SDL_GetRGB(pixel, image->format, &r, &g, &b);
+
+
+            if(r1 == -255)
             {
               double h, s, v;
               RGB_To_HSV(r, g, b, array);
@@ -91,28 +94,23 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
                 continue;
               }
               // Brown colors
-              if(h > 30 && h < 50 && v > 0.60 && (s > 0.197 || (s > 0.15 && h > 43) || (s > 0.14 && h > 47) || (s > 0.13 && h > 53) || (s > 0.165 && h > 38)) && r1 == -1)
+              if(h > 30 && h < 50 && v > 0.60 && (s > 0.197 || (s > 0.15 && h > 43) || (s > 0.14 && h > 47) || (s > 0.13 && h > 53) || (s > 0.165 && h > 38)))
               {
                 BMP_Put_Pixel(image, i, j,
                     (SDL_MapRGB(image->format, 255, 0, 0)));
 
                 array_topo[i][j] = 1;
               }
-              else
+            }
+            else
+            {
+              // Color Picker
+              if(r == r1 && g == g1 && b == b1)
               {
-                double h1, s1, v1;
-                RGB_To_HSV(r1, g1, b1, array);
-                h1 = array[0];
-                s1 = array[1];
-                v1 = array[2];
-                if(h < h1 +10 && h > h1 -10 && s < s1 +0.1 && s > s1 -0.1 && v < v1 +0.15 && v > v1 -0.15)
-                {
-                  BMP_Put_Pixel(image, i, j,
+                BMP_Put_Pixel(image, i, j,
                     (SDL_MapRGB(image->format, 255, 0, 0)));
 
-                  array_topo[i][j] = 1;
-
-                }
+                array_topo[i][j] = 1;
               }
             }
         }
