@@ -92,9 +92,10 @@ void print_list(vector_list *end)
 //test if a pixel correspond to filter
 int is_in_filter(struct image_pict *image, int x, int y)
 {
-  int filter[23][25]=
+  int filter[29][25]=
   {
-  	//{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
+  	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
+  	{0,0,0,0,0,0,-1,-1,-1,0,0,-1,1,-1,0,0,-1,-1,-1,0,0,0,0,0,0},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,-1,1,-1,-1,-1,1,1,1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,-1,0,0,-1,-1,1,1,0,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,1,-1,0,-1,-1,1,1,0,-1,-1,1,-1,0,-1,-1,-1,-1,-1,-1},
@@ -104,20 +105,24 @@ int is_in_filter(struct image_pict *image, int x, int y)
 	{-1,-1,-1,-1,-1,-1,0,-1,1,-1,-1,0,1,1,-1,-1,0,-1,1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,-1,-1,-1,0,1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,0,-1,-1,0,1,1,1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,1,-1,-1,0,0,1,0,-1,0,1,1,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,-1,-1,-1,0,0,1,0,-1,0,1,1,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,1,-1,-1,0,0,1,0,-1,-1,-1,1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,-1,0,1,1,1,-1,-1,-1,0,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,1,1,1,0,-1,-1,0,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,1,1,0,-1,0,1,0,0,-1,-1,1,-1,-1,-1},
 	{-1,1,-1,-1,-1,0,1,0,0,-1,-1,1,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,0,-1,-1,-1,1,1,1,0,-1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
-	{-1,-1,0,-1,-1,-1,1,1,1,-1,-1,0,1,0,-1,-1,0,1,0,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,-1,-1,-1,0,0,1,-1,-1,1,1,1,0,-1,0,0,1,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,-1,-1,-1,0,1,0,-1,-1,0,1,0,-1,-1,1,1,1,-1,-1,-1,0,-1,-1},
-	{-1,-1,-1,-1,-1,-1,1,0,0,-1,0,1,1,1,-1,-1,1,0,0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,0,-1,-1,-1,1,1,1,-1,-1,0,1,0,-1,-1,0,1,0,-1,-1,-1,0,-1,-1},
+	{-1,-1,-1,-1,-1,-1,0,0,1,-1,0,1,1,1,0,-1,0,0,1,-1,-1,-1,-1,-1,-1},
+	{-1,-1,0,-1,-1,-1,0,1,0,-1,-1,0,1,0,-1,-1,1,1,1,-1,-1,-1,0,-1,-1},
+	{-1,-1,-1,-1,-1,-1,1,0,0,-1,0,1,1,1,0,-1,1,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,-1,1,-1,0,1,1,-1,-1,0,0,1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,1,-1,0,0,1,-1,-1,0,1,1,1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,-1,-1,-1,0,0,0,-1,1,1,1,0,-1,1,0,0,0,-1,-1,-1,-1,-1,-1}
+	{-1,-1,-1,-1,-1,-1,0,0,0,-1,1,1,1,0,-1,1,0,0,0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,-1,-1,1,0,0,0,0,0,1,1,-1,0,1,0,0,0,0,-1,-1,-1,-1,-1},
+	{-1,-1,-1,-1,-1,1,-1,0,0,-1,-1,1,1,0,-1,-1,1,0,0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,-1,1,0,0,0,0,1,0,-1,1,1,1,0,0,0,0,1,-1,-1,-1,-1,-1},
+	{0,0,0,1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0}
   };
   int fd_ngh[25][2] = {{-2,-2},{-1,-2},{0,-2},{1,-2},{2,-2},
   		       {-2,-1},{-1,-1},{0,-1},{1,-1},{2,-1},
@@ -125,7 +130,7 @@ int is_in_filter(struct image_pict *image, int x, int y)
 		       {-2,1},{-1,1},{0,1},{1,1},{2,1},
 		       {-2,2},{-1,2},{0,2},{1,2},{2,2}};
   int corr;
-  for (int i = 0; i<23; i++)
+  for (int i = 0; i<29; i++)
   {
 	corr = 0;
 	for(int j = 0; j<25; j++)
@@ -163,11 +168,11 @@ void thinning(struct image_pict *image)
 			if (i-1 < 0)
 				i = 0;
 			else
-				i --;
+				i -= 2;
 			if (j-1 < 0)
 				j = 0;
 			else
-				j --;
+				j -= 2;
 		}
 		j++;
 	}
@@ -265,7 +270,7 @@ void moore(struct image_pict *image, vector_list *end_list)
 void neigh(struct image_pict *image, vector_list *end_list)
 {
   int fd_ngh[8][2] = {{-1,-1},{0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0}};
-  int count, last, new_x, new_y;
+  int count, edge, last, new_x, new_y;
   for (int x = 0; x<image->w; x++)
   {
   	for (int y = 0; y<image->h; y++)
@@ -273,6 +278,7 @@ void neigh(struct image_pict *image, vector_list *end_list)
   		if (image->pict[x][y] != 0)
   		{
   		count = 0;
+  		edge = 0;
   		last = -2;
   		for (int i = 0; i<8; i++)
   		{
@@ -287,9 +293,12 @@ void neigh(struct image_pict *image, vector_list *end_list)
 				}
 			}
 			else
-				count++;
+			{
+				count ++;
+				edge ++;
+			}
 		}
-		if (count < 2)
+		if ((edge > 0 && count-edge == 0) || count < 2)
   		{
   			image->pict[x][y] = 2;
 			struct end_pts nw = (struct end_pts){.x = x, .y = y, .state = 0};
@@ -303,7 +312,7 @@ void neigh(struct image_pict *image, vector_list *end_list)
 //see if there is a loop between point (x1,y1) and point (x2,y2)
 int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2, int cpt, int **mark)
 {
-  if (cpt > 50)
+  if (cpt > 10)
   	return 0;
   int new_x, new_y;
   int fd_ngh[9][2] = {{-1,-1},{0,-1},{1,-1},
@@ -329,6 +338,8 @@ int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2, int cpt,
 //see if point (x1,y1) is linked to point (x2,y2)
 int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
 {
+  if (abs(x2-x1) <= 1 && abs(y2-y1) <= 1)
+  	return 1;
   int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
   int link = 0;
   if (abs(x2-x1) < abs(y2-y1))
@@ -404,50 +415,54 @@ int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
 }
 
 //find the point of the list which is closer to (x,y) point and draw the line
-void euclidian(struct image_pict *image, vector_list *pts, int x, int y)
+int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i_src, size_t i_dst, float i_mini)
 {
   float min_d, new_d;
-  size_t mini;
-  min_d = image->w * image->h;
+  size_t mini = i_src;
+  min_d = i_mini;
   struct end_pts pt;
   for (size_t i = 0; i<pts->element_count; i++)
   {
 	pt = pts->data[i];
-	if (pt.x != x || pt.y != y)
+	if (pt.state == 0 && (pt.x != x || pt.y != y))
 	{
 		new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y)));
 		if (i >= pts->element_count-4)
-			new_d *= 5;
-		if (new_d > 1 && ((i >= pts->element_count-4 && new_d < 100) ||new_d < 30) && 
-			new_d < min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+			new_d *= 3;
+		if (new_d > 1 && ((i >= pts->element_count-4 && new_d < 100) ||new_d < 100) && 
+			new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
 		{
-			if (i >= pts->element_count-4)
-			{
-				int **mark = NULL;
-  				mark = (int**)calloc(image->w, sizeof(int*));
- 				for(int i = 0; i < image->w; i++)
-					mark[i] = (int*)calloc(image->h, sizeof(int*));
-  				if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 1)
+			int **mark = NULL;
+  			mark = (int**)calloc(image->w, sizeof(int*));
+ 			for(int j = 0; j < image->w; j++)
+				mark[j] = (int*)calloc(image->h, sizeof(int*));
+  			//if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
+			//{
+				if (i == i_dst || i >= pts->element_count-4 ||
+					euclidian(image, pts, pt.x, pt.y, i, i_src, new_d) == 1)
 				{
 					min_d = new_d;
 					mini = i;
 				}
-				for (int i=0; i<image->w; i++)
-					free(mark[i]);
-  				free(mark);
-			}
-			min_d = new_d;
-			mini = i;
+			//}
+			for (int j=0; j<image->w; j++)
+				free(mark[j]);
+  			free(mark);
 		}
 	}
   }
-  if (min_d == image->w * image->h)
+  if (mini == i_src || min_d == image->w * image->h)
   	image->pict[x][y] = 0;
   else
   {
+  	if (mini == i_dst)
+  		return 1;
   	pts->data[mini].state = 1;
+  	pts->data[i_src].state = 1;
+  	printf("x: %i, y: %i, new_x: %i, new_y: %i\n",x,y,pts->data[mini].x,pts->data[mini].y);
   	array_Draw_Line(image,x,y,pts->data[mini].x,pts->data[mini].y, 1);
   }
+  return 0;
 }
 
 //link points which are end of lines between them or the edge
@@ -459,7 +474,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
   	pt =  pts->data[i];
   	if (pt.state == 0)
   	{
-  		pts->data[i].state = 1;
+  		//pts->data[i].state = 1;
   		struct end_pts nw1 = (struct end_pts){.x = 0, .y = pt.y, .state = 0};
 		push_back_for_list(pts, nw1);
 		struct end_pts nw2 = (struct end_pts){.x = image->w-1, .y = pt.y, .state = 0};
@@ -468,7 +483,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
 		push_back_for_list(pts, nw3);
 		struct end_pts nw4 = (struct end_pts){.x = pt.x, .y = image->h-1, .state = 0};
 		push_back_for_list(pts, nw4);
-  		euclidian(image, pts, pt.x, pt.y);
+  		euclidian(image, pts, pt.x, pt.y, i, -1, image->w * image->h);
   		pts->element_count -= 4;
   	}
   }
@@ -499,12 +514,14 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp)
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
   bmp_create(pic_neigh, pict->pict, "neigh.bmp");
-  while (end_list.element_count != 0)
+  int max = 5;
+  while (max > 0 && end_list.element_count != 0)
   {
   	link_pts(pict, &end_list);
   	//print_list(&end_list);
   	end_list.element_count = 0;
   	neigh(pict, &end_list);
+  	max --;
   }
   delete_vec(end_list);
 

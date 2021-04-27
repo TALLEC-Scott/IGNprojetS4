@@ -27,7 +27,7 @@ void moore(struct image_pict*image, vector_list *list);*/
 void neigh(struct image_pict *image, vector_list *end_list);
 int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2,int cpt, int **mark);
 int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2);
-void euclidian(struct image_pict *image, vector_list *pts, int x, int y);
+int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i_src, size_t i_dst, float i_mini);
 void link_pts(struct image_pict *image, vector_list *pts);
 void rebuilt_lines(SDL_Surface *image, int **tab, int **bp);
 void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel);
