@@ -9,14 +9,32 @@
 #include "Open_GL_exec.h"
 
 typedef struct {
-    GtkDrawingArea *area;
+    gdouble h;
+    gdouble s;
+    gdouble v;
+} HSV;
+
+typedef struct {
+    GtkDrawingArea  *area;
     cairo_surface_t *image_surface;
-    GdkPixbuf *pixbuf;
-    cairo_format_t format;
-    int width;
-    int height;
-    char* filename;
+    GdkPixbuf       *pixbuf;
+    cairo_format_t  format;
+    int             width;
+    int             height;
+    char            *filename;
 } Image;
+
+typedef struct {
+    GtkWindow   *wcb;
+    GtkButton   *button_color_topo;
+    GtkButton   *button_color_road;
+    GtkButton   *button_color_river;
+    GtkButton   *ok;
+    GtkButton   *cancel;
+    HSV         color_topo;
+    HSV         color_road;
+    HSV         color_river;
+} Colors;
 
 typedef struct {
     GtkWindow *window;
@@ -27,14 +45,17 @@ typedef struct {
     GtkButton *modelise;
     GtkWidget *dfc;
     GtkWidget *color_dialog;
+    GtkWidget *switch_auto;
     GtkScale *rotate_scale;
     GtkScale *zoom_scale;
     double rotation;
     double zoom;
     int state;
+    gboolean automatic;
     GdkRGBA rgba;
     Image image_input;
     Image image_output;
+    Colors colors;
     int **bp;
 } Ui;
 
@@ -135,23 +156,50 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
     return TRUE;
 }
 
+// Display a secondary window with three color pickers for topo, road and river
+gboolean on_switch_auto(GtkWidget *switch_auto,
+        gboolean state __attribute__((unused)), gpointer user_data)
+{
+    Ui *ui = user_data;
+
+    // updates the auto boolean and the linked window (display or not)
+    if (gtk_switch_get_active(GTK_SWITCH(switch_auto)) == 1)
+    {
+        gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
+        ui->automatic = 1;
+        return TRUE;
+    }
+    else
+    {
+        ui->automatic = 0;
+        gtk_widget_show(GTK_WIDGET(ui->colors.wcb));
+    }
+
+    return TRUE;
+}
+
+// updates the input image & calls for redraw 
 gboolean on_draw_input(GtkWidget *area, cairo_t *cr, gpointer user_data)
 {
     Ui *ui = user_data;
 
+    // if image exists
     if(ui->image_input.pixbuf != NULL)
     {
+        // resize to trigger handles
         gtk_widget_set_size_request(GTK_WIDGET(ui->image_input.area),
                 ui->image_input.width * ui->zoom,
                 ui->image_input.height * ui->zoom);
         int width = gtk_widget_get_allocated_width(GTK_WIDGET(area));
         int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
 
+        // translate for scale and rotation
         cairo_translate(cr, width/2.0, height/2.0);
         cairo_rotate(cr, ui->rotation);
         cairo_scale(cr, ui->zoom, ui->zoom);
         cairo_translate(cr, -width/2.0, -height/2.0);
 
+        // links the surface to the image and paints
         cairo_set_source_surface(cr, ui->image_input.image_surface,
                 width/2.0 - ui->image_input.width/2.0,
                 height/2.0 - ui->image_input.height/2.0);
@@ -161,22 +209,26 @@ gboolean on_draw_input(GtkWidget *area, cairo_t *cr, gpointer user_data)
     return FALSE;
 }
 
+// updates the output image & calls for redraw
 gboolean on_draw_output(GtkWidget *area, cairo_t *cr, gpointer user_data)
 {
     Ui *ui = user_data;
     if (ui->image_output.pixbuf != NULL)
     {
+        // resize to trigger handles 
         gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
                 ui->image_output.width * ui->zoom,
                 ui->image_output.height * ui->zoom);
         int width = gtk_widget_get_allocated_width(GTK_WIDGET(area));
         int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
 
+        // translate for scale and rotation
         cairo_translate(cr, width/2.0, height/2.0);
         cairo_rotate(cr, ui->rotation);
         cairo_scale(cr, ui->zoom, ui->zoom);
         cairo_translate(cr, -width/2.0, -height/2.0);
 
+        // links the surface to the image for redraw
         cairo_set_source_surface(cr, ui->image_output.image_surface,
                 width/2.0 - ui->image_output.width/2.0,
                 height/2.0 - ui->image_output.height/2.0);
@@ -230,73 +282,14 @@ gboolean on_zoom_scale_change_value(GtkScale* scale, gpointer user_data)
     return TRUE;
 }
 
-/*
-// Handler for the save button
-gboolean on_save(GtkButton *button, gpointer user_data)
+// Handles the color picker for the three colors in HSV format
+gboolean on_color(GtkButton *button, gpointer user_data)
 {
-    (void)button;
     Ui *ui = user_data;
-
-    // Creates the dialog
-    GtkWidget *dialog;
-    dialog = gtk_file_chooser_dialog_new ("Save",
-            NULL,
-            GTK_FILE_CHOOSER_ACTION_SAVE,
-            "_Cancel", GTK_RESPONSE_CANCEL,
-            "_Save", GTK_RESPONSE_ACCEPT,
-            NULL);
+    GdkRGBA color = {0, 0, 0, 0};
+    const gchar *label;
     
-    // Runs the dialog
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-    {
-        char* filename;
-        char* text;
-        GtkTextBuffer *buffer;
-        GtkTextIter start;
-        GtkTextIter end;
-        GError *err = NULL;
-        gboolean result;
-
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-
-        // Lock textView while editing
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->outputText), FALSE);
-
-        buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui->outputText));
-        gtk_text_buffer_get_bounds(buffer, &start, &end);
-        text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-        gtk_text_buffer_set_modified(buffer, FALSE);
-        
-        // Unlock textView
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->outputText), TRUE);
-        
-        // Saves text to file
-        result = g_file_set_contents(filename, text, -1, &err);
-
-        if(result == FALSE)
-        {
-            g_printerr("Error saving file : %s\n", err->message);
-            g_clear_error(&err);
-        }
-
-        free(filename);
-        free(text);
-        free(err);
-    }
-
-    // Destroys and free the dialog
-    gtk_widget_destroy(dialog);
-        
-    return TRUE;
-}
-*/
-
-
-gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
-{
-    Ui *ui = user_data;
     gtk_widget_show(ui->color_dialog);
-    GdkRGBA rgba = {0, 0, 0, 0};
 
     if (gtk_dialog_run(GTK_DIALOG(ui->color_dialog)) == GTK_RESPONSE_OK)
     {
@@ -305,12 +298,47 @@ gboolean on_color(GtkButton *button __attribute((unused)), gpointer user_data)
                     GTK_COLOR_SELECTION_DIALOG(ui->color_dialog));
         
         gtk_color_selection_get_current_rgba(
-                GTK_COLOR_SELECTION(colorSelection), &rgba);
+                GTK_COLOR_SELECTION(colorSelection), &color);
 
-        ui->rgba = rgba;
+        label = gtk_button_get_label(button);
+
+        if (strcmp(label, "Topographic Line Color") == 0)
+        {
+            gtk_rgb_to_hsv(color.red, color.green, color.blue,
+                    &ui->colors.color_topo.h,
+                    &ui->colors.color_topo.s,
+                    &ui->colors.color_topo.v);
+        }
+        else if (strcmp(label, "Road Color") == 0)
+        {
+            gtk_rgb_to_hsv(color.red, color.green, color.blue,
+                    &ui->colors.color_road.h,
+                    &ui->colors.color_road.s,
+                    &ui->colors.color_road.v);
+        }
+        else if (strcmp(label, "River Color") == 0)
+        {
+            gtk_rgb_to_hsv(color.red, color.green, color.blue,
+                    &ui->colors.color_river.h,
+                    &ui->colors.color_river.s,
+                    &ui->colors.color_river.v);
+        }
+        else
+            printf("How in Hell did you manage to click on a button that \
+doesn't exists ?!?\n");
+
         
-        printf("color:\nr: %f\ng: %f\nb: %f\na: %f\n", rgba.red,
-                rgba.green, rgba.blue, rgba.alpha);
+        //printf("color:\nr: %f\ng: %f\nb: %f\na: %f\n", color.red,
+        //        color.green, color.blue, color.alpha);
+        printf("topo:\nh: %f\ns: %f\nv:%f\n\n", ui->colors.color_topo.h,
+                    ui->colors.color_topo.s,
+                    ui->colors.color_topo.v);
+        printf("road:\nh: %f\ns: %f\nv:%f\n\n", ui->colors.color_road.h,
+                    ui->colors.color_road.s,
+                    ui->colors.color_road.v);
+        printf("river:\nh: %f\ns: %f\nv:%f\n\n", ui->colors.color_river.h,
+                    ui->colors.color_river.s,
+                    ui->colors.color_river.v);
     }
 
     gtk_widget_hide(ui->color_dialog);
@@ -468,28 +496,44 @@ int main (int argc, char *argv[])
     }
 
     // Gets the widgets.
-    GtkWindow* window = GTK_WINDOW(gtk_builder_get_object(builder,
+    GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(builder,
                 "window_main"));
-    GtkWidget* dfc = GTK_WIDGET(gtk_builder_get_object(builder,
+    GtkWindow *wcb = GTK_WINDOW(gtk_builder_get_object(builder,
+                "window_color_buttons"));
+    GtkWidget *dfc = GTK_WIDGET(gtk_builder_get_object(builder,
                 "dlg_file_choose"));
-    GtkButton* open = GTK_BUTTON(gtk_builder_get_object(builder, "open"));
-    GtkButton* launch = GTK_BUTTON(gtk_builder_get_object(builder,
-                "launch_analysis"));
-    GtkButton* step = GTK_BUTTON(gtk_builder_get_object(builder, "step"));
-    GtkButton* modelise = GTK_BUTTON(gtk_builder_get_object(builder,
-                "modelise"));
-    GtkScale* rotate_scale = GTK_SCALE(gtk_builder_get_object(builder,
-                "rotate_scale"));
-    GtkScale* zoom_scale = GTK_SCALE(gtk_builder_get_object(builder,
-                "zoom_scale"));
-    GtkDrawingArea *area_input = GTK_DRAWING_AREA(gtk_builder_get_object(builder,
-                "image_input"));
-    GtkDrawingArea *area_output = GTK_DRAWING_AREA(gtk_builder_get_object(
-                builder, "image_output"));
-    GtkButton *color_button = GTK_BUTTON(gtk_builder_get_object(builder,
-                "color"));
     GtkWidget *color_dialog = GTK_WIDGET(gtk_builder_get_object(builder,
                 "color_dialog"));
+    GtkWidget *switch_auto = GTK_WIDGET(gtk_builder_get_object(builder,
+                "switch_auto"));
+    GtkButton *open = GTK_BUTTON(gtk_builder_get_object(builder, "open"));
+    
+    GtkButton *launch = GTK_BUTTON(gtk_builder_get_object(builder,
+                "launch_analysis"));
+    GtkButton *step = GTK_BUTTON(gtk_builder_get_object(builder, "step"));
+    
+    GtkButton *modelise = GTK_BUTTON(gtk_builder_get_object(builder,
+                "modelise"));
+    GtkButton *button_color_topo = GTK_BUTTON(gtk_builder_get_object(builder,
+                "color_topo"));
+    GtkButton *button_color_road = GTK_BUTTON(gtk_builder_get_object(builder,
+                "color_road"));
+    GtkButton *button_color_river = GTK_BUTTON(gtk_builder_get_object(builder,
+                "color_river"));
+    GtkButton *ok = GTK_BUTTON(gtk_builder_get_object(builder,
+                "ok"));
+    GtkButton *cancel = GTK_BUTTON(gtk_builder_get_object(builder,
+                "cancel"));
+    GtkScale *rotate_scale = GTK_SCALE(gtk_builder_get_object(builder,
+                "rotate_scale"));
+    GtkScale *zoom_scale = GTK_SCALE(gtk_builder_get_object(builder,
+                "zoom_scale"));
+    GtkDrawingArea *area_input = GTK_DRAWING_AREA(gtk_builder_get_object(
+                builder, "image_input"));
+    GtkDrawingArea *area_output = GTK_DRAWING_AREA(gtk_builder_get_object(
+                builder, "image_output"));
+
+
 
     // Initialise data structure
     Ui ui =
@@ -497,16 +541,29 @@ int main (int argc, char *argv[])
         .window = window,
         .open = open,
         .dfc = dfc,
-        .color_button = color_button,
         .color_dialog = color_dialog,
+        .switch_auto = switch_auto,
         .rotate_scale = rotate_scale,
         .zoom_scale = zoom_scale,
         .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
+        .automatic = 1,
         .launch = launch,
         .step = step,
         .modelise = modelise,
         .state = 0,
+        .colors =
+        {
+            .wcb = wcb,
+            .button_color_topo = button_color_topo,
+            .button_color_road = button_color_road,
+            .button_color_river = button_color_river,
+            .ok = ok,
+            .cancel = cancel,
+            .color_topo = {.h = 0, .s = 0, .v = 0},
+            .color_road = {.h = 0, .s = 0, .v = 0},
+            .color_river = {.h = 0, .s = 0, .v = 0}
+        },
         .rgba =
         {
             .red = -1,
@@ -538,8 +595,11 @@ int main (int argc, char *argv[])
     //g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
     g_signal_connect(step, "clicked", G_CALLBACK(on_step), &ui);
-    g_signal_connect(color_button, "clicked", G_CALLBACK(on_color), &ui);
+    g_signal_connect(button_color_topo, "clicked", G_CALLBACK(on_color), &ui);
+    g_signal_connect(button_color_road, "clicked", G_CALLBACK(on_color), &ui);
+    g_signal_connect(button_color_river, "clicked", G_CALLBACK(on_color), &ui);
     g_signal_connect(modelise, "clicked", G_CALLBACK(on_modelise), &ui);
+    g_signal_connect(switch_auto, "state-set", G_CALLBACK(on_switch_auto), &ui);
 
     // Frees builder
     g_object_unref(builder);
