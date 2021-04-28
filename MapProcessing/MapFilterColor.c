@@ -89,12 +89,12 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
                 continue;
               }
               // White colors
-              if(s < 0.17 && v > 0.87)
+              if(s < 0.17 && v > 0.87 && h > 45)
               {
                 continue;
               }
               // Brown colors
-              if(h > 30 && h < 50 && v > 0.60 && (s > 0.197 || (s > 0.15 && h > 43) || (s > 0.14 && h > 47) || (s > 0.13 && h > 53) || (s > 0.165 && h > 38)))
+              if(h > 30 && h < 49.5 && v > 0.60 && (s > 0.197 || (s > 0.151 && h > 43 && h < 46.5 && s < 0.16) || (s > 0.14 && h > 47 && s < 0.158) || (s > 0.13 && h > 53) || (s > 0.1615 && h > 37 && v > 0.60)))
               {
                 BMP_Put_Pixel(image, i, j,
                     (SDL_MapRGB(image->format, 255, 0, 0)));
