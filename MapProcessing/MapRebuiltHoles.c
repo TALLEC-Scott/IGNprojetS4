@@ -92,7 +92,7 @@ void print_list(vector_list *end)
 //test if a pixel correspond to filter
 int is_in_filter(struct image_pict *image, int x, int y)
 {
-  int filter[29][25]=
+  int filter[31][25]=
   {
   	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
   	{0,0,0,0,0,0,-1,-1,-1,0,0,-1,1,-1,0,0,-1,-1,-1,0,0,0,0,0,0},
@@ -104,7 +104,7 @@ int is_in_filter(struct image_pict *image, int x, int y)
 	{-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,0,1,1,-1,-1,0,0,-1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,-1,1,-1,-1,0,1,1,-1,-1,0,-1,1,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,-1,-1,-1,0,1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,0,-1,-1,0,1,1,1,-1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,0,-1,-1,0,1,1,1,-1,0,1,0,-1,-1,-1,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,1,0,-1,0,1,1,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,1,-1,-1,0,0,1,0,-1,-1,-1,1,-1},
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,-1,0,1,0,-1,-1,0,1,1,1,-1,-1,-1,0,-1},
@@ -121,16 +121,18 @@ int is_in_filter(struct image_pict *image, int x, int y)
 	{-1,-1,-1,-1,-1,-1,0,0,0,-1,1,1,1,0,-1,1,0,0,0,-1,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,1,0,0,0,0,0,1,1,-1,0,1,0,0,0,0,-1,-1,-1,-1,-1},
 	{-1,-1,-1,-1,-1,1,-1,0,0,-1,-1,1,1,0,-1,-1,1,0,0,-1,-1,-1,-1,-1,-1},
-	{-1,-1,-1,-1,1,0,0,0,0,1,0,-1,1,1,1,0,0,0,0,1,-1,-1,-1,-1,-1},
-	{0,0,0,1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0}
+	{-1,-1,-1,-1,1,0,0,0,0,1,0,-1,1,1,-1,0,0,0,0,1,-1,-1,-1,-1,-1},
+	{0,0,0,1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0},
+	{1,-1,-1,-1,-1,1,1,0,0,-1,1,0,1,0,-1,-1,0,0,0,-1,-1,-1,-1,-1,-1},
+	{0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,1,0}
   };
   int fd_ngh[25][2] = {{-2,-2},{-1,-2},{0,-2},{1,-2},{2,-2},
   		       {-2,-1},{-1,-1},{0,-1},{1,-1},{2,-1},
 	  	       {-2,0},{-1,0},{0,0},{1,0},{2,0},
 		       {-2,1},{-1,1},{0,1},{1,1},{2,1},
 		       {-2,2},{-1,2},{0,2},{1,2},{2,2}};
-  int corr;
-  for (int i = 0; i<29; i++)
+  int corr, test;
+  for (int i = 0; i<31; i++)
   {
 	corr = 0;
 	for(int j = 0; j<25; j++)
@@ -138,15 +140,31 @@ int is_in_filter(struct image_pict *image, int x, int y)
 		if (x+fd_ngh[j][0]>=0 && x+fd_ngh[j][0]<image->w &&
 			y+fd_ngh[j][1]>=0 && y+fd_ngh[j][1]<image->h)
 		{
-		if (filter[i][j] == -1 || (filter[i][j] == 1 && image->pict[x+fd_ngh[j][0]][y+fd_ngh[j][1]] != 0)
-				|| (filter[i][j] == 0 && image->pict[x+fd_ngh[j][0]][y+fd_ngh[j][1]] == 0))
-			corr++;
-		else
-			break;
+			if (filter[i][j] == -1 || (filter[i][j] == 1 && image->pict[x+fd_ngh[j][0]][y+fd_ngh[j][1]] != 0)
+					|| (filter[i][j] == 0 && image->pict[x+fd_ngh[j][0]][y+fd_ngh[j][1]] == 0))
+				corr++;
+			else
+				break;
 		}
 	}
 	if (corr == 25)
-		return 1;
+	{
+		test = 1;
+		if (i == 1 && x-3>=0 && x+3<image->w && y-3>=0 && y+3<image->h)
+		{
+			for (int m = x-3; m<=x+3; m++)
+			{
+				for (int n = y-3; n<=y+3; n++)
+				{
+					if ((m == x-3 || m == x+3 || n == y-3 || n == y+3)
+						&& (image->pict[m][n] != 0))
+						test = 0;
+				}
+			}
+		}
+		if (test)
+			return 1;
+	}
   }
   return 0;
 }
@@ -338,10 +356,12 @@ int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2, int cpt,
 //see if point (x1,y1) is linked to point (x2,y2)
 int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
 {
-  if (abs(x2-x1) <= 1 && abs(y2-y1) <= 1)
+  if (abs(x2-x1) <= 1 && abs(y2-y1) <= 1 && image->pict[x1][y1] != 0)
   	return 1;
   int d, dx, dy, incr1, incr2, incr_x, incr_y, x, y;
   int link = 0;
+  if (x1==981 && y1==651 && x2==986 && y2==649)
+	printf("start\n");
   if (abs(x2-x1) < abs(y2-y1))
   {
   	if (y1 > y2)
@@ -385,12 +405,14 @@ int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
   		x2 = tmp_x;
   		y2 = tmp_y;
   	}
+  	if (x1==981 && y1==651 && x2==986 && y2==649)
+		printf("good if\n");
   	incr_y = y2 > y1 ? 1 : -1;
   	dx = x2 - x1;
   	dy = abs(y2 - y1);
   	d = 2*dy - dx;
   	incr1 = 2 * (dy-dx);
-  	incr2 = 2 * d;
+  	incr2 = 2 * dy;
   	x = x1;
   	y = y1;
   	for (x = x1+1; x<=x2 && link<2; x++)
@@ -402,6 +424,8 @@ int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
   		}
   		else
   			d += incr2;
+  		if (x1==981 && y1==651 && x2==986 && y2==649)
+			printf("x: %i, y: %i, value: %i, d: %i, incr2: %i, incr1: %i\n",x,y,image->pict[x][y],d,incr2,incr1);
   		if (x>=0 && x<image->w && y>=0 && y<image->h)
   		{
   			if (image->pict[x][y] != 0)
@@ -409,6 +433,8 @@ int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
   		}
   	}
   }
+  if (x1==981 && y1==651 && x2==986 && y2==649)
+	printf("link: %i\n",link);
   if (link > 1)
   	return 1;
   return 0;
@@ -421,47 +447,91 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
   size_t mini = i_src;
   min_d = i_mini;
   struct end_pts pt;
-  for (size_t i = 0; i<pts->element_count; i++)
+  size_t len = pts->element_count;
+  if (x > 963 && x < 990 && y > 645 && y < 700)
+  	printf("x: %i, y: %i, min dist: %f\n",x,y,min_d);
+  for (size_t i = 0; i<len+4; i++)
   {
-	pt = pts->data[i];
-	if (pt.state == 0 && (pt.x != x || pt.y != y))
-	{
-		new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y)));
-		if (i >= pts->element_count-4)
-			new_d *= 3;
-		if (new_d > 1 && ((i >= pts->element_count-4 && new_d < 100) ||new_d < 100) && 
-			new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+  	if (i >= len)
+  	{
+  		if (i == len)
+  		{
+  			struct end_pts nw1 = (struct end_pts){.x = 0, .y = y, .state = 0};
+			push_back_for_list(pts, nw1);
+			struct end_pts nw2 = (struct end_pts){.x = image->w-1, .y = y, .state = 0};
+			push_back_for_list(pts, nw2);
+			struct end_pts nw3 = (struct end_pts){.x = x, .y = 0, .state = 0};
+			push_back_for_list(pts, nw3);
+			struct end_pts nw4 = (struct end_pts){.x = x, .y = image->h-1, .state = 0};
+			push_back_for_list(pts, nw4);
+  		}
+  		pt = pts->data[i];
+  		if (pt.state == 0 && (pt.x != x || pt.y != y))
 		{
-			int **mark = NULL;
-  			mark = (int**)calloc(image->w, sizeof(int*));
- 			for(int j = 0; j < image->w; j++)
-				mark[j] = (int*)calloc(image->h, sizeof(int*));
-  			//if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
-			//{
-				if (i == i_dst || i >= pts->element_count-4 ||
-					euclidian(image, pts, pt.x, pt.y, i, i_src, new_d) == 1)
-				{
+			new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y))) * 5;
+			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+			{
+				/*int **mark = NULL;
+	  			mark = (int**)calloc(image->w, sizeof(int*));
+	 			for(int j = 0; j < image->w; j++)
+					mark[j] = (int*)calloc(image->h, sizeof(int*));
+	  			if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
+				{*/
 					min_d = new_d;
 					mini = i;
-				}
-			//}
-			for (int j=0; j<image->w; j++)
-				free(mark[j]);
-  			free(mark);
+				/*}
+				for (int j=0; j<image->w; j++)
+					free(mark[j]);
+	  			free(mark);*/
+			}
+		}
+  	}
+  	else
+  	{
+		pt = pts->data[i];
+		if (pt.state == 0 && (pt.x != x || pt.y != y))
+		{
+			new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y)));
+			if (x > 963 && x < 990 && y > 645 && y < 700 && pt.x > 963 && pt.x < 990 && pt.y > 645 && pt.y < 700)
+  				printf("x2: %i, y2: %i, dist: %f\n",pt.x,pt.y,new_d);
+			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+			{
+				/*int **mark = NULL;
+	  			mark = (int**)calloc(image->w, sizeof(int*));
+	 			for(int j = 0; j < image->w; j++)
+					mark[j] = (int*)calloc(image->h, sizeof(int*));
+	  			if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
+				{*/
+					if (i == i_dst || euclidian(image, pts, pt.x, pt.y, i, i_src, new_d) == 1)
+					{
+						min_d = new_d;
+						mini = i;
+					}
+				/*}
+				for (int j=0; j<image->w; j++)
+					free(mark[j]);
+	  			free(mark);*/
+			}
 		}
 	}
   }
-  if (mini == i_src || min_d == image->w * image->h)
+  
+  if (mini == i_src || min_d == image->w * image->h || pts->data[mini].state == 1 || pts->data[i_src].state == 1)
   	image->pict[x][y] = 0;
   else
   {
   	if (mini == i_dst)
+  	{
+  		pts->element_count -= 4;
   		return 1;
+  	}
+  	if (x > 963 && x < 990 && y > 645 && y < 700)
+  		printf("x: %i, y: %i, new_x: %i, new_y: %i, state1: %i, state2: %i\n",x,y,pts->data[mini].x,pts->data[mini].y,pts->data[mini].state, pts->data[i_src].state);
   	pts->data[mini].state = 1;
   	pts->data[i_src].state = 1;
-  	printf("x: %i, y: %i, new_x: %i, new_y: %i\n",x,y,pts->data[mini].x,pts->data[mini].y);
   	array_Draw_Line(image,x,y,pts->data[mini].x,pts->data[mini].y, 1);
   }
+  pts->element_count -= 4;
   return 0;
 }
 
@@ -473,19 +543,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
   {
   	pt =  pts->data[i];
   	if (pt.state == 0)
-  	{
-  		//pts->data[i].state = 1;
-  		struct end_pts nw1 = (struct end_pts){.x = 0, .y = pt.y, .state = 0};
-		push_back_for_list(pts, nw1);
-		struct end_pts nw2 = (struct end_pts){.x = image->w-1, .y = pt.y, .state = 0};
-		push_back_for_list(pts, nw2);
-		struct end_pts nw3 = (struct end_pts){.x = pt.x, .y = 0, .state = 0};
-		push_back_for_list(pts, nw3);
-		struct end_pts nw4 = (struct end_pts){.x = pt.x, .y = image->h-1, .state = 0};
-		push_back_for_list(pts, nw4);
   		euclidian(image, pts, pt.x, pt.y, i, -1, image->w * image->h);
-  		pts->element_count -= 4;
-  	}
   }
 }
 
