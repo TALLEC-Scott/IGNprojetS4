@@ -53,10 +53,10 @@ void display()
     gluLookAt(x, y, z,                                  //camera set-up
               x + lx, y + ly, z + lz,
               0.0f, 1.0f, 0.0f);
-    glTranslatef(1.5f, 0.0f, -7.0f); // Move right and into the screen
+    glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-    //Draw_Points(bp,image);
-    glBegin(GL_POINTS);
+    Draw_Points(bp,image);
+    /*glBegin(GL_POINTS);
     glColor3f(0.0f, 1.0f, 0.5f);
     for (int i = 0; i < (image->w); i++)
     {
@@ -71,7 +71,7 @@ void display()
         }
     }
     glEnd();
-
+*/
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 
     /* To render Pyramid uncomment
