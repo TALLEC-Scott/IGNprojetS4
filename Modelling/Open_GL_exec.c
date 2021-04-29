@@ -8,15 +8,27 @@ static int **bp;
 
 static SDL_Surface *image;
 
-static float angle_Pitch = 0.0;
+//static float angle_Pitch = 0.0;
 
-static float angle_Yaw = 0.0;
+//static float angle_Yaw = 0.0;
 
 static float lx = 0.0f, lz = -1.0f, ly = 0;
 
 static float x = 0.0f, z = 5.0f;
 
 static float y = 1.0f;
+
+static float angle=0.0f;
+
+static float ang = 0.0f;
+
+static float deltaAngle = 0.0f;
+
+static float gammaAngle = 0.0f;
+
+static int xOrigin = -1;
+
+static int yOrigin = -1;
 
 char title[] = "3D Shapes";
 
@@ -132,10 +144,10 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     case 'd':
         x += .05f;
         break;
-    case 'i':
+    case 'k':
         z -= .05f;
         break;
-    case 'k':
+    case 'i':
         z += .05f;
         break;
     case 27:
@@ -143,7 +155,7 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     }
 }
 
-void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
+/*void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
 {
 
     //float fraction = 0.1f; //rotate speed
@@ -169,15 +181,49 @@ void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((un
         ly = tan(angle_Pitch);
         break;
     }
+    }*/
+
+void mouseButton(int button, int state, int x, int y) {
+
+    // only start motion if the left button is pressed
+    if (button == GLUT_LEFT_BUTTON) {
+
+        // when the button is released
+        if (state == GLUT_UP) {
+            angle += deltaAngle;
+            ang += gammaAngle;
+            xOrigin = -1;
+            yOrigin = -1;
+        }
+        else  {// state = GLUT_DOWN
+            xOrigin = x;
+            yOrigin = y;
+        }
+    }
+}
+
+void mouseMove(int x, int y) {
+
+    // this will only be true when the left button is down
+    if (xOrigin >= 0) {
+
+        // update deltaAngle
+        deltaAngle = (x - xOrigin) * 0.001f;
+
+        gammaAngle = (y - yOrigin) * 0.01f;
+
+        // update camera's direction
+        lx = -sin(angle+deltaAngle);
+        ly = +sin(ang+gammaAngle);
+        lz = -cos(angle+deltaAngle)-cos(ang+gammaAngle);
+        glutPostRedisplay();
+    }
 }
 
 int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
 {
 	image = im; //it's to use SDL_Surface *im as a global ref
         bp = bps;
-    /* Pierre-Corentin stuff
-        float c = eye[2];
-        radius = c; */
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -199,7 +245,10 @@ int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
     glutReshapeFunc(reshape);
     glutIdleFunc(display); // Register callback handler for window re-size event
     glutKeyboardFunc(keyboard);
-    glutSpecialFunc(SpecialKeys);
+
+    glutMouseFunc(mouseButton);
+    glutMotionFunc(mouseMove);
+    //glutSpecialFunc(SpecialKeys);
     initGL();       // Our own OpenGL initialization
     
     glutMainLoop(); // Enter the infinite event-processing loop
