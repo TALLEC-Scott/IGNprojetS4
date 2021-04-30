@@ -35,7 +35,7 @@ void clean(int **tab, int w, int h);
 int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
     int elevation, int* size);
 void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
-    int **h, int elevation, int *new_label);
+    int **h, int elevation, int *new_label, int *size);
 void clean_label(int **tab, int w, int h, int label);
 void bfs_elevation(SDL_Surface *image, int x, int y, int label,
     int **tab, int **h2, int* list, int* size_2i, int elevation, int total);
