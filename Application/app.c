@@ -384,15 +384,25 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
     
     double r = ui->rgba.red * 255,
            g = ui->rgba.green * 255,
-           b = ui->rgba.blue * 255;
-    
+           b = ui->rgba.blue * 255,
+           r1 = ui->colors.color_road.red * 255,
+           g1 = ui->colors.color_road.green * 255,
+           b1 = ui->colors.color_road.blue * 255,
+           r2 = ui->colors.color_river.red * 255,
+           g2 = ui->colors.color_river.green * 255,
+           b2 = ui->colors.color_river.blue * 255;
+
+
     ui->bp = (int**)calloc(image->w, sizeof(int*));
     for(int k = 0; k < image->w; k++)
     {
       ui->bp[k] = (int*)calloc(image->h, sizeof(int));
     }
 
-    bmp_filter(image, r, g, b, ui->bp);
+    bmp_filter(image, r, g, b,
+           r1, g1, b1,
+          r2, g2, b2,
+          ui->bp);
     
     GError *error = NULL;
 
@@ -494,6 +504,7 @@ gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data)
             sprintf(file, "%simage.bmp", dir);
             break;
         default:
+            printf("Step by step: state > 6 should not be possible\n");
             break;
     }
 
@@ -530,6 +541,17 @@ gboolean on_step(GtkButton* button __attribute__((unused)), gpointer user_data)
     return TRUE;
 }
 
+// Handler for manual elevation rectification
+gboolean on_area_press(GtkWidget *area, GdkEventButton *event, gpointer user_data)
+{
+    Ui *ui = user_data;
+
+    printf("%f, %f\n", event->x, event->y);
+
+    return TRUE;
+}
+
+// Handler for modelisation button
 gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_data)
 {
     Ui *ui = user_data;
@@ -606,6 +628,8 @@ int main (int argc, char *argv[])
                 builder, "image_input"));
     GtkDrawingArea *area_output = GTK_DRAWING_AREA(gtk_builder_get_object(
                 builder, "image_output"));
+    GtkWidget *output_event_box = GTK_WIDGET(gtk_builder_get_object(
+                builder, "output_event"));
 
 
 
@@ -667,6 +691,8 @@ int main (int argc, char *argv[])
                 on_zoom_scale_change_value), &ui);
     g_signal_connect(area_input, "draw", G_CALLBACK(on_draw_input), &ui);
     g_signal_connect(area_output, "draw", G_CALLBACK(on_draw_output), &ui);
+    g_signal_connect(output_event_box, "button-press-event",
+            G_CALLBACK(on_area_press), &ui);
     //g_signal_connect(save, "clicked", G_CALLBACK(on_save), &ui);
     g_signal_connect(launch, "clicked", G_CALLBACK(on_launch), &ui);
     g_signal_connect(step, "clicked", G_CALLBACK(on_step), &ui);
@@ -676,6 +702,9 @@ int main (int argc, char *argv[])
     g_signal_connect(modelise, "clicked", G_CALLBACK(on_modelise), &ui);
     g_signal_connect(switch_auto, "state-set", G_CALLBACK(on_switch_auto), &ui);
     g_signal_connect(ok, "clicked", G_CALLBACK(on_color_ok), &ui);
+
+    // Events
+    gtk_widget_set_events(output_event_box, GDK_BUTTON_PRESS_MASK);
 
     // Frees builder
     g_object_unref(builder);
