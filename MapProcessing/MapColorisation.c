@@ -34,6 +34,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
       if(r == 255 && tab[i][j] == 0)
       {
         bfs_test(image, i, j, label, tab, res, bp);
+        printf("Label register :%i\n", label);
         //int close = map_dfs_finder(image, i, j, label, tab, 1);
         if(res[0] && res[0] != -1)
         {
@@ -57,7 +58,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   {
     errx(EXIT_FAILURE, "invalid calloc M");
   }
-  printf("Label %i\n", label);
+  //printf("Label %i\n", label);
 
   //BMP_Test(image, tab);
   int **h = NULL;
@@ -81,7 +82,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
     {
       if(M[node[i][1]] == 0)
       {
-        printf("label start %i\n", node[i][1]);
+        //printf("label start %i\n", node[i][1]);
         q = enqueue_int(q, node[i][1]);
         size_q +=1;
         M[node[i][1]] = 1;
@@ -170,7 +171,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
     tab2[k] = (int*)calloc(image->h, sizeof(int));
   }
 
-  map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 1);
+  map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 0);
   bmp_test2(image, h);
 
 
@@ -222,6 +223,7 @@ void map_remplace_label(int **h2, int **tab, int w, int h, int label_old, int ne
 void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
     int w, int h, int manual)
 {
+  printf("KSQDM %i\n", tab2[0][561]);
   int label_old = tab2[x][y];
   map_remplace_label(h2, tab2, w, h, label_old, new);
 
@@ -297,6 +299,8 @@ void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h
     {
       if(xt+n[i][0] >= 0 && xt+n[i][0] < w && yt+n[i][1] >= 0 && yt+n[i][1] < h)
       {
+        
+
         int x1 = xt+n[i][0];
         int y1 = yt+n[i][1];
 
@@ -309,10 +313,12 @@ void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h
           tab[x1][y1] = 1;
           q = enqueue(q, node);
         }
-        else if(tab2[x1][y1] != label_old && tab[x1][y1] == 0)
+        else if(tab2[x1][y1] != label_old && tab[x1][y1] == 0 && !is_present2(list, *size, tab2[x1][y1]))
         {
           if(h2[x1][y1] - label >= 100 || label-h2[x1][y1] >= 100)
           {
+            
+
             int new_label = h2[x1][y1];
             if(new_label > label)
             {
@@ -328,9 +334,9 @@ void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h
                 new_label += 100;
               }
             }
-            
+
             // Mark all pixels
-            for(int i = 0; i < w; i++)
+            /*for(int i = 0; i < w; i++)
             {
               for(int j = 0; j < h; j++)
               {
@@ -339,13 +345,14 @@ void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h
                   tab[i][j] = 1;
                 }
               }
-            } 
+            }*/
 
             // Check if label is already saves
             if(!is_present2(list, *size, tab2[x1][y1]))
             {
               struct point new_p;
               new_p.x = tab2[x1][y1];
+              
               new_p.y = label;
               list[*size-1] = new_p;
               *size+=1;
@@ -444,7 +451,7 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
     {1, 0},
   };
   printf("TEST\n");
-  printf("Elevation : %i\n", elevation);
+  printf("Elevation : %i %i\n", elevation, label);
 
   while(!is_empty(q))
   {
@@ -478,9 +485,10 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
         else if(/*tab[xt+n[i][0]][yt+n[i][1]] != -1*/ r == 0 &&
             h2[xt+n[i][0]][yt+n[i][1]] == 0)
         {
-          int new_label = 0;
+          int new_label[5];
+          int size_dfs = 0;
           dfs_elevation(image, xt+n[i][0], yt+n[i][1], tab,
-              tab[xt+n[i][0]][yt+n[i][1]], h2, elevation, &new_label);
+              tab[xt+n[i][0]][yt+n[i][1]], h2, elevation, new_label, &size_dfs);
           //printf("Label : %i\n", new_label);
 
           if(!is_present(list, *size_2, tab[xt+n[i][0]][yt+n[i][1]]) && tab[xt+n[i][0]][yt+n[i][1]] != label)
@@ -499,26 +507,30 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
             }
           }
 
-          if(new_label != 0 && !is_present(list, *size_2, new_label))
+          for(int j = 0; j < size_dfs-1; j++)
           {
-            //printf("Label : %i\n", tab[xt+n[i][0]][yt+n[i][1]]);
-            list[*size_2-1] = new_label;
-            *size_2 += 1;
-            if(*size_2 == total)
+            if(new_label != 0 && !is_present(list, *size_2, new_label[j]))
             {
-              total = total * 2;
-              list = realloc(list, total * sizeof(int));
-              if(list == NULL)
+              //printf("Label : %i\n", tab[xt+n[i][0]][yt+n[i][1]]);
+              list[*size_2-1] = new_label[j];
+              *size_2 += 1;
+              if(*size_2 == total)
               {
-                errx(EXIT_FAILURE, "invalid realloc list");
+                total = total * 2;
+                list = realloc(list, total * sizeof(int));
+                if(list == NULL)
+                {
+                  errx(EXIT_FAILURE, "invalid realloc list");
+                }
               }
             }
           }
         }
       }
     }
-  } 
+  }
 }
+
 
 int is_present(int* list, int size, int x)
 {
@@ -545,7 +557,7 @@ int is_present2(struct point *list, int size, int x)
 
 
 void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
-    int **h, int elevation, int *new_label)
+    int **h, int elevation, int *new_label, int *size)
 { 
   Uint8 r, g, b; 
   Uint32 pixel = BMP_Get_Pixel(image, x, y);
@@ -559,47 +571,51 @@ void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
 
     if(x-1 >= 0)
     {
-      dfs_elevation(image, x-1, y, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x-1, y, tab, label, h, elevation, new_label, size);
     }
 
     if(x+1 < w)
     {
-      dfs_elevation(image, x+1, y, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x+1, y, tab, label, h, elevation, new_label, size);
     }
 
     if(y-1 >= 0)
     {
-      dfs_elevation(image, x, y-1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x, y-1, tab, label, h, elevation, new_label, size);
     }
 
     if(y+1 < h2)
     {
-      dfs_elevation(image, x, y+1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x, y+1, tab, label, h, elevation, new_label, size);
     }
 
     if(x+1 < w && y+1 < h2)
     {
-      dfs_elevation(image, x+1, y+1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x+1, y+1, tab, label, h, elevation, new_label, size);
     }
 
     if(x+1 < w && y-1 >= 0)
     {
-      dfs_elevation(image, x+1, y-1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x+1, y-1, tab, label, h, elevation, new_label, size);
     }
 
     if(x-1 >= 0 && y+1 < h2)
     {
-      dfs_elevation(image, x-1, y+1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x-1, y+1, tab, label, h, elevation, new_label, size);
     }
 
     if(x-1 >= 0 && y-1 >=0)
     {
-      dfs_elevation(image, x-1, y-1, tab, label, h, elevation, new_label);
+      dfs_elevation(image, x-1, y-1, tab, label, h, elevation, new_label, size);
     }
   }
   else if(r == 255 && tab[x][y] != label)
   {
-    *new_label = tab[x][y];
+    if(!is_present(new_label, *size, tab[x][y]))
+    {
+      new_label[*size] = tab[x][y];
+      *size += 1;
+    }
   }
 }
 
