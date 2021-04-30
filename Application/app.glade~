@@ -684,7 +684,7 @@
             <property name="valign">end</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton" id="OK">
+              <object class="GtkButton" id="ok">
                 <property name="label" translatable="yes">OK</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -697,7 +697,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="Cancel">
+              <object class="GtkButton" id="cancel">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
