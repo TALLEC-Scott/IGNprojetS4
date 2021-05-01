@@ -1,78 +1,14 @@
-#include <gtk/gtk.h>
-#include <cairo.h>
 #include <string.h>
 #include <stdlib.h>
+#include "app.h"
+#include "tools.h"
 #include "MapColorisation.h"
 #include "MapFilterColor.h"
 #include "MapRebuiltHoles.h"
-#include "tools.h"
 #include "vector.h"
 #include "Open_GL_exec.h"
 
-typedef struct {
-    GtkDrawingArea  *area;
-    cairo_surface_t *image_surface;
-    GdkPixbuf       *pixbuf;
-    cairo_format_t  format;
-    int             width;
-    int             height;
-    char            *filename;
-} Image;
 
-typedef struct {
-    GtkWindow   *wcb;
-    GtkButton   *button_color_topo;
-    GtkButton   *button_color_road;
-    GtkButton   *button_color_river;
-    GtkButton   *color_ok;
-    GtkButton   *color_cancel;
-    GdkRGBA     color_topo;
-    GdkRGBA	color_road;
-    GdkRGBA	color_river;
-} Colors;
-
-typedef struct {
-    GtkWindow       *wrectif;
-    GtkWidget       *output_event_box;
-    GtkLabel        *x_label;
-    GtkLabel        *y_label;
-    GtkButton       *rectif_ok;
-    GtkButton       *rectif_cancel;
-    GtkButton       *rectif_done;
-    GtkEntryBuffer  *coord_text_buff;
-    gulong          handler_id;
-    gdouble         x_pos;
-    gdouble         y_pos;
-} Rectif;
-
-typedef struct {
-    GtkWindow           *window;
-    GtkScrolledWindow   *scrl_out;
-    GtkScrolledWindow   *scrl_in;
-    GtkButton           *open;
-    GtkButton           *launch;
-    GtkButton           *step_f;
-    GtkButton           *step_b;
-    GtkButton           *color_button;
-    GtkButton           *modelise;
-    GtkWidget           *dfc;
-    GtkWidget           *color_dialog;
-    GtkSwitch           *switch_auto_analysis;
-    GtkSwitch           *switch_auto_rectif;
-    GtkScale            *rotate_scale;
-    GtkScale            *zoom_scale;
-    double      rotation;
-    double      zoom;
-    int         state;
-    gboolean    automatic;
-    gboolean    analysis_done;
-    GdkRGBA     rgba;
-    Image       image_input;
-    Image       image_output;
-    Colors      colors;
-    Rectif      rectif;
-    int         **bp;
-} Ui;
 
 // File --> Open
 gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_data)
@@ -82,11 +18,6 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
     // Name of file to open from dialog box
     gchar *file_name = calloc(500, sizeof(char));
     
-    GdkPixbuf *pixbuf_input_load = NULL;
-    GdkPixbuf *pixbuf_output_load = NULL;
-    GError *error = NULL;
-    GError *error2 = NULL;
-
     // Show the "Open Image" dialog box
     gtk_widget_show(ui->dfc);
 
@@ -96,77 +27,18 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
         // Get the file name from the dialog box
         file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(ui->dfc));
         if (file_name != NULL) {
-            //gtk_image_set_from_file(GTK_IMAGE(ui->img_main), file_name);
-            pixbuf_input_load = gdk_pixbuf_new_from_file(file_name, &error);
-            pixbuf_output_load = gdk_pixbuf_new_from_file(file_name, &error2);
-            if (!error && !error2)
-            {
-                //Save the pixbuf in user data for input
-                ui->image_input.pixbuf = pixbuf_input_load;
-                ui->image_input.format = (gdk_pixbuf_get_has_alpha (ui->image_input.pixbuf)
-                        ) ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
-                ui->image_input.width = gdk_pixbuf_get_width(ui->image_input.pixbuf);
-                ui->image_input.height = gdk_pixbuf_get_height(ui->image_input.pixbuf);
+            load_image(&ui->image_input, file_name);
+            load_image(&ui->image_output, file_name);
 
-                //Same for output
-                ui->image_output.pixbuf = pixbuf_output_load;
-                ui->image_output.format = (gdk_pixbuf_get_has_alpha (
-                            ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 :
-                    CAIRO_FORMAT_RGB24;
-                ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
-                ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
-
-                // Resize the drawing area to trigger scrollbars
-                gtk_widget_set_size_request(GTK_WIDGET(ui->image_input.area),
-                        ui->image_input.width, ui->image_input.height);
-                gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
-                        ui->image_output.width, ui->image_output.height);
-                
-                //Create cairo surfaces for zoom and rotation
-                ui->image_input.image_surface = cairo_image_surface_create(
-                        ui->image_input.format, ui->image_input.width,
-                        ui->image_input.height);
-                ui->image_output.image_surface = cairo_image_surface_create(
-                        ui->image_output.format, ui->image_output.width,
-                        ui->image_output.height);
-
-                cairo_t *cr = cairo_create(ui->image_input.image_surface);
-                cairo_t *cr2 = cairo_create(ui->image_output.image_surface);
-                
-                //Links the surfaces to the pixbuf
-                gdk_cairo_set_source_pixbuf(cr, ui->image_input.pixbuf, 0, 0);
-                gdk_cairo_set_source_pixbuf(cr2, ui->image_output.pixbuf, 0, 0);
-
-                //Draws the surfaces
-                cairo_paint(cr);
-                cairo_paint(cr2);
-
-                gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_input.area), 0,
-                        0, ui->image_input.width, ui->image_input.height);
-                gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0,
-                        0, ui->image_output.width, ui->image_output.height);
-
-                strcpy(ui->image_input.filename, file_name);
-               
-                gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_analysis),
-                        TRUE);
-                gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
-                gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
-            }
-            else
-            {
-                if (error)
-                    g_critical(error->message);
-                if (error2)
-                    g_critical(error2->message);
-            }
+            strcpy(ui->image_input.filename, file_name);
+           
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_analysis),
+                    TRUE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
         }
     }
 
-    free(file_name);
-    free(error);
-    free(error2);
-    
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
     
@@ -545,62 +417,49 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 {
     Ui *ui = user_data;
 
-    SDL_Surface *image;
-    image = SDL_LoadBMP(ui->image_input.filename);
-
-    printf("filename: %s\n", ui->image_input.filename);
-
-    //SDL_Surface *test;
-    //test = SDL_LoadBMP("/home/yann/Documents/EPITA/Cours/2020_spe/s4/IGNprojetS4/Pictures/map_ign_2.bmp");
-
-    if(image == NULL)
+    if (!ui->analysis_done)
     {
-        printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
-        return TRUE;
+        SDL_Surface *image;
+        image = SDL_LoadBMP(ui->image_input.filename);
+
+        printf("filename: %s\n", ui->image_input.filename);
+
+        //SDL_Surface *test;
+        //test = SDL_LoadBMP("/home/yann/Documents/EPITA/Cours/2020_spe/s4/IGNprojetS4/Pictures/map_ign_2.bmp");
+
+        if(image == NULL)
+        {
+            printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+            return TRUE;
+        }
+        
+        
+        double r = ui->rgba.red * 255,
+               g = ui->rgba.green * 255,
+               b = ui->rgba.blue * 255,
+               r1 = ui->colors.color_road.red * 255,
+               g1 = ui->colors.color_road.green * 255,
+               b1 = ui->colors.color_road.blue * 255,
+               r2 = ui->colors.color_river.red * 255,
+               g2 = ui->colors.color_river.green * 255,
+               b2 = ui->colors.color_river.blue * 255;
+
+
+        ui->bp = (int**)calloc(image->w, sizeof(int*));
+        for(int k = 0; k < image->w; k++)
+        {
+          ui->bp[k] = (int*)calloc(image->h, sizeof(int));
+        }
+
+        bmp_filter(image, r, g, b,
+               r1, g1, b1,
+              r2, g2, b2,
+              ui->bp);
+        
+        SDL_FreeSurface(image);
     }
-    
-    
-    double r = ui->rgba.red * 255,
-           g = ui->rgba.green * 255,
-           b = ui->rgba.blue * 255,
-           r1 = ui->colors.color_road.red * 255,
-           g1 = ui->colors.color_road.green * 255,
-           b1 = ui->colors.color_road.blue * 255,
-           r2 = ui->colors.color_river.red * 255,
-           g2 = ui->colors.color_river.green * 255,
-           b2 = ui->colors.color_river.blue * 255;
 
-
-    ui->bp = (int**)calloc(image->w, sizeof(int*));
-    for(int k = 0; k < image->w; k++)
-    {
-      ui->bp[k] = (int*)calloc(image->h, sizeof(int));
-    }
-
-    bmp_filter(image, r, g, b,
-           r1, g1, b1,
-          r2, g2, b2,
-          ui->bp);
-    
-    GError *error = NULL;
-
-    ui->image_output.pixbuf = gdk_pixbuf_new_from_file("Pictures/Results/image.bmp", &error);
-    ui->image_output.format = (gdk_pixbuf_get_has_alpha (
-                ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 : 
-        CAIRO_FORMAT_RGB24;
-    ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
-    ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
-    
-    cairo_t *cr2 = cairo_create(ui->image_output.image_surface);
-                
-    //Links the surfaces to the pixbuf
-    gdk_cairo_set_source_pixbuf(cr2, ui->image_output.pixbuf, 0, 0);
-
-    //Draws the surfaces
-    cairo_paint(cr2);
-    
-    gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0,
-                        0, ui->image_output.width, ui->image_output.height);
+    load_image(&ui->image_output, "Pictures/Results/image.bmp");
 
     /*
     Uint32 src_format = image->format->format;
@@ -631,15 +490,19 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
             width_out, height_out);
     */
 
-    if (ui->state != 0)
-        ui->state = 7;
+    if (!ui->is_step || ui->analysis_done)
+    {
+        ui->state = 8;
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), TRUE);
+    }
 
     ui->analysis_done = TRUE;
 
     gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_rectif), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
-    SDL_FreeSurface(image);
+
     //SDL_FreeSurface(test);
 
     return TRUE;
@@ -649,14 +512,13 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
 {
     Ui *ui = user_data;
 
-    GdkPixbuf *pixbuf_step = NULL;
-    GError *error = NULL;
     char file[500];
     char *dir = "Pictures/Results/";
 
     switch(ui->state)
     {
         case 0:
+            ui->is_step = TRUE;
             if (!ui->analysis_done)
                 on_launch(NULL, ui);
             sprintf(file, "%stopo.bmp", dir);
@@ -697,35 +559,7 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
             break;
     }
 
-    pixbuf_step = gdk_pixbuf_new_from_file(file, &error);
-
-    if (!error)
-    {
-        ui->image_output.pixbuf = pixbuf_step;
-        ui->image_output.format = (gdk_pixbuf_get_has_alpha (
-                            ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 :
-                    CAIRO_FORMAT_RGB24;
-        ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
-        ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
-
-        gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
-                ui->image_output.width, ui->image_output.height);
-
-        ui->image_output.image_surface = cairo_image_surface_create(
-                        ui->image_output.format, ui->image_output.width,
-                        ui->image_output.height);
-        
-        cairo_t *cr = cairo_create(ui->image_output.image_surface);
-
-        gdk_cairo_set_source_pixbuf(cr, ui->image_output.pixbuf, 0, 0);
-
-        cairo_paint(cr);
-
-        gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0, 0,
-                ui->image_output.width, ui->image_output.height);
-    }
-    else
-        g_critical(error->message);
+    load_image(&ui->image_output, file);
 
     return TRUE;
 }
@@ -735,8 +569,6 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
 {
     Ui *ui = user_data;
     
-    GdkPixbuf *pixbuf_step = NULL;
-    GError *error = NULL;
     char file[500];
     char *dir = "Pictures/Results/";
 
@@ -781,40 +613,7 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
             break;
     }
 
-    pixbuf_step = gdk_pixbuf_new_from_file(file, &error);
-
-    if (!error)
-    {
-        ui->image_output.pixbuf = pixbuf_step;
-        ui->image_output.format = (gdk_pixbuf_get_has_alpha (
-                            ui->image_output.pixbuf)) ? CAIRO_FORMAT_ARGB32 :
-                    CAIRO_FORMAT_RGB24;
-        ui->image_output.width = gdk_pixbuf_get_width(ui->image_output.pixbuf);
-        ui->image_output.height = gdk_pixbuf_get_height(ui->image_output.pixbuf);
-
-        gtk_widget_set_size_request(GTK_WIDGET(ui->image_output.area),
-                ui->image_output.width, ui->image_output.height);
-
-        ui->image_output.image_surface = cairo_image_surface_create(
-                        ui->image_output.format, ui->image_output.width,
-                        ui->image_output.height);
-        
-        cairo_t *cr = cairo_create(ui->image_output.image_surface);
-
-        gdk_cairo_set_source_pixbuf(cr, ui->image_output.pixbuf, 0, 0);
-
-        cairo_paint(cr);
-
-        gtk_widget_queue_draw_area(GTK_WIDGET(ui->image_output.area), 0, 0,
-                ui->image_output.width, ui->image_output.height);
-    }
-    else
-        g_critical(error->message);
-
-
-
-
-
+    load_image(&ui->image_output, file);
 
     return TRUE;
 }
@@ -937,6 +736,7 @@ int main (int argc, char *argv[])
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .automatic = TRUE,
         .analysis_done = FALSE,
+        .is_step = FALSE,
         .launch = launch,
         .step_f = step_f,
         .step_b = step_b,
