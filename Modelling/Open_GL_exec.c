@@ -1,5 +1,6 @@
 #include "Open_GL_exec.h"
 #include <GL/glut.h> // GLUT, include glu.h and gl.h
+#include<GL/freeglut.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -53,24 +54,9 @@ void display()
     gluLookAt(x, y, z,                                  //camera set-up
               x + lx, y + ly, z + lz,
               0.0f, 1.0f, 0.0f);
-    glTranslatef(1.5f, 0.0f, -7.0f); // Move right and into the screen
+    glTranslatef(0.0f, 0.0f, 2.0f); // Move into the screen
 
-    //Draw_Points(bp,image);
-    glBegin(GL_POINTS);
-    glColor3f(0.0f, 1.0f, 0.5f);
-    for (int i = 0; i < (image->w); i++)
-    {
-        for (int j = 0; j < (image->h); j++)
-        {
-	//	printf("%d \n",bp[i][j]);
-            if (bp[i][j] != 0)
-            {
-                glVertex3f(((float)j / (float)image->w), ((float)i / (float)image->h),
-                           ((float) bp[i][j]/1500.));
-            }
-        }
-    }
-    glEnd();
+    Draw_Points(bp,image);
 
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 
@@ -151,7 +137,8 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
         z += .05f;
         break;
     case 27:
-        exit(0);
+        
+        glutLeaveMainLoop();
     }
 }
 
@@ -240,7 +227,7 @@ int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
     glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
     glutInitWindowSize(640, 480);     // Set the window's initial width & height
     glutInitWindowPosition(500, 50);  // Position the window's initial top-left corner
-    glutCreateWindow(title);          // Create window with the given title
+    int window = glutCreateWindow(title);          // Create window with the given title
     glutDisplayFunc(display);         // Register callback handler for window re-paint event
     glutReshapeFunc(reshape);
     glutIdleFunc(display); // Register callback handler for window re-size event
@@ -252,6 +239,7 @@ int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
     initGL();       // Our own OpenGL initialization
     
     glutMainLoop(); // Enter the infinite event-processing loop
-    free_bm(bp, image);
+    glutDestroyWindow(window);
+    //free_bm(bp, image);
     return 0;
 }
