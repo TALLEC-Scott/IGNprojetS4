@@ -54,10 +54,26 @@ void display()
     gluLookAt(x, y, z,                                  //camera set-up
               x + lx, y + ly, z + lz,
               0.0f, 1.0f, 0.0f);
-    glTranslatef(0.0f, 0.0f, 2.0f); // Move into the screen
+
+    glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
     Draw_Points(bp,image);
-
+    /*glBegin(GL_POINTS);
+    glColor3f(0.0f, 1.0f, 0.5f);
+    for (int i = 0; i < (image->w); i++)
+    {
+        for (int j = 0; j < (image->h); j++)
+        {
+	//	printf("%d \n",bp[i][j]);
+            if (bp[i][j] != 0)
+            {
+                glVertex3f(((float)j / (float)image->w), ((float)i / (float)image->h),
+                           ((float) bp[i][j]/1500.));
+            }
+        }
+    }
+    glEnd();
+*/
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 
     /* To render Pyramid uncomment

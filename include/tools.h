@@ -7,6 +7,7 @@
 #include <SDL2/SDL_image.h>
 #include <math.h>
 #include "MapRebuiltHoles.h"
+#include "app.h"
 
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y);
 void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel);
@@ -31,4 +32,5 @@ typedef struct _2D_arrays {
 
 int get_2D_array_x_y (_2D_array *M, size_t x, size_t y);
 void set_2D_array_x_y (_2D_array *M, size_t x, size_t y, size_t new_val);
+void load_image(Image *image, char *file);
 #endif
