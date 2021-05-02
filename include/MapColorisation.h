@@ -24,7 +24,7 @@ struct queue_int {
 
 
 
-void Map_Colorisation(SDL_Surface *image, int **bp);
+void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h);
 int map_dfs_finder(SDL_Surface *image, int x, int y, int label,
 int **tab, int first);
 int map_end(int **tab, int x, int y, int h, int w);
@@ -60,7 +60,7 @@ int is_empty(struct queue* start);
 
 void map_remplace_label(int **h22, int **tab, int w, int h, int label_old,
     int new);
-void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
+void map_set_altitude(int **h2, int **tab, int x, int y, int new,
     int w, int h, int manual);
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
 int label, int label_old, struct point *list, int *size);

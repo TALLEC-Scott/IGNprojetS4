@@ -68,6 +68,8 @@ typedef struct {
     Colors      colors;
     Rectif      rectif;
     int         **bp;
+    int         **tab;
+    int         **h;
 } Ui;
 
 

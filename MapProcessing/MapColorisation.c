@@ -2,10 +2,9 @@
 #include <err.h>
 
 // Map_Colorisation : Colors topographic line in BMP image file
-void Map_Colorisation(SDL_Surface *image, int **bp)
+void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
 {
   SDL_LockSurface(image);
-  int **tab = NULL;
   int **node = NULL;
 
   int size = 1;
@@ -15,12 +14,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   int* res = (int*) malloc(2 *  sizeof(int));
   if(res == NULL)
     printf("NUll\n");
-
-  tab = (int**)calloc(image->w, sizeof(int*));
-  for(int k = 0; k < image->w; k++)
-  {
-    tab[k] = (int*)calloc(image->h, sizeof(int));
-  }
 
   int label = 1;
   
@@ -61,16 +54,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   //printf("Label %i\n", label);
 
   //BMP_Test(image, tab);
-  int **h = NULL;
-  h = (int**)calloc(image->w, sizeof(int*));
-  if(h == NULL)
-  {
-    errx(EXIT_FAILURE, "invalid calloc h");
-  }
-  for(int k = 0; k < image->w; k++)
-  {
-    h[k] = (int*)calloc(image->h, sizeof(int));
-  }
+
 
   int elevation = 1500;
   int size_q = 0;
@@ -164,14 +148,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
 
   
 
-  int **tab2 = NULL;
-  tab2 = (int**)calloc(image->w, sizeof(int*));
-  for(int k = 0; k < image->w; k++)
-  {
-    tab2[k] = (int*)calloc(image->h, sizeof(int));
-  }
-
-  map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 0);
+  
+  //map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 0);
   bmp_test2(image, h);
 
 
@@ -183,10 +161,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   for(int i = 0; i < image->w; i++)
   {
     free(tab[i]);
-    free(tab2[i]);
     free(h[i]);
   }
-  free(tab2);
   free(tab);
   free(h);
 
@@ -220,10 +196,16 @@ void map_remplace_label(int **h2, int **tab, int w, int h, int label_old, int ne
     }
   }
 }
-void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
+void map_set_altitude(int **h2, int **tab, int x, int y, int new,
     int w, int h, int manual)
 {
-  printf("KSQDM %i\n", tab2[0][561]);
+  int **tab2 = NULL;
+  tab2 = (int**)calloc(w, sizeof(int*));
+  for(int k = 0; k < w; k++)
+  {
+    tab2[k] = (int*)calloc(h, sizeof(int));
+  }
+
   int label_old = tab2[x][y];
   map_remplace_label(h2, tab2, w, h, label_old, new);
 
@@ -265,6 +247,12 @@ void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
       free(list);
     }
   }
+
+  for(int i = 0; i < w; i++)
+  {
+    free(tab2[i]);
+  }
+  free(tab2);
 }
 
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,

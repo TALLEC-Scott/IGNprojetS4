@@ -446,15 +446,22 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
 
         ui->bp = (int**)calloc(image->w, sizeof(int*));
+        ui->tab = (int**)calloc(image->w, sizeof(int*));
+        ui->h = (int**)calloc(image->w, sizeof(int*));
+
+
         for(int k = 0; k < image->w; k++)
         {
           ui->bp[k] = (int*)calloc(image->h, sizeof(int));
+          ui->tab[k] = (int*)calloc(image->h, sizeof(int));
+          ui->h[k] = (int*)calloc(image->h, sizeof(int));
         }
+
 
         bmp_filter(image, r, g, b,
                r1, g1, b1,
               r2, g2, b2,
-              ui->bp);
+              ui->bp, ui->tab, ui->h);
         
         SDL_FreeSurface(image);
     }
@@ -786,7 +793,9 @@ int main (int argc, char *argv[])
             .area = area_output,
             .filename = NULL
         },
-        .bp = NULL
+        .bp = NULL,
+        .tab = NULL,
+        .h = NULL
     };
 
     // Connects signal handlers.

@@ -4,7 +4,7 @@
 // the ign map
 void bmp_filter(SDL_Surface *image, int r, int g, int b,
     int r1, int g1, int b1, int r2, int g2, int b2
-    ,int **bp)
+    ,int **bp, int **tab, int **h)
 {
 
   int **topo = NULL;
@@ -45,7 +45,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
 
 
   filter(image, topo, river, road_major, road_minor, trail, r, g, b, r1, g1,
-      b1, r2, g2, b2, bp);
+      b1, r2, g2, b2, bp, tab, h);
 
   // free
   for(int i = 0; i < image->w; i++)
@@ -68,7 +68,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
     int **array_road_major, int **array_road_minor, int **array_trail, int r1,
     int g1, int b1, int r2, int g2, int b2, int r3, int g3, int b3, 
-    int **bp)
+    int **bp, int **tab, int **h)
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
@@ -177,7 +177,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-    rebuilt_lines(lines, array_topo, bp);
+    rebuilt_lines(lines, array_topo, bp, tab, h);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,
