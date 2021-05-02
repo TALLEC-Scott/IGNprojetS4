@@ -534,3 +534,44 @@ void set_2D_array_x_y (_2D_array *M, size_t x, size_t y, size_t new_val){
 	*M->data[y * M->cols + x] = new_val;
 }
 
+void load_image(Image *image, char *file)
+{
+    GError *error = NULL;
+    GdkPixbuf *pix = NULL;
+
+    // Save the pixbuf in image
+    pix = gdk_pixbuf_new_from_file(file, &error);
+    if (!error)
+    {
+        image->pixbuf = pix;
+        image->format = (gdk_pixbuf_get_has_alpha (
+                    image->pixbuf)) ? CAIRO_FORMAT_ARGB32 :
+                    CAIRO_FORMAT_RGB24;
+        image->width = gdk_pixbuf_get_width(image->pixbuf);
+        image->height = gdk_pixbuf_get_height(image->pixbuf);
+
+        // Resize the drawing area to trigger scrollbars
+        gtk_widget_set_size_request(GTK_WIDGET(image->area),
+                image->width, image->height);
+
+        // Creates cairo surface for zoom and rotation
+        image->image_surface = cairo_image_surface_create(image->format,
+                image->width, image->height);
+
+        cairo_t *cr = cairo_create(image->image_surface);
+
+        // Links the surface to the pixbuf
+        gdk_cairo_set_source_pixbuf(cr, image->pixbuf, 0, 0);
+
+        // Draws the surface
+        cairo_paint(cr);
+
+        gtk_widget_queue_draw_area(GTK_WIDGET(image->area), 0, 0,
+                image->width, image->height);
+
+        free(cr);
+    }
+    else
+        g_critical(error->message);
+}
+
