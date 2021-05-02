@@ -313,7 +313,15 @@ void RGB_To_HSV(double r, double g, double b, double array[3])
         if(max == r1)
         {
             double temp = ((g1 - b1) / delta);
-            h = (double)60 * fmod(temp, (double)6);
+            //printf("temp : %f\n", temp%(double)6);
+            if(temp < (double) 0)
+            {
+              h = (double)60 * ((double)6 - temp);
+            }
+            else
+            {
+              h = (double)60 * fmod(temp, (double)6);
+            }
         }
         if(max == g1)
             h = (double)60 * (((b1 - r1) / delta) + 2);
