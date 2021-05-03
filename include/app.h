@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
     GtkWindow       *wrectif;
     GtkWidget       *output_event_box;
+    GtkSwitch       *switch_auto;
     GtkLabel        *x_label;
     GtkLabel        *y_label;
     GtkButton       *rectif_ok;
@@ -53,7 +54,7 @@ typedef struct {
     GtkWidget           *dfc;
     GtkWidget           *color_dialog;
     GtkSwitch           *switch_auto_analysis;
-    GtkSwitch           *switch_auto_rectif;
+    GtkToggleButton     *rectif_button;
     GtkScale            *rotate_scale;
     GtkScale            *zoom_scale;
     double      rotation;

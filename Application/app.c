@@ -39,6 +39,8 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
         }
     }
 
+    ui->analysis_done = FALSE;
+
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
     
@@ -70,6 +72,18 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), FALSE);
     }
+
+    return TRUE;
+}
+
+// Handler for switch controlling automatic rectification
+gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
+        gboolean state, gpointer user_data __attribute__((unused)))
+{
+   if (state == TRUE)
+       printf("rectif auto\n");
+   else
+       printf("rectif manu\n");
 
     return TRUE;
 }
@@ -108,13 +122,31 @@ gboolean on_area_press(GtkWidget *area __attribute__((unused)),
 }
 
 // Handler for manual rectification, display secondary window
-gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
-        gboolean state, gpointer user_data)
+gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
 {
     Ui *ui = user_data;
 
-    // automatic
-    if (state == TRUE)
+    // change altitude
+    if (gtk_toggle_button_get_active(tbutton))
+    {
+        // connects the signal for click coordinates
+        ui->rectif.handler_id = g_signal_connect(ui->rectif.output_event_box,
+                "button-press-event", G_CALLBACK(on_area_press), ui);
+
+        // shows the secondary window
+        gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
+
+        // restore defaults value for zoom and rotation
+        gtk_range_set_value(GTK_RANGE(ui->rotate_scale), 0.00);
+        gtk_range_set_value(GTK_RANGE(ui->zoom_scale), 1.00);
+
+        // deactivate the scales and modelisation button
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
+    }
+    // finished changing
+    else
     {
         // Error a signal should have been connected
         if (ui->rectif.handler_id == 0)
@@ -136,25 +168,6 @@ something went wrong\n");
        
         // closes the secondary window
         gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
-    }
-    // manual
-    else
-    {
-        // connects the signal for click coordinates
-        ui->rectif.handler_id = g_signal_connect(ui->rectif.output_event_box,
-                "button-press-event", G_CALLBACK(on_area_press), ui);
-
-        // shows the secondary window
-        gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
-
-        // restore defaults value for zoom and rotation
-        gtk_range_set_value(GTK_RANGE(ui->rotate_scale), 0.00);
-        gtk_range_set_value(GTK_RANGE(ui->zoom_scale), 1.00);
-
-        // deactivate the scales and modelisation button
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
     }
 
     return TRUE;
@@ -392,9 +405,9 @@ gboolean on_rectif_cancel(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
 
-    gtk_switch_set_active(ui->switch_auto_rectif, TRUE);
+    gtk_toggle_button_set_active(ui->rectif_button, FALSE);
 
     return TRUE;
 }
@@ -405,9 +418,11 @@ gboolean on_rectif_done(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
 
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
+    gtk_toggle_button_set_active(ui->rectif_button, FALSE);
+
+    //gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
     return TRUE;
 }
@@ -506,7 +521,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
     ui->analysis_done = TRUE;
 
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_rectif), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
 
@@ -679,7 +694,9 @@ int main (int argc, char *argv[])
     GtkSwitch *switch_auto_analysis = GTK_SWITCH(gtk_builder_get_object(builder,
                 "switch_auto_analysis"));
     GtkSwitch *switch_auto_rectif = GTK_SWITCH(gtk_builder_get_object(builder,
-                "switch_auto_rectif"));
+                "rectif_switch_auto"));
+    GtkToggleButton *rectif_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(
+                builder, "rectification"));
     GtkButton *open = GTK_BUTTON(gtk_builder_get_object(builder, "open"));
     
     GtkButton *launch = GTK_BUTTON(gtk_builder_get_object(builder,
@@ -736,7 +753,7 @@ int main (int argc, char *argv[])
         .dfc = dfc,
         .color_dialog = color_dialog,
         .switch_auto_analysis = switch_auto_analysis,
-        .switch_auto_rectif = switch_auto_rectif,
+        .rectif_button = rectif_button,
         .rotate_scale = rotate_scale,
         .zoom_scale = zoom_scale,
         .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
@@ -769,6 +786,7 @@ int main (int argc, char *argv[])
             .output_event_box = output_event_box,
             .x_label = x_label,
             .y_label = y_label,
+            .switch_auto = switch_auto_rectif,
             .rectif_ok = rectif_ok,
             .rectif_cancel = rectif_cancel,
             .rectif_done = rectif_done,
@@ -820,6 +838,8 @@ int main (int argc, char *argv[])
             G_CALLBACK(on_switch_auto_analysis), &ui);
     g_signal_connect(switch_auto_rectif, "state-set",
             G_CALLBACK(on_switch_auto_rectif), &ui);
+    g_signal_connect(rectif_button, "toggled", G_CALLBACK(on_rectif_button),
+            &ui);
     g_signal_connect(color_ok, "clicked", G_CALLBACK(on_color_ok), &ui);
     g_signal_connect(color_cancel, "clicked", G_CALLBACK(on_color_cancel), &ui);
     g_signal_connect(rectif_ok, "clicked", G_CALLBACK(on_rectif_ok), &ui);
