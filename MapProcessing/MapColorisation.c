@@ -177,6 +177,23 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
 
 }
 
+
+//map_update_bp takes bp array and h (elevation) array and update altitude of
+//topographics lines in bp array.
+void map_update_bp(int **h, int **bp, int w, int h2)
+{
+  for(int i = 0; i < w; i++)
+  {
+    for(int j = 0; j < h2; j++)
+    {
+      if(bp[i][j] != 0)
+      {
+        bp[i][j] = h[i][j];
+      }
+    }
+  }
+}
+
 // map_remplace_label replaces all old label by new label
 void map_remplace_label(int **h2, int **tab, int w, int h, int label_old, int new)
 {

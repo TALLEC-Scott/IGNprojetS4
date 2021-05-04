@@ -411,6 +411,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     }
 
     map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude, ui->image_output.width, ui->image_output.height, 0);
+    map_update_bp(ui->h, ui->bp, ui->image_output.width, ui->image_output.height);
     load_image(&ui->image_output, "Pictures/Results/elevation.bmp");
 
     return TRUE;
