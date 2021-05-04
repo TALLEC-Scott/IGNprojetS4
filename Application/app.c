@@ -58,7 +58,7 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     if (state == TRUE)
     {
         gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
-        ui->automatic = 1;
+        ui->is_analysis_auto = 1;
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
@@ -67,7 +67,7 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     }
     else
     {
-        ui->automatic = 0;
+        ui->is_analysis_auto = 0;
         gtk_widget_show(GTK_WIDGET(ui->colors.wcb));
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
@@ -79,12 +79,13 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
 
 // Handler for switch controlling automatic rectification
 gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
-        gboolean state, gpointer user_data __attribute__((unused)))
+        gboolean state, gpointer user_data)
 {
+    Ui *ui = user_data;
    if (state == TRUE)
-       printf("rectif auto\n");
+       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
    else
-       printf("rectif manu\n");
+       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
 
     return TRUE;
 }
@@ -398,7 +399,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     sscanf(text, "%d", &altitude);
 
     printf("New altitude = %d\n", altitude);
-    printf("Manuel : %i\n", gtk_switch_get_state(ui->rectif.switch_auto));
+    printf("Manuel : %i\n", gtk_switch_get_active(ui->rectif.switch_auto));
     int x_int = (int)ui->rectif.x_pos;
     int y_int = (int)ui->rectif.y_pos;
 
@@ -410,7 +411,10 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
         return TRUE;
     }
 
-    map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude, ui->image_output.width, ui->image_output.height, 0);
+    // switch get active is reversed, its normal
+    map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude,
+            ui->image_output.width, ui->image_output.height, 
+            !gtk_switch_get_active(ui->rectif.switch_auto));
     load_image(&ui->image_output, "Pictures/Results/elevation.bmp");
 
     return TRUE;
@@ -775,7 +779,7 @@ int main (int argc, char *argv[])
         .zoom_scale = zoom_scale,
         .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
-        .automatic = TRUE,
+        .is_analysis_auto = TRUE,
         .analysis_done = FALSE,
         .is_step = FALSE,
         .launch = launch,
@@ -881,4 +885,3 @@ int main (int argc, char *argv[])
     // Exits.
     return 0;
 }
-

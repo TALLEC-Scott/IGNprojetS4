@@ -60,7 +60,7 @@ typedef struct {
     double      rotation;
     double      zoom;
     int         state;
-    gboolean    automatic;
+    gboolean    is_analysis_auto;
     gboolean    analysis_done;
     gboolean    is_step;
     GdkRGBA     rgba;
