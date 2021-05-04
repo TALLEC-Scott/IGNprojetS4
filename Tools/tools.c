@@ -572,6 +572,6 @@ void load_image(Image *image, char *file)
         free(cr);
     }
     else
-        g_critical(error->message);
+        g_critical("%s",error->message);
 }
 

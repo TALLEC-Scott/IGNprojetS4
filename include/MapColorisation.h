@@ -65,6 +65,7 @@ void map_set_altitude(SDL_Surface *image, int **h2, int **tab, int x, int y, int
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
 int label, int label_old, struct point *list, int *size);
 int is_present2(struct point *list, int size, int x);
+void map_update_bp(int **h, int **bp, int w, int h2);
 
 
 
