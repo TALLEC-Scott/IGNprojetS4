@@ -55,7 +55,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
 
   //BMP_Test(image, tab);
 
-
   int elevation = 1500;
   int size_q = 0;
   struct queue_int* q = NULL;
@@ -125,8 +124,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
         M[next[i]] = 1;
         //printf("next : %i\n", next[i]);
         counter_temp++;
-      }
-      
+      } 
     }
     free(next);
     next = NULL;
@@ -146,10 +144,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
     }
   }
 
-  
-
-  
-  //map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 0);
+  //map_set_altitude(h, tab, 0, 400, 1500, image->w, image->h, 0);
   bmp_test2(image, h);
 
 
@@ -158,13 +153,13 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
   free(size_e);
   free(M);
 
-  for(int i = 0; i < image->w; i++)
+ /* for(int i = 0; i < image->w; i++)
   {
     free(tab[i]);
     free(h[i]);
   }
   free(tab);
-  free(h);
+  free(h);*/
 
   for(int j = 0; j < size; j++)
   {
@@ -196,21 +191,25 @@ void map_remplace_label(int **h2, int **tab, int w, int h, int label_old, int ne
     }
   }
 }
-void map_set_altitude(int **h2, int **tab, int x, int y, int new,
+void map_set_altitude(SDL_Surface *image, int **h2, int **tab2, int x, int y, int new,
     int w, int h, int manual)
 {
-  int **tab2 = NULL;
-  tab2 = (int**)calloc(w, sizeof(int*));
+  printf("x : %i, y: %i\n", x, y);
+  printf("altitude %i %i\n",w, h);
+  int **tab = NULL;
+  tab = (int**)calloc(w, sizeof(int*));
   for(int k = 0; k < w; k++)
   {
-    tab2[k] = (int*)calloc(h, sizeof(int));
+    tab[k] = (int*)calloc(h, sizeof(int));
   }
 
   int label_old = tab2[x][y];
+  printf("Label old %i\n", label_old);
   map_remplace_label(h2, tab2, w, h, label_old, new);
 
   if(!manual)
   {
+    printf("Test \n");
     struct queue* q = NULL;
     struct point p;
     p.x = label_old;
@@ -248,11 +247,13 @@ void map_set_altitude(int **h2, int **tab, int x, int y, int new,
     }
   }
 
+  bmp_test2(image, h2);
+
   for(int i = 0; i < w; i++)
   {
-    free(tab2[i]);
+    free(tab[i]);
   }
-  free(tab2);
+  free(tab);
 }
 
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
