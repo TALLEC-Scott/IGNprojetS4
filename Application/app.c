@@ -40,6 +40,7 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
     }
 
     ui->analysis_done = FALSE;
+    ui->state = 0;
 
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
@@ -135,6 +136,8 @@ gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
 
         // shows the secondary window
         gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
+
+        gtk_window_present(ui->window);
 
         // restore defaults value for zoom and rotation
         gtk_range_set_value(GTK_RANGE(ui->rotate_scale), 0.00);
@@ -408,6 +411,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     }
 
     map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude, ui->image_output.width, ui->image_output.height, 0);
+    map_update_bp(ui->h, ui->bp, ui->image_output.width, ui->image_output.height);
     load_image(&ui->image_output, "Pictures/Results/elevation.bmp");
 
     return TRUE;
