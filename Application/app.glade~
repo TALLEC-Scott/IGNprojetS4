@@ -682,9 +682,10 @@ Analysis</property>
               </packing>
             </child>
             <child>
-              <object class="GtkSwitch">
+              <object class="GtkSwitch" id="rectif_switch_auto">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="active">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
