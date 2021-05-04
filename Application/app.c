@@ -376,7 +376,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
         gtk_widget_destroy(message);
         
         return TRUE;
-    }        
+    }
 
 
     // Tests if the text is a number, exits if false
@@ -395,6 +395,20 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     sscanf(text, "%d", &altitude);
 
     printf("New altitude = %d\n", altitude);
+    printf("Manuel : %i\n", gtk_switch_get_state(ui->rectif.switch_auto));
+    int x_int = (int)ui->rectif.x_pos;
+    int y_int = (int)ui->rectif.y_pos;
+
+    SDL_Surface *image_elevation;
+    image_elevation = SDL_LoadBMP("Pictures/Results/image.bmp");
+    if(image_elevation == NULL)
+    {
+        printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+        return TRUE;
+    }
+
+    map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude, ui->image_output.width, ui->image_output.height, 0);
+    load_image(&ui->image_output, "Pictures/Results/elevation.bmp");
 
     return TRUE;
 }
