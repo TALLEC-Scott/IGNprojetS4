@@ -9,9 +9,11 @@ static int **bp;
 
 static SDL_Surface *image;
 
-//static float angle_Pitch = 0.0;
+static float angle_Pitch = 0.0;
 
-//static float angle_Yaw = 0.0;
+static float angle_Yaw = 0.0;
+
+//static float angle_Roll = 0.0;
 
 static float lx = 0.0f, lz = -1.0f, ly = 0;
 
@@ -30,6 +32,18 @@ static float gammaAngle = 0.0f;
 static int xOrigin = -1;
 
 static int yOrigin = -1;
+
+// Step translation
+static float max_step = 0.125f;
+static float min_step = 0.0625f;
+static float current_step = 0.125f;
+
+// Step rotation
+static float max_step_rot = 0.02f;
+static float min_step_rot = 0.01f;
+static float current_step_rot = 0.01f;
+
+
 
 char title[] = "3D Shapes";
 
@@ -135,73 +149,64 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     switch (key)
     {
     case 'w': //
-        y += .05f;
-        break;
-    case 'W':
-        y += .1f;
+        y += current_step;
         break;
     case 's':
-        y -= .05f;
-        break;
-    case 'S':
-        y -= .1f;
+        y -= current_step;
         break;
     case 'a':
-        x -= .05f;
-        break;
-    case 'A':
-        x -= .1f;
+        x -= current_step;
         break;
     case 'd':
-        x += .05f;
-        break;
-    case 'D':
-        x += .1f;
+        x += current_step;
         break;
     case 'k':
-        z -= .05f;
-        break;
-    case 'K':
-        z -= .1f;
+        z -= current_step;
         break;
     case 'i':
-        z += .05f;
+        z += current_step;
         break;
-    case 73:
-        z += .1f;
-        break;
+    /*case 73:
+        z += current_step;
+        break;*/
     case 27:
         glutLeaveMainLoop();
     }
 }
 
-/*void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
+void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
 {
-
     //float fraction = 0.1f; //rotate speed
     switch (key)
     {
     case GLUT_KEY_LEFT:
-        angle_Yaw -= 0.01f;
+        angle_Yaw -= current_step_rot;
         lx = sin(angle_Yaw);
         lz = -cos(angle_Yaw);
         break;
     case GLUT_KEY_RIGHT:
-        angle_Yaw += 0.01f;
+        angle_Yaw += current_step_rot;
         lx = sin(angle_Yaw);
         lz = -cos(angle_Yaw);
         break;
     case GLUT_KEY_UP:
-
-        angle_Pitch += 0.01f;
+        angle_Pitch += current_step_rot;
         ly = tan(angle_Pitch);
         break;
     case GLUT_KEY_DOWN:
-        angle_Pitch -= 0.01f;
+        angle_Pitch -= current_step_rot;
         ly = tan(angle_Pitch);
         break;
+    case GLUT_KEY_SHIFT_L:
+        current_step = max_step;
+        current_step_rot = max_step_rot;
+        break;
+    case GLUT_KEY_CTRL_L:
+        current_step = min_step;
+        current_step_rot = min_step_rot;
+        break;
     }
-    }*/
+}
 
 void mouseButton(int button, int state, int xx, int yy) {
 
@@ -231,6 +236,7 @@ void mouseButton(int button, int state, int xx, int yy) {
     }
 }
 
+
 void mouseMove(int xx __attribute__((unused)), int yy) {
 
     // this will only be true when the left button is down
@@ -252,9 +258,9 @@ void mouseMove(int xx __attribute__((unused)), int yy) {
         deltaAngle = (xx - xOrigin) * 0.001f;
         // update camera's direction
         lx = -cos(angle+deltaAngle);
-        ly = sin(an+deltaAngle);
+        ly = sin(angle+deltaAngle);
         glutPostRedisplay();
-        }*/
+    }*/
 }
 
 int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
@@ -285,7 +291,7 @@ int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
 
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
-    //glutSpecialFunc(SpecialKeys);
+    glutSpecialFunc(SpecialKeys);
     initGL();       // Our own OpenGL initialization
     
     glutMainLoop(); // Enter the infinite event-processing loop
