@@ -2,10 +2,9 @@
 #include <err.h>
 
 // Map_Colorisation : Colors topographic line in BMP image file
-void Map_Colorisation(SDL_Surface *image, int **bp)
+void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
 {
   SDL_LockSurface(image);
-  int **tab = NULL;
   int **node = NULL;
 
   int size = 1;
@@ -16,13 +15,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   if(res == NULL)
     printf("NUll\n");
 
-  tab = (int**)calloc(image->w, sizeof(int*));
-  for(int k = 0; k < image->w; k++)
-  {
-    tab[k] = (int*)calloc(image->h, sizeof(int));
-  }
-
   int label = 1;
+  int is_high_point = 0;
   
   for(int i = 0; i < image->w; i++)
   {
@@ -41,6 +35,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
           //printf("FIND\n");
           //printf("NB : %i\n", res[1]);
           //printf("Label : %i\n\n", label);
+          is_high_point = 1;
           node[size-1][0] = res[1];
           node[size-1][1] = label;
 
@@ -52,6 +47,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
       }
     }
   }
+
+
   int *M = NULL;
   M = calloc(label+1, sizeof(int));
   if(M == NULL)
@@ -61,16 +58,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   //printf("Label %i\n", label);
 
   //BMP_Test(image, tab);
-  int **h = NULL;
-  h = (int**)calloc(image->w, sizeof(int*));
-  if(h == NULL)
-  {
-    errx(EXIT_FAILURE, "invalid calloc h");
-  }
-  for(int k = 0; k < image->w; k++)
-  {
-    h[k] = (int*)calloc(image->h, sizeof(int));
-  }
 
   int elevation = 1500;
   int size_q = 0;
@@ -121,7 +108,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
     size_q -= 1;
     *size_e = 1;
     int *next = map_elevation(image, tab, h, label_temp, elevation, size_e);
-    //printf("Elevation %i\n", elevation);
+    printf("Elevation %i\n", elevation);
     //printf("Label : %i\n", label);
 
     if(next == NULL || *size_e == 1)
@@ -141,17 +128,18 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
         M[next[i]] = 1;
         //printf("next : %i\n", next[i]);
         counter_temp++;
-      }
-      
+      } 
     }
     free(next);
     next = NULL;
     counter--;
   }
-  bmp_test3(image, bp, h);
-  
+
+  if(is_high_point)
+    bmp_test3(image, bp, h);
+ 
   // BP matrix of elevation of blakc pixel
-  for(int i = 0; i < image->w; i++)
+  for(int i = 0; i < image->w && is_high_point; i++)
   {
     for(int j = 0; j < image->h; j++)
     {
@@ -162,16 +150,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
     }
   }
 
-  
-
-  int **tab2 = NULL;
-  tab2 = (int**)calloc(image->w, sizeof(int*));
-  for(int k = 0; k < image->w; k++)
-  {
-    tab2[k] = (int*)calloc(image->h, sizeof(int));
-  }
-
-  map_set_altitude(h, tab2, tab, 0, 400, 1500, image->w, image->h, 0);
+  //map_set_altitude(h, tab, 0, 400, 1500, image->w, image->h, 0);
   bmp_test2(image, h);
 
 
@@ -180,15 +159,13 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
   free(size_e);
   free(M);
 
-  for(int i = 0; i < image->w; i++)
+ /* for(int i = 0; i < image->w; i++)
   {
     free(tab[i]);
-    free(tab2[i]);
     free(h[i]);
   }
-  free(tab2);
   free(tab);
-  free(h);
+  free(h);*/
 
   for(int j = 0; j < size; j++)
   {
@@ -198,12 +175,29 @@ void Map_Colorisation(SDL_Surface *image, int **bp)
 
   free(res);
 
+
+
   /* END FREE */
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/image.bmp");
   printf("[MAP COLORISATION] Successful saved\n");
+}
 
 
+//map_update_bp takes bp array and h (elevation) array and update altitude of
+//topographics lines in bp array.
+void map_update_bp(int **h, int **bp, int w, int h2)
+{
+  for(int i = 0; i < w; i++)
+  {
+    for(int j = 0; j < h2; j++)
+    {
+      if(bp[i][j] != 0)
+      {
+        bp[i][j] = h[i][j];
+      }
+    }
+  }
 }
 
 // map_remplace_label replaces all old label by new label
@@ -220,11 +214,18 @@ void map_remplace_label(int **h2, int **tab, int w, int h, int label_old, int ne
     }
   }
 }
-void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
+void map_set_altitude(SDL_Surface *image, int **h2, int **tab2, int x, int y, int new,
     int w, int h, int manual)
 {
-  printf("KSQDM %i\n", tab2[0][561]);
+  int **tab = NULL;
+  tab = (int**)calloc(w, sizeof(int*));
+  for(int k = 0; k < w; k++)
+  {
+    tab[k] = (int*)calloc(h, sizeof(int));
+  }
+
   int label_old = tab2[x][y];
+  printf("x: %i, y: %i, label:  %i, altitude: %i\n", x, y, new, label_old);
   map_remplace_label(h2, tab2, w, h, label_old, new);
 
   if(!manual)
@@ -265,6 +266,14 @@ void map_set_altitude(int **h2, int **tab, int **tab2, int x, int y, int new,
       free(list);
     }
   }
+
+  bmp_test2(image, h2);
+
+  for(int i = 0; i < w; i++)
+  {
+    free(tab[i]);
+  }
+  free(tab);
 }
 
 void bfs_set_altitude(int x, int y, int w, int h, int **tab, int **tab2, int **h2,
@@ -434,8 +443,8 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
   int w = image->w;
   int h = image->h;
 
-  Uint8 r, g, b;
-  Uint32 pixel;
+  /*Uint8 r, g, b;
+  Uint32 pixel;*/
 
   struct queue* q = NULL;
   struct point p;
@@ -450,8 +459,8 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
     {-1, 0},
     {1, 0},
   };
-  printf("TEST\n");
-  printf("Elevation : %i %i\n", elevation, label);
+  //printf("TEST\n");
+  //printf("Elevation : %i %i\n", elevation, label);
 
   while(!is_empty(q))
   {
@@ -468,27 +477,26 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
       if(xt+n[i][0] >= 0 && xt+n[i][0] < w && yt+n[i][1] >= 0 && yt+n[i][1] < h)
       {
 
-        pixel = BMP_Get_Pixel(image, xt+n[i][0], yt+n[i][1]);
-        SDL_GetRGB(pixel, image->format, &r, &g, &b);
+        /*pixel = BMP_Get_Pixel(image, xt+n[i][0], yt+n[i][1]);
+        SDL_GetRGB(pixel, image->format, &r, &g, &b);*/
 
         if(tab[xt+n[i][0]][yt+n[i][1]] == label &&
-            h2[xt+n[i][0]][yt+n[i][1]] == 0 &&r == 255)
+            h2[xt+n[i][0]][yt+n[i][1]] == 0 /*&&r == 255*/)
         {
           struct point node;
           node.x = xt+n[i][0];
           node.y = yt+n[i][1];
-          //tab[xt+n[i][0]][yt+n[i][1]] = -1;
 
           h2[xt+n[i][0]][yt+n[i][1]] = elevation;
           q = enqueue(q, node);
         }
-        else if(/*tab[xt+n[i][0]][yt+n[i][1]] != -1*/ r == 0 &&
+        else if(i/*r == 0*/ &&
             h2[xt+n[i][0]][yt+n[i][1]] == 0)
         {
-          int new_label[5];
-          int size_dfs = 0;
-          dfs_elevation(image, xt+n[i][0], yt+n[i][1], tab,
-              tab[xt+n[i][0]][yt+n[i][1]], h2, elevation, new_label, &size_dfs);
+          /*int new_label[5];
+          int size_dfs = 0;*/
+          /*dfs_elevation(image, xt+n[i][0], yt+n[i][1], tab,
+              tab[xt+n[i][0]][yt+n[i][1]], h2, elevation, new_label, &size_dfs);*/
           //printf("Label : %i\n", new_label);
 
           if(!is_present(list, *size_2, tab[xt+n[i][0]][yt+n[i][1]]) && tab[xt+n[i][0]][yt+n[i][1]] != label)
@@ -507,7 +515,7 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
             }
           }
 
-          for(int j = 0; j < size_dfs-1; j++)
+          /*for(int j = 0; j < size_dfs-1; j++)
           {
             if(new_label != 0 && !is_present(list, *size_2, new_label[j]))
             {
@@ -524,7 +532,7 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
                 }
               }
             }
-          }
+          }*/
         }
       }
     }

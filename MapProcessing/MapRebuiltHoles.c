@@ -183,11 +183,11 @@ void thinning(struct image_pict *image)
 				is_in_filter(image, i, j) == 1)
 		{
 			image->pict[i][j] = 0;
-			if (i-1 < 0)
+			if (i-2 < 0)
 				i = 0;
 			else
 				i -= 2;
-			if (j-1 < 0)
+			if (j-2 < 0)
 				j = 0;
 			else
 				j -= 2;
@@ -471,18 +471,18 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
 			new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y))) * 5;
 			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
 			{
-				/*int **mark = NULL;
+				int **mark = NULL;
 	  			mark = (int**)calloc(image->w, sizeof(int*));
 	 			for(int j = 0; j < image->w; j++)
 					mark[j] = (int*)calloc(image->h, sizeof(int*));
 	  			if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
-				{*/
+				{
 					min_d = new_d;
 					mini = i;
-				/*}
+				}
 				for (int j=0; j<image->w; j++)
 					free(mark[j]);
-	  			free(mark);*/
+	  			free(mark);
 			}
 		}
   	}
@@ -496,21 +496,21 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
   				printf("x2: %i, y2: %i, dist: %f\n",pt.x,pt.y,new_d);
 			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
 			{
-				/*int **mark = NULL;
+				int **mark = NULL;
 	  			mark = (int**)calloc(image->w, sizeof(int*));
 	 			for(int j = 0; j < image->w; j++)
 					mark[j] = (int*)calloc(image->h, sizeof(int*));
 	  			if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
-				{*/
+				{
 					if (i == i_dst || euclidian(image, pts, pt.x, pt.y, i, i_src, new_d) == 1)
 					{
 						min_d = new_d;
 						mini = i;
 					}
-				/*}
+				}
 				for (int j=0; j<image->w; j++)
 					free(mark[j]);
-	  			free(mark);*/
+	  			free(mark);
 			}
 		}
 	}
@@ -548,7 +548,7 @@ void link_pts(struct image_pict *image, vector_list *pts)
 }
 
 
-void rebuilt_lines(SDL_Surface *image, int **tab, int **bp)
+void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h)
 {
   SDL_LockSurface(image);
   struct image_pict *pict = malloc(sizeof(struct image_pict));
@@ -597,7 +597,7 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp)
   free(bp);*/
   thinning(pict);
   bmp_create(image, pict->pict, "holes.bmp");
-  Map_Colorisation(image, bp);
+  Map_Colorisation(image, bp, tab2, h);
   for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);

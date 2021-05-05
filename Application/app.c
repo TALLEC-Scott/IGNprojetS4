@@ -39,6 +39,9 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
         }
     }
 
+    ui->analysis_done = FALSE;
+    ui->state = 0;
+
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
     
@@ -55,7 +58,7 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     if (state == TRUE)
     {
         gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
-        ui->automatic = 1;
+        ui->is_analysis_auto = 1;
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
@@ -64,12 +67,25 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     }
     else
     {
-        ui->automatic = 0;
+        ui->is_analysis_auto = 0;
         gtk_widget_show(GTK_WIDGET(ui->colors.wcb));
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), FALSE);
     }
+
+    return TRUE;
+}
+
+// Handler for switch controlling automatic rectification
+gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
+        gboolean state, gpointer user_data)
+{
+    Ui *ui = user_data;
+   if (state == TRUE)
+       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
+   else
+       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
 
     return TRUE;
 }
@@ -108,13 +124,33 @@ gboolean on_area_press(GtkWidget *area __attribute__((unused)),
 }
 
 // Handler for manual rectification, display secondary window
-gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
-        gboolean state, gpointer user_data)
+gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
 {
     Ui *ui = user_data;
 
-    // automatic
-    if (state == TRUE)
+    // change altitude
+    if (gtk_toggle_button_get_active(tbutton))
+    {
+        // connects the signal for click coordinates
+        ui->rectif.handler_id = g_signal_connect(ui->rectif.output_event_box,
+                "button-press-event", G_CALLBACK(on_area_press), ui);
+
+        // shows the secondary window
+        gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
+
+        gtk_window_present(ui->window);
+
+        // restore defaults value for zoom and rotation
+        gtk_range_set_value(GTK_RANGE(ui->rotate_scale), 0.00);
+        gtk_range_set_value(GTK_RANGE(ui->zoom_scale), 1.00);
+
+        // deactivate the scales and modelisation button
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
+    }
+    // finished changing
+    else
     {
         // Error a signal should have been connected
         if (ui->rectif.handler_id == 0)
@@ -136,25 +172,6 @@ something went wrong\n");
        
         // closes the secondary window
         gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
-    }
-    // manual
-    else
-    {
-        // connects the signal for click coordinates
-        ui->rectif.handler_id = g_signal_connect(ui->rectif.output_event_box,
-                "button-press-event", G_CALLBACK(on_area_press), ui);
-
-        // shows the secondary window
-        gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
-
-        // restore defaults value for zoom and rotation
-        gtk_range_set_value(GTK_RANGE(ui->rotate_scale), 0.00);
-        gtk_range_set_value(GTK_RANGE(ui->zoom_scale), 1.00);
-
-        // deactivate the scales and modelisation button
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
     }
 
     return TRUE;
@@ -363,7 +380,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
         gtk_widget_destroy(message);
         
         return TRUE;
-    }        
+    }
 
 
     // Tests if the text is a number, exits if false
@@ -382,6 +399,26 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     sscanf(text, "%d", &altitude);
 
     printf("New altitude = %d\n", altitude);
+    int x_int = (int)ui->rectif.x_pos;
+    int y_int = (int)ui->rectif.y_pos;
+
+    SDL_Surface *image_elevation;
+    image_elevation = SDL_LoadBMP("Pictures/Results/image.bmp");
+    if(image_elevation == NULL)
+    {
+        printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+        return TRUE;
+    }
+
+    // switch get active is reversed, its normal
+    map_set_altitude(image_elevation, ui->h, ui->tab, x_int, y_int, altitude,
+            ui->image_output.width, ui->image_output.height, 
+            !gtk_switch_get_active(ui->rectif.switch_auto));
+
+    map_update_bp(ui->h, ui->bp, ui->image_output.width,
+        ui->image_output.height);
+
+    load_image(&ui->image_output, "Pictures/Results/elevation.bmp");
 
     return TRUE;
 }
@@ -392,9 +429,9 @@ gboolean on_rectif_cancel(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
 
-    gtk_switch_set_active(ui->switch_auto_rectif, TRUE);
+    gtk_toggle_button_set_active(ui->rectif_button, FALSE);
 
     return TRUE;
 }
@@ -405,9 +442,11 @@ gboolean on_rectif_done(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
 
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
+    gtk_toggle_button_set_active(ui->rectif_button, FALSE);
+
+    //gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
     return TRUE;
 }
@@ -434,9 +473,9 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         }
         
         
-        double r = ui->rgba.red * 255,
-               g = ui->rgba.green * 255,
-               b = ui->rgba.blue * 255,
+        double r = ui->colors.color_topo.red * 255,
+               g = ui->colors.color_topo.green * 255,
+               b = ui->colors.color_topo.blue * 255,
                r1 = ui->colors.color_road.red * 255,
                g1 = ui->colors.color_road.green * 255,
                b1 = ui->colors.color_road.blue * 255,
@@ -446,15 +485,31 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
 
         ui->bp = (int**)calloc(image->w, sizeof(int*));
+        ui->tab = (int**)calloc(image->w, sizeof(int*));
+        ui->h = (int**)calloc(image->w, sizeof(int*));
+        ui->road_major = (int**)calloc(image->w, sizeof(int*));
+        ui->road_minor = (int**)calloc(image->w, sizeof(int*));
+        ui->river = (int**)calloc(image->w, sizeof(int*));
+        ui->trail = (int**)calloc(image->w, sizeof(int*));
+
         for(int k = 0; k < image->w; k++)
         {
           ui->bp[k] = (int*)calloc(image->h, sizeof(int));
+          ui->tab[k] = (int*)calloc(image->h, sizeof(int));
+          ui->h[k] = (int*)calloc(image->h, sizeof(int));
+          ui->road_major[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->road_minor[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->river[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->trail[k] = (int*)calloc(image->h, sizeof(int*));
         }
+
 
         bmp_filter(image, r, g, b,
                r1, g1, b1,
               r2, g2, b2,
-              ui->bp);
+              ui->bp, ui->tab, ui->h,
+              ui->road_major, ui->road_minor,
+              ui->river, ui->trail);
         
         SDL_FreeSurface(image);
     }
@@ -499,7 +554,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
     ui->analysis_done = TRUE;
 
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_rectif), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
 
@@ -672,7 +727,9 @@ int main (int argc, char *argv[])
     GtkSwitch *switch_auto_analysis = GTK_SWITCH(gtk_builder_get_object(builder,
                 "switch_auto_analysis"));
     GtkSwitch *switch_auto_rectif = GTK_SWITCH(gtk_builder_get_object(builder,
-                "switch_auto_rectif"));
+                "rectif_switch_auto"));
+    GtkToggleButton *rectif_button = GTK_TOGGLE_BUTTON(gtk_builder_get_object(
+                builder, "rectification"));
     GtkButton *open = GTK_BUTTON(gtk_builder_get_object(builder, "open"));
     
     GtkButton *launch = GTK_BUTTON(gtk_builder_get_object(builder,
@@ -729,12 +786,12 @@ int main (int argc, char *argv[])
         .dfc = dfc,
         .color_dialog = color_dialog,
         .switch_auto_analysis = switch_auto_analysis,
-        .switch_auto_rectif = switch_auto_rectif,
+        .rectif_button = rectif_button,
         .rotate_scale = rotate_scale,
         .zoom_scale = zoom_scale,
         .zoom = 1.00,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
         .rotation = 0,//gtk_range_get_value(GTK_RANGE(zoom_scale)),
-        .automatic = TRUE,
+        .is_analysis_auto = TRUE,
         .analysis_done = FALSE,
         .is_step = FALSE,
         .launch = launch,
@@ -762,6 +819,7 @@ int main (int argc, char *argv[])
             .output_event_box = output_event_box,
             .x_label = x_label,
             .y_label = y_label,
+            .switch_auto = switch_auto_rectif,
             .rectif_ok = rectif_ok,
             .rectif_cancel = rectif_cancel,
             .rectif_done = rectif_done,
@@ -786,7 +844,13 @@ int main (int argc, char *argv[])
             .area = area_output,
             .filename = NULL
         },
-        .bp = NULL
+        .bp = NULL,
+        .tab = NULL,
+        .h = NULL,
+        .road_major = NULL,
+        .road_minor = NULL,
+        .river = NULL,
+        .trail = NULL
     };
 
     // Connects signal handlers.
@@ -811,6 +875,8 @@ int main (int argc, char *argv[])
             G_CALLBACK(on_switch_auto_analysis), &ui);
     g_signal_connect(switch_auto_rectif, "state-set",
             G_CALLBACK(on_switch_auto_rectif), &ui);
+    g_signal_connect(rectif_button, "toggled", G_CALLBACK(on_rectif_button),
+            &ui);
     g_signal_connect(color_ok, "clicked", G_CALLBACK(on_color_ok), &ui);
     g_signal_connect(color_cancel, "clicked", G_CALLBACK(on_color_cancel), &ui);
     g_signal_connect(rectif_ok, "clicked", G_CALLBACK(on_rectif_ok), &ui);
@@ -835,4 +901,3 @@ int main (int argc, char *argv[])
     // Exits.
     return 0;
 }
-

@@ -4,7 +4,8 @@
 // the ign map
 void bmp_filter(SDL_Surface *image, int r, int g, int b,
     int r1, int g1, int b1, int r2, int g2, int b2
-    ,int **bp)
+    ,int **bp, int **tab, int **h, int **road_major, int **road_minor,
+    int **river, int **trail)
 {
 
   int **topo = NULL;
@@ -14,7 +15,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
     topo[i] = (int*)calloc(image->h, sizeof(int*));
   }
 
-  int **river = NULL;
+  /*int **river = NULL;
   river = (int**)calloc(image->w, sizeof(int*));
   for(int i = 0; i < image->w; i++)
   {
@@ -41,37 +42,39 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
   for(int i = 0; i < image->w; i++)
   {
     trail[i] = (int*)calloc(image->h, sizeof(int*));
-  }
+  }*/
 
 
   filter(image, topo, river, road_major, road_minor, trail, r, g, b, r1, g1,
-      b1, r2, g2, b2, bp);
+      b1, r2, g2, b2, bp, tab, h);
 
   // free
   for(int i = 0; i < image->w; i++)
   {
     free(topo[i]);
-    free(river[i]);
+    /*free(river[i]);
     free(road_major[i]);
     free(road_minor[i]);
-    free(trail[i]);
+    free(trail[i]);*/
   }
 
   free(topo);
-  free(river);
+  /*free(river);
   free(road_major);
   free(road_minor);
-  free(trail);
+  free(trail);*/
 }
 
 // filter Converts all rgb values to HSV in order to filters colors
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
     int **array_road_major, int **array_road_minor, int **array_trail, int r1,
     int g1, int b1, int r2, int g2, int b2, int r3, int g3, int b3, 
-    int **bp)
+    int **bp, int **tab, int **h)
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
+
+    printf("r %i, g, %i, b, %i", r1, g1, b1);
 
     printf("r %d\n", r1);
     for(int i = 0; i < image->w; i++)
@@ -83,7 +86,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
             SDL_GetRGB(pixel, image->format, &r, &g, &b);
 
 
-            if(r1 == -255)
+            if(r1 == 0)
             {
               double h, s, v;
               RGB_To_HSV(r, g, b, array);
@@ -177,7 +180,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-    rebuilt_lines(lines, array_topo, bp);
+    rebuilt_lines(lines, array_topo, bp, tab, h);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,
