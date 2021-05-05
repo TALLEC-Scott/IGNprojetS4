@@ -137,23 +137,40 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     case 'w': //
         y += .05f;
         break;
+    case 'W':
+        y += .1f;
+        break;
     case 's':
         y -= .05f;
+        break;
+    case 'S':
+        y -= .1f;
         break;
     case 'a':
         x -= .05f;
         break;
+    case 'A':
+        x -= .1f;
+        break;
     case 'd':
         x += .05f;
+        break;
+    case 'D':
+        x += .1f;
         break;
     case 'k':
         z -= .05f;
         break;
+    case 'K':
+        z -= .1f;
+        break;
     case 'i':
         z += .05f;
         break;
+    case 73:
+        z += .1f;
+        break;
     case 27:
-        
         glutLeaveMainLoop();
     }
 }
@@ -186,41 +203,58 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     }
     }*/
 
-void mouseButton(int button, int state, int x, int y) {
+void mouseButton(int button, int state, int xx, int yy) {
 
     // only start motion if the left button is pressed
     if (button == GLUT_LEFT_BUTTON) {
 
         // when the button is released
         if (state == GLUT_UP) {
-            angle += deltaAngle;
-            ang += gammaAngle;
-            xOrigin = -1;
+            ang+=gammaAngle;
             yOrigin = -1;
         }
         else  {// state = GLUT_DOWN
-            xOrigin = x;
-            yOrigin = y;
+            yOrigin = yy;
+        }
+    }
+
+    if (button == GLUT_RIGHT_BUTTON) {
+
+        // when the button is released
+        if (state == GLUT_UP) {
+            angle += deltaAngle;
+            xOrigin = -1;
+        }
+        else  {// state = GLUT_DOWN
+            xOrigin = xx;
         }
     }
 }
 
-void mouseMove(int x, int y) {
+void mouseMove(int xx __attribute__((unused)), int yy) {
 
     // this will only be true when the left button is down
-    if (xOrigin >= 0) {
+    if (yOrigin >= 0) {
 
-        // update deltaAngle
-        deltaAngle = (x - xOrigin) * 0.001f;
+        // update gammaAngle
 
-        gammaAngle = (y - yOrigin) * 0.01f;
+        gammaAngle = (yy - yOrigin) * 0.01f;
 
-        // update camera's direction
-        lx = -sin(angle+deltaAngle);
-        ly = +sin(ang+gammaAngle);
-        lz = -cos(angle+deltaAngle)-cos(ang+gammaAngle);
+        lz = -cos(ang+gammaAngle);
+        ly = sin(ang+gammaAngle);
+
         glutPostRedisplay();
     }
+
+    /*if (xOrigin >= 0) {
+
+        // update deltaAngle
+        deltaAngle = (xx - xOrigin) * 0.001f;
+        // update camera's direction
+        lx = -cos(angle+deltaAngle);
+        ly = sin(an+deltaAngle);
+        glutPostRedisplay();
+        }*/
 }
 
 int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
