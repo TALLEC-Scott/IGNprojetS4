@@ -32,12 +32,18 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
 
             strcpy(ui->image_input.filename, file_name);
            
+            if (gtk_toggle_button_get_active(ui->rectif_button))
+                gtk_toggle_button_set_active(ui->rectif_button, FALSE);
+
             gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_analysis),
                     TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), FALSE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), FALSE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
+
+            gtk_switch_set_active(ui->switch_auto_analysis, TRUE);
         }
     }
 
@@ -707,7 +713,7 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
     // point matrix: ui->bp (double pointer)
     SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
-    execute_function(0, NULL, image, ui->bp);
+    execute_function(ui->argc, ui->argv, image, ui->bp);
 
     SDL_FreeSurface(image);
     return TRUE;
@@ -876,7 +882,9 @@ int main (int argc, char *argv[])
         .road_major = NULL,
         .road_minor = NULL,
         .river = NULL,
-        .trail = NULL
+        .trail = NULL,
+        .argc = argc,
+        .argv = argv
     };
 
     // Connects signal handlers.
