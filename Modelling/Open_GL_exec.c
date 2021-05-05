@@ -1,6 +1,6 @@
 #include "Open_GL_exec.h"
 #include <GL/glut.h> // GLUT, include glu.h and gl.h
-#include<GL/freeglut.h>
+#include <GL/freeglut.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -19,7 +19,7 @@ static float x = 0.0f, z = 5.0f;
 
 static float y = 1.0f;
 
-static float angle=0.0f;
+static float angle = 0.0f;
 
 static float ang = 0.0f;
 
@@ -30,6 +30,17 @@ static float gammaAngle = 0.0f;
 static int xOrigin = -1;
 
 static int yOrigin = -1;
+
+//static XYZ *p;
+
+//static ITRIANGLE *v;
+
+//static int ntri;
+
+
+    static int ntri = 0;
+    static ITRIANGLE *v;
+    static XYZ *p = NULL;
 
 char title[] = "3D Shapes";
 
@@ -57,7 +68,10 @@ void display()
 
     glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-    Draw_Points(bp,image);
+    //Draw_Points(bp,image);
+
+    Draw_Triangles(p, v, ntri,bp,image);
+    //printf("%d",ntri);
     /*glBegin(GL_POINTS);
     glColor3f(0.0f, 1.0f, 0.5f);
     for (int i = 0; i < (image->w); i++)
@@ -153,7 +167,7 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
         z += .05f;
         break;
     case 27:
-        
+
         glutLeaveMainLoop();
     }
 }
@@ -186,29 +200,35 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
     }
     }*/
 
-void mouseButton(int button, int state, int x, int y) {
+void mouseButton(int button, int state, int x, int y)
+{
 
     // only start motion if the left button is pressed
-    if (button == GLUT_LEFT_BUTTON) {
+    if (button == GLUT_LEFT_BUTTON)
+    {
 
         // when the button is released
-        if (state == GLUT_UP) {
+        if (state == GLUT_UP)
+        {
             angle += deltaAngle;
             ang += gammaAngle;
             xOrigin = -1;
             yOrigin = -1;
         }
-        else  {// state = GLUT_DOWN
+        else
+        { // state = GLUT_DOWN
             xOrigin = x;
             yOrigin = y;
         }
     }
 }
 
-void mouseMove(int x, int y) {
+void mouseMove(int x, int y)
+{
 
     // this will only be true when the left button is down
-    if (xOrigin >= 0) {
+    if (xOrigin >= 0)
+    {
 
         // update deltaAngle
         deltaAngle = (x - xOrigin) * 0.001f;
@@ -216,35 +236,53 @@ void mouseMove(int x, int y) {
         gammaAngle = (y - yOrigin) * 0.01f;
 
         // update camera's direction
-        lx = -sin(angle+deltaAngle);
-        ly = +sin(ang+gammaAngle);
-        lz = -cos(angle+deltaAngle)-cos(ang+gammaAngle);
+        lx = -sin(angle + deltaAngle);
+        ly = +sin(ang + gammaAngle);
+        lz = -cos(angle + deltaAngle) - cos(ang + gammaAngle);
         glutPostRedisplay();
     }
 }
 
-int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
+int execute_function(int argc, char **argv, SDL_Surface *im, int **bps)
 {
-	image = im; //it's to use SDL_Surface *im as a global ref
-        bp = bps;
+
+    image = im; //it's to use SDL_Surface *im as a global ref
+    bp = bps;
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
-    /*
-    bp = NULL;
-    bp = (int **)calloc(image->w, sizeof(int *));
-    for (int k = 0; k < image->w; k++)
-    {
-        bp[k] = (int *)calloc(image->h, sizeof(int));
-    }
-    Map_Colorisation(image, bp);*/
 
-    glutInit(&argc, argv);             // Initialize GLUT
-    glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
-    glutInitWindowSize(640, 480);     // Set the window's initial width & height
-    glutInitWindowPosition(500, 50);  // Position the window's initial top-left corner
-    int window = glutCreateWindow(title);          // Create window with the given title
-    glutDisplayFunc(display);         // Register callback handler for window re-paint event
+    Attributes att = attr(image, bp);
+    _3D_Coord *arr = malloc(att.nb_points * sizeof(_3D_Coord));
+    List_of_Points(bp, image, &arr);
+
+    int nb_points = att.nb_points;
+    
+    int nv = 0;
+
+    for (int i = 0; i < nb_points; i++)
+    {
+        p = realloc(p, (nv + 1) * sizeof(XYZ));
+        p[nv].x = arr[i].x;
+        p[nv].y = arr[i].y;
+        p[nv].z = arr[i].z;
+        nv++;
+    }
+
+    p = realloc(p, (nv + 3) * sizeof(XYZ));
+    v = malloc(3 * nv * sizeof(ITRIANGLE));
+    qsort(p, nv, sizeof(XYZ), XYZCompare);
+    Triangulate(nv, p, v, &ntri);
+
+  
+    //Print_Arr_of_Coord(att.nb_points, x);
+
+    glutInit(&argc, argv);                // Initialize GLUT
+    glutInitDisplayMode(GLUT_DOUBLE);     // Enable double buffered mode
+    glutInitWindowSize(640, 480);         // Set the window's initial width & height
+    glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
+    int window = glutCreateWindow(title); // Create window with the given title
+    glutDisplayFunc(display);             // Register callback handler for window re-paint event
     glutReshapeFunc(reshape);
     glutIdleFunc(display); // Register callback handler for window re-size event
     glutKeyboardFunc(keyboard);
@@ -252,8 +290,8 @@ int execute_function( int argc, char ** argv, SDL_Surface *im, int** bps)
     glutMouseFunc(mouseButton);
     glutMotionFunc(mouseMove);
     //glutSpecialFunc(SpecialKeys);
-    initGL();       // Our own OpenGL initialization
-    
+    initGL(); // Our own OpenGL initialization
+
     glutMainLoop(); // Enter the infinite event-processing loop
     glutDestroyWindow(window);
     //free_bm(bp, image);

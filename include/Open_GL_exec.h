@@ -2,6 +2,7 @@
 #define OPEN_GL_EXEC_H
 #include "drawing_tools.h"
 #include "MapColorisation.h"
+#include "triangulation.h"
 
 
 void initGL();

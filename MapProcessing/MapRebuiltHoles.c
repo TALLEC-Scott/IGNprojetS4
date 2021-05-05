@@ -595,7 +595,7 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp)
     free(bp[i]);
   }
   free(bp);*/
-
+  thinning(pict);
   bmp_create(image, pict->pict, "holes.bmp");
   Map_Colorisation(image, bp);
   for(int i = 0; i < pict->w; i++)
