@@ -565,7 +565,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
     if (!ui->is_step || ui->analysis_done)
     {
-        ui->state = 8;
+        ui->state = 9;
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), TRUE);
     }
@@ -607,28 +607,32 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
             ui->state++;
             break;
         case 3:
-            sprintf(file, "%sriver.bmp", dir);
+            sprintf(file, "%strail.bmp", dir);
             ui->state++;
             break;
         case 4:
-            sprintf(file, "%sign.bmp", dir);
+            sprintf(file, "%sriver.bmp", dir);
             ui->state++;
             break;
         case 5:
-            sprintf(file, "%sneigh.bmp", dir);
+            sprintf(file, "%sign.bmp", dir);
             ui->state++;
             break;
         case 6:
-            sprintf(file, "%sholes.bmp", dir);
+            sprintf(file, "%sneigh.bmp", dir);
             ui->state++;
             break;
         case 7:
+            sprintf(file, "%sholes.bmp", dir);
+            ui->state++;
+            break;
+        case 8:
             sprintf(file, "%simage.bmp", dir);
             gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
             ui->state++;
             break;
         default:
-            printf("Step by step forward: state > 7 should not be possible\n");
+            printf("Step by step forward: state > 8 should not be possible\n");
             break;
     }
 
@@ -665,24 +669,28 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
             ui->state--;
             break;
         case 5:
-            sprintf(file, "%sriver.bmp", dir);
+            sprintf(file, "%strail.bmp", dir);
             ui->state--;
             break;
         case 6:
-            sprintf(file, "%sign.bmp", dir);
+            sprintf(file, "%sriver.bmp", dir);
             ui->state--;
             break;
         case 7:
-            sprintf(file, "%sneigh.bmp", dir);
+            sprintf(file, "%sign.bmp", dir);
             ui->state--;
             break;
         case 8:
+            sprintf(file, "%sneigh.bmp", dir);
+            ui->state--;
+            break;
+        case 9:
             sprintf(file, "%sholes.bmp", dir);
             ui->state--;
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
             break;
         default:
-            printf("Step by step backward: state > 7 should not be possible\n");
+            printf("Step by step backward: state < 1 should not be possible\n");
             break;
     }
 
