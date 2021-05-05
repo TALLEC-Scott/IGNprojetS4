@@ -318,9 +318,9 @@ int main(int argc,char **argv)
 */
 int XYZCompare(const void *v1,const void *v2)
 {
-   XYZ *p1,*p2;
-   p1 = v1;
-   p2 = v2;
+   const XYZ *p1 = v1, *p2 = v2;
+   //p1 = v1;
+   //p2 = v2;
    if (p1->x < p2->x)
       return(-1);
    else if (p1->x > p2->x)

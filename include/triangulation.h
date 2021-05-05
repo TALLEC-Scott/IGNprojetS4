@@ -1,10 +1,9 @@
 #ifndef TRIANGULATION_H
 #define TRIANGULATION_H
 
-#define FALSE 0
-#define TRUE 1
 #define EPSILON 0.000001
 
+#include <gtk/gtk.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <math.h>

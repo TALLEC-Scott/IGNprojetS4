@@ -36,11 +36,29 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
                     TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), FALSE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
         }
     }
 
     ui->analysis_done = FALSE;
     ui->state = 0;
+
+    if (ui->bp != NULL)
+        free(ui->bp);
+    if (ui->tab != NULL)
+        free(ui->tab);
+    if (ui->h)
+        free(ui->h);
+    if (ui->road_major != NULL)
+        free(ui->road_major);
+    if (ui->road_minor != NULL)
+        free(ui->road_minor);
+    if (ui->river != NULL)
+        free(ui->river);
+    if (ui->trail != NULL)
+        free(ui->trail);
+
 
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
