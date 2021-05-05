@@ -104,7 +104,7 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
     size_q -= 1;
     *size_e = 1;
     int *next = map_elevation(image, tab, h, label_temp, elevation, size_e);
-    //printf("Elevation %i\n", elevation);
+    printf("Elevation %i\n", elevation);
     //printf("Label : %i\n", label);
 
     if(next == NULL || *size_e == 1)
@@ -221,12 +221,11 @@ void map_set_altitude(SDL_Surface *image, int **h2, int **tab2, int x, int y, in
   }
 
   int label_old = tab2[x][y];
-  printf("Label old %i\n", label_old);
+  //printf("Label old %i\n", label_old);
   map_remplace_label(h2, tab2, w, h, label_old, new);
 
   if(!manual)
   {
-    printf("Test \n");
     struct queue* q = NULL;
     struct point p;
     p.x = label_old;
@@ -456,8 +455,8 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
     {-1, 0},
     {1, 0},
   };
-  printf("TEST\n");
-  printf("Elevation : %i %i\n", elevation, label);
+  //printf("TEST\n");
+  //printf("Elevation : %i %i\n", elevation, label);
 
   while(!is_empty(q))
   {

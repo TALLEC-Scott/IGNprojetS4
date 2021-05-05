@@ -399,7 +399,6 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     sscanf(text, "%d", &altitude);
 
     printf("New altitude = %d\n", altitude);
-    printf("Manuel : %i\n", gtk_switch_get_active(ui->rectif.switch_auto));
     int x_int = (int)ui->rectif.x_pos;
     int y_int = (int)ui->rectif.y_pos;
 
@@ -473,9 +472,9 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         }
         
         
-        double r = ui->rgba.red * 255,
-               g = ui->rgba.green * 255,
-               b = ui->rgba.blue * 255,
+        double r = ui->colors.color_topo.red * 255,
+               g = ui->colors.color_topo.green * 255,
+               b = ui->colors.color_topo.blue * 255,
                r1 = ui->colors.color_road.red * 255,
                g1 = ui->colors.color_road.green * 255,
                b1 = ui->colors.color_road.blue * 255,
@@ -487,20 +486,29 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         ui->bp = (int**)calloc(image->w, sizeof(int*));
         ui->tab = (int**)calloc(image->w, sizeof(int*));
         ui->h = (int**)calloc(image->w, sizeof(int*));
-
+        ui->road_major = (int**)calloc(image->w, sizeof(int*));
+        ui->road_minor = (int**)calloc(image->w, sizeof(int*));
+        ui->river = (int**)calloc(image->w, sizeof(int*));
+        ui->trail = (int**)calloc(image->w, sizeof(int*));
 
         for(int k = 0; k < image->w; k++)
         {
           ui->bp[k] = (int*)calloc(image->h, sizeof(int));
           ui->tab[k] = (int*)calloc(image->h, sizeof(int));
           ui->h[k] = (int*)calloc(image->h, sizeof(int));
+          ui->road_major[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->road_minor[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->river[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->trail[k] = (int*)calloc(image->h, sizeof(int*));
         }
 
 
         bmp_filter(image, r, g, b,
                r1, g1, b1,
               r2, g2, b2,
-              ui->bp, ui->tab, ui->h);
+              ui->bp, ui->tab, ui->h,
+              ui->road_major, ui->road_minor,
+              ui->river, ui->trail);
         
         SDL_FreeSurface(image);
     }
@@ -837,7 +845,11 @@ int main (int argc, char *argv[])
         },
         .bp = NULL,
         .tab = NULL,
-        .h = NULL
+        .h = NULL,
+        .road_major = NULL,
+        .road_minor = NULL,
+        .river = NULL,
+        .trail = NULL
     };
 
     // Connects signal handlers.

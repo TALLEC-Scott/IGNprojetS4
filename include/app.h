@@ -71,6 +71,10 @@ typedef struct {
     int         **bp;
     int         **tab;
     int         **h;
+    int         **road_major;
+    int         **road_minor;
+    int         **river;
+    int         **trail;
 } Ui;
 
 

@@ -4,7 +4,8 @@
 // the ign map
 void bmp_filter(SDL_Surface *image, int r, int g, int b,
     int r1, int g1, int b1, int r2, int g2, int b2
-    ,int **bp, int **tab, int **h)
+    ,int **bp, int **tab, int **h, int **road_major, int **road_minor,
+    int **river, int **trail)
 {
 
   int **topo = NULL;
@@ -14,7 +15,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
     topo[i] = (int*)calloc(image->h, sizeof(int*));
   }
 
-  int **river = NULL;
+  /*int **river = NULL;
   river = (int**)calloc(image->w, sizeof(int*));
   for(int i = 0; i < image->w; i++)
   {
@@ -41,7 +42,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
   for(int i = 0; i < image->w; i++)
   {
     trail[i] = (int*)calloc(image->h, sizeof(int*));
-  }
+  }*/
 
 
   filter(image, topo, river, road_major, road_minor, trail, r, g, b, r1, g1,
@@ -51,17 +52,17 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
   for(int i = 0; i < image->w; i++)
   {
     free(topo[i]);
-    free(river[i]);
+    /*free(river[i]);
     free(road_major[i]);
     free(road_minor[i]);
-    free(trail[i]);
+    free(trail[i]);*/
   }
 
   free(topo);
-  free(river);
+  /*free(river);
   free(road_major);
   free(road_minor);
-  free(trail);
+  free(trail);*/
 }
 
 // filter Converts all rgb values to HSV in order to filters colors
@@ -73,6 +74,8 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
 
+    printf("r %i, g, %i, b, %i", r1, g1, b1);
+
     printf("r %d\n", r1);
     for(int i = 0; i < image->w; i++)
     {
@@ -83,7 +86,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
             SDL_GetRGB(pixel, image->format, &r, &g, &b);
 
 
-            if(r1 == -255)
+            if(r1 == 0)
             {
               double h, s, v;
               RGB_To_HSV(r, g, b, array);
