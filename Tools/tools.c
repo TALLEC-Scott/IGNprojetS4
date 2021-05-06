@@ -178,11 +178,11 @@ void bmp_test2(SDL_Surface *image, int **tab)
       }
       else if(label == 1300)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 127, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 102, 0)));
       }
       else if(label == 1200)
       {
-         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 102, 0)));
+         BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, 255, 127, 0)));
       }
       else if(label == 1100)
       {
