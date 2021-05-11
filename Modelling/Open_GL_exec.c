@@ -75,61 +75,10 @@ void display()
     glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
     //Draw_Points(bp,image);
-
     Draw_Triangles(p, v, ntri,bp,image);
-    //printf("%d",ntri);
-    /*glBegin(GL_POINTS);
-    glColor3f(0.0f, 1.0f, 0.5f);
-    for (int i = 0; i < (image->w); i++)
-    {
-        for (int j = 0; j < (image->h); j++)
-        {
-	//	printf("%d \n",bp[i][j]);
-            if (bp[i][j] != 0)
-            {
-                glVertex3f(((float)j / (float)image->w), ((float)i / (float)image->h),
-                           ((float) bp[i][j]/1500.));
-            }
-        }
-    }
-    glEnd();
-*/
+
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 
-    /* To render Pyramid uncomment
-   // Render a pyramid consists of 4 triangles
-   glBegin();   // begin drawing pyramid
-   glLoadIdentity();                  // Reset the model-view matrix
-   glTranslatef(-1.5f, 0.0f, -6.0f);  // Move left and into the screen
-
-   glBegin(GL_TRIANGLES);           // Begin drawing the pyramid with 4 triangles
-      // Front
-      glColor3f(1.0f, 0.0f, 0.0f);     // Red
-      glVertex3f( 0.0f, 1.0f, 0.0f);
-      glColor3f(0.0f, 1.0f, 0.0f);     // Green
-      glVertex3f(-1.0f, -1.0f, 1.0f);
-      glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-      glVertex3f(1.0f, -1.0f, 1.0f);
- 
-      // Right
-      glColor3f(1.0f, 0.0f, 0.0f);     // Red
-      glVertex3f(0.0f, 1.0f, 0.0f);
-      glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-      glVertex3f(1.0f, -1.0f, 1.0f);
-      glColor3f(0.0f, 1.0f, 0.0f);     // Green
-      glVertex3f(1.0f, -1.0f, -1.0f);
-      glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-      glVertex3f(-1.0f, -1.0f, -1.0f);
-      glVertex3f( 0.0f, 1.0f, 0.0f);
-      glColor3f(0.0f,0.0f,1.0f);       // Blue
-      glVertex3f(-1.0f,-1.0f,-1.0f);
-      glColor3f(0.0f,1.0f,0.0f);       // Green
-      glVertex3f(-1.0f,-1.0f, 1.0f);
-   glEnd();   // Done drawing the pyramid
- 
-   glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
-}
- */
 }
 /* Handler for window re-size event. Called back when the window first appears and
    whenever the window is re-sized with its new width and height */
@@ -321,7 +270,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps)
     initGL();       // Our own OpenGL initialization
     
     glutMainLoop(); // Enter the infinite event-processing loop
-    glutDestroyWindow(window);
+    //glutDestroyWindow(window);
     //free_bm(bp, image);
     return 0;
 }
