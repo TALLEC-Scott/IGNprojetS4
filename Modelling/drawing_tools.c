@@ -38,7 +38,7 @@ int first_height(SDL_Surface *image, int **bp)
     {
         for (int j = 0; j < image->h; j++)
         {
-            if (bp[i][j] != 0)
+            if (bp[i][j] != -1)
                 return bp[i][j];
         }
     }
@@ -54,7 +54,7 @@ Attributes attr(SDL_Surface *image, int **bp)
     {
         for (int j = 0; j < image->h; j++)
         {
-            if (bp[i][j] != 0)
+            if (bp[i][j] != -1)
             {
                 nb_points++;
                 if (bp[i][j] > max)
@@ -183,7 +183,7 @@ void List_of_Points(int **bp, SDL_Surface *image, _3D_Coord **res)
         for (int j = 0; j < image->h; j++)
         {
 
-            if (bp[i][j] != 0)
+            if (bp[i][j] != -1)
             {
                 co.x = i;
                 co.y = j;
@@ -216,7 +216,7 @@ void Draw_Points(int **bp, SDL_Surface *image)
     {
         for (int j = 0; j < image->h; j++)
         {
-            if (bp[i][j] != 0)
+            if (bp[i][j] != -1)
             {
                 glVertex3f(((float)i / max_dim_size) * 2 - image->w / max_dim_size, ((float)j / max_dim_size) * 2 + (image->h / max_dim_size),
                            (float)bp[i][j] / (float)max);
@@ -323,21 +323,26 @@ void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image
       {
          glColor3f( 0/255., 51/255., 204/255.);
       }
-      else if( ((float)p[v[i].p1].z == -100) | ((float)p[v[i].p2].z == -100) | ((float)p[v[i].p3].z == -100))
+      else if( ((float)p[v[i].p1].z == 0) | ((float)p[v[i].p2].z == 0) | ((float)p[v[i].p3].z == 0))
       {
          glColor3f( 0/255., 0/255., 153/255.);
       }
-      else if( ((float)p[v[i].p1].z == -200) | ((float)p[v[i].p2].z == -200) | ((float)p[v[i].p3].z == -200))
+      else if( ((float)p[v[i].p1].z == -100) | ((float)p[v[i].p2].z == -100) | ((float)p[v[i].p3].z == -100))
       {
          glColor3f( 0/255., 0/255., 102/255.);
       }
-      else if( ((float)p[v[i].p1].z == -300) | ((float)p[v[i].p2].z == -300) | ((float)p[v[i].p3].z == -300))
+      else if( ((float)p[v[i].p1].z == -200) | ((float)p[v[i].p2].z == -200) | ((float)p[v[i].p3].z == -200))
       {
          glColor3f( 0/255., 0/255., 77/255.);
       }
-      else if( ((float)p[v[i].p1].z == -400) | ((float)p[v[i].p2].z == -400) | ((float)p[v[i].p3].z == -400))
+      else if( ((float)p[v[i].p1].z == -300) | ((float)p[v[i].p2].z == -300) | ((float)p[v[i].p3].z == -300))
       {
          glColor3f( 0/255., 0/255., 26/255.);
+      }
+
+      else if( ((float)p[v[i].p1].z == -400) | ((float)p[v[i].p2].z == -400) | ((float)p[v[i].p3].z == -400))
+      {
+         glColor3f( 0., 0., 0.);
       }
 
         //glColor3f((float) i/ntri, (float) i/ntri, (float) i/ntri);
