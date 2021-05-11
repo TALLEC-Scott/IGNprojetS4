@@ -256,7 +256,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps)
     glutInitDisplayMode(GLUT_DOUBLE);     // Enable double buffered mode
     glutInitWindowSize(640, 480);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
-    int window = glutCreateWindow(title); // Create window with the given title
+    glutCreateWindow(title); // Create window with the given title
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
     glutDisplayFunc(display);             // Register callback handler for window re-paint event
     glutReshapeFunc(reshape);
