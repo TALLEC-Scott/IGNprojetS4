@@ -7,6 +7,17 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
   SDL_LockSurface(image);
   int **node = NULL;
 
+  // Init array
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      h[i][j] = -1;
+      bp[i][j] = -1;
+    }
+  }
+
+
   int size = 1;
   node = (int**)calloc(1, sizeof(int*));
   node[0] = (int*)calloc(2, sizeof(int));
@@ -98,8 +109,6 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
     if(counter == 0)
     {
       elevation -= 100;
-      if(elevation == 0)
-        elevation = -100;
       counter = counter_temp;
       counter_temp = 0;
     }
@@ -192,7 +201,7 @@ void map_update_bp(int **h, int **bp, int w, int h2)
   {
     for(int j = 0; j < h2; j++)
     {
-      if(bp[i][j] != 0)
+      if(bp[i][j] != -1)
       {
         bp[i][j] = h[i][j];
       }
@@ -404,7 +413,7 @@ int* map_elevation(SDL_Surface *image, int **tab, int **h, int label,
       Uint8 r, g, b;
       SDL_GetRGB(pixel, image->format, &r, &g, &b);
 
-      if(tab[i][j] == label && r == 255 && h[i][j] == 0)
+      if(tab[i][j] == label && r == 255 && h[i][j] == -1)
       {
         bfs_elevation(image, i, j, label, tab, h, list, size, elevation, total);
         //map_elevation_colorize(h, tab, label, elevation, image->w, image->h);
@@ -481,7 +490,7 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
         SDL_GetRGB(pixel, image->format, &r, &g, &b);*/
 
         if(tab[xt+n[i][0]][yt+n[i][1]] == label &&
-            h2[xt+n[i][0]][yt+n[i][1]] == 0 /*&&r == 255*/)
+            h2[xt+n[i][0]][yt+n[i][1]] == -1 /*&&r == 255*/)
         {
           struct point node;
           node.x = xt+n[i][0];
@@ -491,7 +500,7 @@ void bfs_elevation(SDL_Surface *image, int x, int y, int label,
           q = enqueue(q, node);
         }
         else if(i/*r == 0*/ &&
-            h2[xt+n[i][0]][yt+n[i][1]] == 0)
+            h2[xt+n[i][0]][yt+n[i][1]] == -1)
         {
           /*int new_label[5];
           int size_dfs = 0;*/
@@ -573,7 +582,7 @@ void dfs_elevation(SDL_Surface *image, int x, int y, int **tab, int label,
   int w = image->w;
   int h2 = image->h;
 
-  if(r == 0 && h[x][y] == 0 && tab[x][y] == label)
+  if(r == 0 && h[x][y] == -1 && tab[x][y] == label)
   {
     h[x][y] = elevation;
 
