@@ -103,7 +103,7 @@ void bmp_create(SDL_Surface *image, int **array, char *name)
       if(array[i][j] == 0)
         BMP_Put_Pixel(image, i, j,
                   (SDL_MapRGB(image->format, 255, 255, 255)));
-      if(array[i][j] == 1)
+      if(array[i][j] == 1 || array[i][j] == 3)
         BMP_Put_Pixel(image, i, j,
                   (SDL_MapRGB(image->format, 0, 0, 0)));
       if(array[i][j] == 2)

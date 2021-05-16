@@ -186,6 +186,8 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
 
+    rebuilt_river(pic_river, array_river);
+    
     SDL_Surface *pic_road_major = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
