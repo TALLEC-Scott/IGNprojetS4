@@ -90,7 +90,7 @@ void print_list(vector_list *end)
 
 
 //test if a pixel correspond to filter
-int is_in_filter(struct image_pict *image, int x, int y)
+int is_in_filter(struct image_pict *image, int x, int y, int is_line)
 {
   int filter[31][25]=
   {
@@ -150,7 +150,7 @@ int is_in_filter(struct image_pict *image, int x, int y)
 	if (corr == 25)
 	{
 		test = 1;
-		if (i == 1 && x-3>=0 && x+3<image->w && y-3>=0 && y+3<image->h)
+		if (is_line == 1 && i == 1 && x-3>=0 && x+3<image->w && y-3>=0 && y+3<image->h)
 		{
 			for (int m = x-3; m<=x+3; m++)
 			{
@@ -170,7 +170,7 @@ int is_in_filter(struct image_pict *image, int x, int y)
 }
 
 //thins lines
-void thinning(struct image_pict *image)
+void thinning(struct image_pict *image, int is_line)
 {
   int i, j;
   i = 0;
@@ -180,7 +180,7 @@ void thinning(struct image_pict *image)
 	while (j<image->h)
 	{
 		if (image->pict[i][j] != 0 &&
-				is_in_filter(image, i, j) == 1)
+				is_in_filter(image, i, j, is_line) == 1)
 		{
 			image->pict[i][j] = 0;
 			if (i-2 < 0)
@@ -198,6 +198,41 @@ void thinning(struct image_pict *image)
   }
 }
 
+
+void enlarge_riv(struct image_pict *image)
+{
+  for (int i = 0; i<image->w; i++)
+  {
+  	for (int j = 0; j<image->h; j++)
+  	{
+  		if (image->pict[i][j] == 1)
+  		{
+  			if (i>0)
+  			{
+  				image->pict[i-1][j] = 3;
+  				if (j>0)
+  					image->pict[i-1][j-1] = 3;
+  				if (j<image->h-1)
+  					image->pict[i-1][j+1] = 3;
+  			}
+  			if (j>0)
+  			{
+  				image->pict[i][j-1] = 3;
+  				if (i<image->w-1)
+  					image->pict[i+1][j-1] = 3;
+  			}
+  			if (i<image->w-1)
+  			{
+  				image->pict[i+1][j] = 3;
+  				if (j<image->h-1)
+  					image->pict[i+1][j+1] = 3;
+  			}
+  			if (j<image->h-1)
+  				image->pict[i][j+1] = 3;
+  		}
+  	}
+  }
+}
 
 /*//search end of a line
 void rec_moore(struct image_pict *image, int **mark, int clock[8][2],
@@ -441,7 +476,7 @@ int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2)
 }
 
 //find the point of the list which is closer to (x,y) point and draw the line
-int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i_src, size_t i_dst, float i_mini)
+int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i_src, size_t i_dst, float i_mini, int max_dist)
 {
   float min_d, new_d;
   size_t mini = i_src;
@@ -469,7 +504,7 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
   		if (pt.state == 0 && (pt.x != x || pt.y != y))
 		{
 			new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y))) * 5;
-			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+			if (new_d > 1 && new_d*2 < max_dist && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
 			{
 				int **mark = NULL;
 	  			mark = (int**)calloc(image->w, sizeof(int*));
@@ -494,7 +529,7 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
 			new_d = sqrt(((pt.x-x)*(pt.x-x))+((pt.y-y)*(pt.y-y)));
 			if (x > 963 && x < 990 && y > 645 && y < 700 && pt.x > 963 && pt.x < 990 && pt.y > 645 && pt.y < 700)
   				printf("x2: %i, y2: %i, dist: %f\n",pt.x,pt.y,new_d);
-			if (new_d > 1 && new_d < 100 && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
+			if (new_d > 1 && new_d < max_dist && new_d <= min_d && is_linked(image,pt.x,pt.y,x,y) == 0)
 			{
 				int **mark = NULL;
 	  			mark = (int**)calloc(image->w, sizeof(int*));
@@ -502,7 +537,7 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
 					mark[j] = (int*)calloc(image->h, sizeof(int*));
 	  			if (is_looped(image, pt.x,pt.y,x,y, 0, mark) == 0)
 				{
-					if (i == i_dst || euclidian(image, pts, pt.x, pt.y, i, i_src, new_d) == 1)
+					if (i == i_dst || euclidian(image, pts, pt.x, pt.y, i, i_src, new_d, max_dist) == 1)
 					{
 						min_d = new_d;
 						mini = i;
@@ -536,14 +571,14 @@ int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i
 }
 
 //link points which are end of lines between them or the edge
-void link_pts(struct image_pict *image, vector_list *pts)
+void link_pts(struct image_pict *image, vector_list *pts, int max_dist)
 {
   struct end_pts pt;
   for (size_t i = 0; i<pts->element_count; i++)
   {
   	pt =  pts->data[i];
   	if (pt.state == 0)
-  		euclidian(image, pts, pt.x, pt.y, i, -1, image->w * image->h);
+  		euclidian(image, pts, pt.x, pt.y, i, -1, image->w * image->h, max_dist);
   }
 }
 
@@ -565,7 +600,7 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h)
   }
   pict->w = image->w;
   pict->h = image->h;
-  thinning(pict);
+  thinning(pict, 1);
   vector_list end_list = vector_of_list(0);
   neigh(pict, &end_list);
   SDL_Surface *pic_neigh = SDL_CreateRGBSurface(0, image->w, image->h,
@@ -575,29 +610,56 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h)
   int max = 5;
   while (max > 0 && end_list.element_count != 0)
   {
-  	link_pts(pict, &end_list);
+  	link_pts(pict, &end_list, 100);
   	//print_list(&end_list);
   	end_list.element_count = 0;
   	neigh(pict, &end_list);
   	max --;
   }
   delete_vec(end_list);
-
-  /*int **bp = NULL;
-  bp = (int**)calloc(image->w, sizeof(int*));
-  for(int k = 0; k < image->w; k++)
-  {
-    bp[k] = (int*)calloc(image->h, sizeof(int));
-  }*/
-
-  /*for(int i = 0; i < image->w; i++)
-  {
-    free(bp[i]);
-  }
-  free(bp);*/
-  thinning(pict);
+  thinning(pict, 1);
   bmp_create(image, pict->pict, "holes.bmp");
   Map_Colorisation(image, bp, tab2, h);
+  for(int i = 0; i < pict->w; i++)
+  	free(pict->pict[i]);
+  free(pict->pict);
+  free(pict);
+  SDL_UnlockSurface(image);
+  SDL_FreeSurface(image);
+}
+
+void rebuilt_river(SDL_Surface *image, int **tab)
+{
+  SDL_LockSurface(image);
+  struct image_pict *pict = malloc(sizeof(struct image_pict));
+  pict->pict = (int**)calloc(image->w, sizeof(int*));
+  for(int i = 0; i < image->w; i++)
+  	pict->pict[i] = (int*)calloc(image->h, sizeof(int*));
+  for (int i = 0; i<image->w; i++)
+  {
+  	for (int j = 0; j<image->h; j++)
+  	{
+  		if (tab[i][j] == 1)
+  			pict->pict[i][j] = 1;
+  	}
+  }
+  pict->w = image->w;
+  pict->h = image->h;
+  thinning(pict, 0);
+  vector_list end_list = vector_of_list(0);
+  neigh(pict, &end_list);
+  SDL_Surface *pic_neigh = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+  bmp_create(pic_neigh, pict->pict, "neigh_riv.bmp");
+  link_pts(pict, &end_list, 20);
+  end_list.element_count = 0;
+  neigh(pict, &end_list);
+  link_pts(pict, &end_list, 20);
+  end_list.element_count = 0;
+  delete_vec(end_list);
+  enlarge_riv(pict);
+  bmp_create(image, pict->pict, "holes_riv.bmp");
   for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);
