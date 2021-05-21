@@ -1,11 +1,12 @@
 #include "MapFilterColor.h"
+#include "MapTexture.h"
 
 // bmp_filter initializes array for stores all the informations about
 // the ign map
 void bmp_filter(SDL_Surface *image, int r, int g, int b,
     int r1, int g1, int b1, int r2, int g2, int b2
     ,int **bp, int **tab, int **h, int **road_major, int **road_minor,
-    int **river, int **trail)
+    int **river, int **trail, int **name)
 {
 
   int **topo = NULL;
@@ -46,7 +47,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
 
 
   filter(image, topo, river, road_major, road_minor, trail, r, g, b, r1, g1,
-      b1, r2, g2, b2, bp, tab, h);
+      b1, r2, g2, b2, bp, tab, h, name);
 
   // free
   for(int i = 0; i < image->w; i++)
@@ -69,7 +70,7 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
     int **array_road_major, int **array_road_minor, int **array_trail, int r1,
     int g1, int b1, int r2, int g2, int b2, int r3, int g3, int b3, 
-    int **bp, int **tab, int **h)
+    int **bp, int **tab, int **h, int **array_name)
 {
     double *array = calloc(3, sizeof(double));
     SDL_LockSurface(image);
@@ -95,6 +96,13 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
               v = array[2];
 
               //printf("H: %f, S: %f, V: %f\n", h, s, v);
+
+              //Name colors
+              if(h < 17.2 && s > 0.19 && v > 0.5 && v < 0.73 && s < 0.64)
+              {
+                array_name[i][j] = 1;
+                continue;
+              }
               
               // Trail colors
               if(h > 350 && s > 0.18)
@@ -109,7 +117,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
                 continue;
               }
               // River
-              if(h > 190 && v > 0.8 && h < 350)
+              if(h > 190 && v > 0.8 && h < 350 && s > 0.1)
               {
                 BMP_Put_Pixel(image, i, j,
                     (SDL_MapRGB(image->format, 0, 255, 0)));
@@ -202,17 +210,28 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
 
+  SDL_Surface *pic_name = SDL_CreateRGBSurface(0, image->w, image->h,
+        image->format->BitsPerPixel, image->format->Rmask,
+        image->format->Gmask, image->format->Bmask, image->format->Amask);
+
     bmp_white(pic_river);
     bmp_white(pic_road_major);
     bmp_white(pic_road_minor);
     bmp_white(pic_topo);
     bmp_white(pic_trail);
+    bmp_white(pic_name);
 
     bmp_create(pic_river, array_river, "river.bmp");
     bmp_create(pic_road_major, array_road_major, "road_major.bmp");
     bmp_create(pic_road_minor, array_road_minor, "road_minor.bmp");
     bmp_create(pic_topo, array_topo, "topo.bmp");
     bmp_create(pic_trail, array_trail, "trail.bmp");
+    bmp_create(pic_trail, array_name, "name.bmp");
+
+    SDL_Surface *image_texture;
+    image_texture = SDL_LoadBMP("Pictures/texture.bmp");
+    map_create_texture(image_texture, array_river, array_trail, array_road_major,
+        array_road_minor, image->w, image->h);
 
     // Free Surface
     free(array);
@@ -221,6 +240,7 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
     SDL_FreeSurface(pic_road_minor);
     SDL_FreeSurface(pic_topo);
     SDL_FreeSurface(pic_trail);
+    SDL_FreeSurface(pic_name);
     SDL_UnlockSurface(image);
     SDL_SaveBMP(image, "Pictures/Results/ign.bmp");
 }

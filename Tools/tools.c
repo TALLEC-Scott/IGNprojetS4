@@ -576,3 +576,23 @@ void load_image(Image *image, char *file)
         g_critical("%s",error->message);
 }
 
+// Takes array from extraction (river, trail, ect.) and update value with
+// real altitude from h2 array
+void process_array(int **array, int **h2, int h, int w)
+{
+  for(int i = 0; i < w; i++)
+  {
+    for(int j = 0; j < h; j++)
+    {
+      if(array[i][j] != 0 && array[i][j] != -1)
+      {
+        array[i][j] = h2[i][j];
+      }
+      else
+      {
+        array[i][j] = -1;
+      }
+    }
+  }
+}
+

@@ -515,6 +515,8 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         ui->road_minor = (int**)calloc(image->w, sizeof(int*));
         ui->river = (int**)calloc(image->w, sizeof(int*));
         ui->trail = (int**)calloc(image->w, sizeof(int*));
+        ui->name = (int**)calloc(image->w, sizeof(int*));
+
 
         for(int k = 0; k < image->w; k++)
         {
@@ -525,6 +527,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
           ui->road_minor[k] = (int*)calloc(image->h, sizeof(int*));
           ui->river[k] = (int*)calloc(image->h, sizeof(int*));
           ui->trail[k] = (int*)calloc(image->h, sizeof(int*));
+          ui->name[k] = (int*)calloc(image->h, sizeof(int*));
         }
 
 
@@ -533,7 +536,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
               r2, g2, b2,
               ui->bp, ui->tab, ui->h,
               ui->road_major, ui->road_minor,
-              ui->river, ui->trail);
+              ui->river, ui->trail, ui->name);
         
         SDL_FreeSurface(image);
     }
@@ -713,7 +716,10 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
     // point matrix: ui->bp (double pointer)
     SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
-    execute_function(ui->argc, ui->argv, image, ui->bp);
+    process_array(ui->river, ui->h, image->h, image->w);
+
+
+    execute_function(ui->argc, ui->argv, image, ui->bp, ui->river);
 
     SDL_FreeSurface(image);
     return TRUE;
@@ -883,6 +889,7 @@ int main (int argc, char *argv[])
         .road_minor = NULL,
         .river = NULL,
         .trail = NULL,
+        .name = NULL,
         .argc = argc,
         .argv = argv
     };
