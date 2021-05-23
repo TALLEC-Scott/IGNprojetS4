@@ -72,6 +72,14 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
     return TRUE;
 }
 
+// restore default colors for topo, road and river
+void reset_colors_to_default(Ui *ui)
+{
+    ui->colors.topo = ui->colors.default_color;
+    ui->colors.road = ui->colors.default_color;
+    ui->colors.river = ui->colors.default_color;
+}
+
 // Display a secondary window with three color pickers for topo, road and river
 gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
         gboolean state, gpointer user_data)
@@ -83,6 +91,8 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     {
         gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
         ui->is_analysis_auto = 1;
+
+        reset_colors_to_default(ui);
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
@@ -115,7 +125,7 @@ gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
 }
 
 // Handler for manual elevation rectification
-gboolean on_area_press(GtkWidget *area __attribute__((unused)),
+gboolean on_area_press(GtkWidget *area,
         GdkEventButton *event, gpointer user_data)
 {
     Ui *ui = user_data;
@@ -129,6 +139,14 @@ gboolean on_area_press(GtkWidget *area __attribute__((unused)),
                 ui->scrl_out)) + event->x;
     gdouble y = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(
                 ui->scrl_out)) + event->y;
+
+    int width = gtk_widget_get_allocated_width(GTK_WIDGET(area));
+    int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
+
+    if (height > ui->image_output.height)
+        x += (ui->image_output.height - height) / 2;
+    if (width > ui->image_output.width)
+        y += (ui->image_output.width - width) / 2;
 
     // loads click coordinates
     sprintf(x_lab, "X: %f", x);
@@ -160,7 +178,7 @@ gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
                 "button-press-event", G_CALLBACK(on_area_press), ui);
 
         // shows the secondary window
-        gtk_widget_show(GTK_WIDGET(ui->rectif.wrectif));
+        gtk_widget_show(GTK_WIDGET(ui->rectif.window));
 
         gtk_window_present(ui->window);
 
@@ -195,7 +213,7 @@ something went wrong\n");
         gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
        
         // closes the secondary window
-        gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+        gtk_widget_hide(GTK_WIDGET(ui->rectif.window));
     }
 
     return TRUE;
@@ -327,15 +345,18 @@ gboolean on_color(GtkButton *button, gpointer user_data)
 
         if (strcmp(label, "Topographic Line Color") == 0)
         {
-            ui->colors.color_topo = color;
+            ui->colors.topo = color;
+            ui->colors.topo_was_set = TRUE;
         }
         else if (strcmp(label, "Road Color") == 0)
         {
-            ui->colors.color_road = color;
+            ui->colors.road = color;
+            ui->colors.road_was_set = TRUE;
         }
         else if (strcmp(label, "River Color") == 0)
         {
-            ui->colors.color_river = color;
+            ui->colors.river = color;
+            ui->colors.river_was_set = TRUE;
         }
         else
             printf("How in Hell did you manage to click on a button that \
@@ -356,12 +377,28 @@ gboolean on_color_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
 {
     Ui *ui = user_data;
 
-    //TODO message dialog to pick all colors
+    if (!(ui->colors.topo_was_set && ui->colors.road_was_set &&
+            ui->colors.river_was_set))
+    {
+        GtkWidget *message = gtk_message_dialog_new(ui->window,
+                GTK_DIALOG_MODAL,
+                GTK_MESSAGE_WARNING,
+                GTK_BUTTONS_OK,
+                "Dear user, all colors must be set for the analysis.\n"
+                "Please check that you have set each"
+                "colors before continuing.");
 
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
+        gtk_dialog_run(GTK_DIALOG(message));
 
-    gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
+        gtk_widget_destroy(message);
+    }
+    else
+    {
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
+
+        gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
+    }
 
     return TRUE;
 }
@@ -375,6 +412,8 @@ gboolean on_color_cancel(GtkButton *b __attribute__((unused)),
     gtk_widget_hide(GTK_WIDGET(ui->colors.wcb));
 
     gtk_switch_set_active(ui->switch_auto_analysis, TRUE);
+
+    reset_colors_to_default(ui);
 
     gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
@@ -453,7 +492,7 @@ gboolean on_rectif_cancel(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.window));
 
     gtk_toggle_button_set_active(ui->rectif_button, FALSE);
 
@@ -466,7 +505,7 @@ gboolean on_rectif_done(GtkButton *b __attribute__((unused)),
 {
     Ui *ui = user_data;
 
-    //gtk_widget_hide(GTK_WIDGET(ui->rectif.wrectif));
+    //gtk_widget_hide(GTK_WIDGET(ui->rectif.window));
 
     gtk_toggle_button_set_active(ui->rectif_button, FALSE);
 
@@ -497,15 +536,15 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         }
         
         
-        double r = ui->colors.color_topo.red * 255,
-               g = ui->colors.color_topo.green * 255,
-               b = ui->colors.color_topo.blue * 255,
-               r1 = ui->colors.color_road.red * 255,
-               g1 = ui->colors.color_road.green * 255,
-               b1 = ui->colors.color_road.blue * 255,
-               r2 = ui->colors.color_river.red * 255,
-               g2 = ui->colors.color_river.green * 255,
-               b2 = ui->colors.color_river.blue * 255;
+        double r = ui->colors.topo.red * 255,
+               g = ui->colors.topo.green * 255,
+               b = ui->colors.topo.blue * 255,
+               r1 = ui->colors.road.red * 255,
+               g1 = ui->colors.road.green * 255,
+               b1 = ui->colors.road.blue * 255,
+               r2 = ui->colors.river.red * 255,
+               g2 = ui->colors.river.green * 255,
+               b2 = ui->colors.river.blue * 255;
 
 
         ui->bp = (int**)calloc(image->w, sizeof(int*));
@@ -836,18 +875,22 @@ int main (int argc, char *argv[])
         .colors =
         {
             .wcb = wcb,
-            .button_color_topo = button_color_topo,
-            .button_color_road = button_color_road,
-            .button_color_river = button_color_river,
+            .button_topo = button_color_topo,
+            .button_road = button_color_road,
+            .button_river = button_color_river,
             .color_ok = color_ok,
             .color_cancel = color_cancel,
-            .color_topo = {0, 0, 0, 0},
-            .color_road = {0, 0, 0, 0},
-            .color_river = {0, 0, 0, 0}
+            .topo = {0, 0, 0, 0},
+            .road = {0, 0, 0, 0},
+            .river = {0, 0, 0, 0},
+            .topo_was_set = FALSE,
+            .road_was_set = FALSE,
+            .river_was_set = FALSE,
+            .default_color = {0, 0, 0, 0}
         },
         .rectif =
         {
-            .wrectif = wrectif,
+            .window = wrectif,
             .output_event_box = output_event_box,
             .x_label = x_label,
             .y_label = y_label,
@@ -859,12 +902,6 @@ int main (int argc, char *argv[])
             .handler_id = 0,
             .x_pos = -1,
             .y_pos = -1
-        },
-        .rgba =
-        {
-            .red = -1,
-            .green = -1,
-            .blue = -1
         },
         .image_input =
         {

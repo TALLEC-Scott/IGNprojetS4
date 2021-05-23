@@ -16,18 +16,22 @@ typedef struct {
 
 typedef struct {
     GtkWindow   *wcb;
-    GtkButton   *button_color_topo;
-    GtkButton   *button_color_road;
-    GtkButton   *button_color_river;
+    GtkButton   *button_topo;
+    GtkButton   *button_road;
+    GtkButton   *button_river;
     GtkButton   *color_ok;
     GtkButton   *color_cancel;
-    GdkRGBA     color_topo;
-    GdkRGBA	color_road;
-    GdkRGBA	color_river;
+    GdkRGBA     topo;
+    GdkRGBA	road;
+    GdkRGBA	river;
+    GdkRGBA     default_color;
+    gboolean    topo_was_set;
+    gboolean    road_was_set;
+    gboolean    river_was_set;
 } Colors;
 
 typedef struct {
-    GtkWindow       *wrectif;
+    GtkWindow       *window;
     GtkWidget       *output_event_box;
     GtkSwitch       *switch_auto;
     GtkLabel        *x_label;
@@ -63,7 +67,6 @@ typedef struct {
     gboolean    is_analysis_auto;
     gboolean    analysis_done;
     gboolean    is_step;
-    GdkRGBA     rgba;
     Image       image_input;
     Image       image_output;
     Colors      colors;
