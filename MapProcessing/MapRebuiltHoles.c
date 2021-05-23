@@ -665,5 +665,5 @@ void rebuilt_river(SDL_Surface *image, int **tab)
   free(pict->pict);
   free(pict);
   SDL_UnlockSurface(image);
-  SDL_FreeSurface(image);
+  //SDL_FreeSurface(image);
 }

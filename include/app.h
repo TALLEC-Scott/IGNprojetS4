@@ -78,6 +78,7 @@ typedef struct {
     int         **road_minor;
     int         **river;
     int         **trail;
+    int         **name;
     int         argc;
     char        **argv;
 } Ui;

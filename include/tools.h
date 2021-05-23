@@ -21,6 +21,7 @@ void bmp_test2(SDL_Surface *image, int **tab);
 int is_black(SDL_Surface *image, int x, int y);
 size_t len_array_int(int *array);
 void bmp_test3(SDL_Surface *image, int **tab, int **h);
+void process_array(int **array, int **h2, int h, int w);
 
 
 typedef struct _2D_arrays {
