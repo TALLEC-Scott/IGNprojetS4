@@ -35,6 +35,16 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
             if (gtk_toggle_button_get_active(ui->rectif_button))
                 gtk_toggle_button_set_active(ui->rectif_button, FALSE);
 
+            ui->image_input.shortname = ui->image_input.filename +
+               strlen(ui->image_input.filename) - 1;
+            
+            while (*ui->image_input.shortname != '/' && 
+                    ui->image_input.shortname > ui->image_input.filename)
+                ui->image_input.shortname--;
+            ui->image_input.shortname++;
+
+            gtk_label_set_text(ui->output_label, ui->image_input.shortname);
+
             gtk_widget_set_sensitive(GTK_WIDGET(ui->switch_auto_analysis),
                     TRUE);
             gtk_widget_set_sensitive(GTK_WIDGET(ui->launch), TRUE);
@@ -144,9 +154,13 @@ gboolean on_area_press(GtkWidget *area,
     int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
 
     if (height > ui->image_output.height)
-        x += (ui->image_output.height - height) / 2;
+        y -= (height - ui->image_output.height) / 2;
     if (width > ui->image_output.width)
-        y += (ui->image_output.width - width) / 2;
+        x -= (width - ui->image_output.width) / 2;
+
+    if (y > ui->image_output.height || x > ui->image_output.width ||
+            y < 0 || x < 0)
+        return TRUE;
 
     // loads click coordinates
     sprintf(x_lab, "X: %f", x);
@@ -623,6 +637,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
     gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
+    gtk_widget_show(GTK_WIDGET(ui->res_scale));
 
     //SDL_FreeSurface(test);
 
@@ -643,39 +658,48 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
             if (!ui->analysis_done)
                 on_launch(NULL, ui);
             sprintf(file, "%stopo.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Topographic lines");
             ui->state++;
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), TRUE);
             break;
         case 1:
             sprintf(file, "%sroad_major.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Major roads");
             ui->state++;
             break;
         case 2:
             sprintf(file, "%sroad_minor.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Minor roads");
             ui->state++;
             break;
         case 3:
             sprintf(file, "%strail.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Trails");
             ui->state++;
             break;
         case 4:
             sprintf(file, "%sriver.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Rivers");
             ui->state++;
             break;
         case 5:
             sprintf(file, "%sign.bmp", dir);
+            gtk_label_set_text(ui->output_label, "ign");
             ui->state++;
             break;
         case 6:
             sprintf(file, "%sneigh.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Ends of lines");
             ui->state++;
             break;
         case 7:
             sprintf(file, "%sholes.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Holes");
             ui->state++;
             break;
         case 8:
             sprintf(file, "%simage.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Result");
             gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
             ui->state++;
             break;
@@ -700,40 +724,49 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
     switch(ui->state)
     {
         case 1:
+            gtk_label_set_text(ui->output_label, ui->image_input.shortname);
             sprintf(file, "%s", ui->image_input.filename);
             gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
             ui->state--;
             break;
         case 2:
             sprintf(file, "%stopo.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Topographic lines");
             ui->state--;
             break;
         case 3:
             sprintf(file, "%sroad_major.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Major roads");
             ui->state--;
             break;
         case 4:
             sprintf(file, "%sroad_minor.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Minor roads");
             ui->state--;
             break;
         case 5:
             sprintf(file, "%strail.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Trails");
             ui->state--;
             break;
         case 6:
             sprintf(file, "%sriver.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Rivers");
             ui->state--;
             break;
         case 7:
             sprintf(file, "%sign.bmp", dir);
+            gtk_label_set_text(ui->output_label, "ign");
             ui->state--;
             break;
         case 8:
             sprintf(file, "%sneigh.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Ends of lines");
             ui->state--;
             break;
         case 9:
             sprintf(file, "%sholes.bmp", dir);
+            gtk_label_set_text(ui->output_label, "Holes");
             ui->state--;
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
             break;
@@ -847,12 +880,16 @@ int main (int argc, char *argv[])
 
     GtkLabel *y_label = GTK_LABEL(gtk_builder_get_object(builder, "y_pos"));
 
+    GtkLabel *output_label = GTK_LABEL(gtk_builder_get_object(builder,
+                "output_label"));
     GtkScrolledWindow *scrl_in = GTK_SCROLLED_WINDOW(gtk_builder_get_object(
                 builder, "scrl_in"));
     GtkScrolledWindow *scrl_out = GTK_SCROLLED_WINDOW(gtk_builder_get_object(
                 builder, "scrl_out"));
     GtkEntryBuffer *coord_text_buff = GTK_ENTRY_BUFFER(gtk_builder_get_object(
                 builder, "coord_text_buff"));
+    GtkImage *res_scale = GTK_IMAGE(gtk_builder_get_object(builder,
+                "res_scale"));
 
 
     // Initialise data structure
@@ -878,6 +915,8 @@ int main (int argc, char *argv[])
         .state = 0,
         .scrl_out = scrl_out,
         .scrl_in = scrl_in,
+        .res_scale = res_scale,
+        .output_label = output_label,
         .colors =
         {
             .wcb = wcb,
