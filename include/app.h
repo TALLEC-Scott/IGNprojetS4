@@ -61,6 +61,7 @@ typedef struct {
     GtkToggleButton     *rectif_button;
     GtkScale            *rotate_scale;
     GtkScale            *zoom_scale;
+    GtkImage            *res_scale;
     double      rotation;
     double      zoom;
     int         state;

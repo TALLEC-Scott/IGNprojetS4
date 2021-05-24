@@ -144,9 +144,13 @@ gboolean on_area_press(GtkWidget *area,
     int height = gtk_widget_get_allocated_height(GTK_WIDGET(area));
 
     if (height > ui->image_output.height)
-        x += (ui->image_output.height - height) / 2;
+        y -= (height - ui->image_output.height) / 2;
     if (width > ui->image_output.width)
-        y += (ui->image_output.width - width) / 2;
+        x -= (width - ui->image_output.width) / 2;
+
+    if (y > ui->image_output.height || x > ui->image_output.width ||
+            y < 0 || x < 0)
+        return TRUE;
 
     // loads click coordinates
     sprintf(x_lab, "X: %f", x);
@@ -623,6 +627,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
     gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
 
+    gtk_widget_show(GTK_WIDGET(ui->res_scale));
 
     //SDL_FreeSurface(test);
 
@@ -853,6 +858,8 @@ int main (int argc, char *argv[])
                 builder, "scrl_out"));
     GtkEntryBuffer *coord_text_buff = GTK_ENTRY_BUFFER(gtk_builder_get_object(
                 builder, "coord_text_buff"));
+    GtkImage *res_scale = GTK_IMAGE(gtk_builder_get_object(builder,
+                "res_scale"));
 
 
     // Initialise data structure
@@ -878,6 +885,7 @@ int main (int argc, char *argv[])
         .state = 0,
         .scrl_out = scrl_out,
         .scrl_in = scrl_in,
+        .res_scale = res_scale,
         .colors =
         {
             .wcb = wcb,
