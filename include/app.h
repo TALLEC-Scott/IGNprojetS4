@@ -12,6 +12,7 @@ typedef struct {
     int             width;
     int             height;
     char            *filename;
+    char            *shortname;
 } Image;
 
 typedef struct {
@@ -62,6 +63,7 @@ typedef struct {
     GtkScale            *rotate_scale;
     GtkScale            *zoom_scale;
     GtkImage            *res_scale;
+    GtkLabel            *output_label;
     double      rotation;
     double      zoom;
     int         state;

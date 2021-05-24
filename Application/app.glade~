@@ -396,10 +396,9 @@ Analysis</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="picture_title">
+          <object class="GtkLabel" id="output_name">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">label</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -407,7 +406,7 @@ Analysis</property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
+          <object class="GtkImage" id="res_scale">
             <property name="can-focus">False</property>
             <property name="pixbuf">../Pictures/needed/scale2.png</property>
           </object>

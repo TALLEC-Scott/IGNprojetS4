@@ -396,10 +396,9 @@ Analysis</property>
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="picture_title">
+          <object class="GtkLabel" id="output_label">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">label</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
