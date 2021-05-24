@@ -5,44 +5,16 @@
 #include <math.h>
 #include <cglm/cglm.h>
 
-#define RADIAN 3.14/180.0
-#define degreesToRadians(x) x*(3.141592f/180.0f)
+#define PI 3.14159
 
-void rotateX(float angle);
-void rotateY(float angle);
-void GetViewMatrix(mat4 res);
-void updateCameraVectors();
 
+void VectorsFromAngles();
 
 /* Global variables */
 static int **bp;
 static int **river2;
 
 static SDL_Surface *image;
-
-static float angle_Pitch = 0.0;
-
-static float angle_Yaw = -90.0f;
-
-//static float angle_Roll = 0.0;
-
-static float lx = 0.0f, lz = -1.0f, ly = 0;
-
-static float x = 0.0f, z = 5.0f;
-
-static float y = 1.0f;
-
-static float angle = 0.0f;
-
-static float ang = 0.0f;
-
-static float deltaAngle = 0.0f;
-
-static float gammaAngle = 0.0f;
-
-static int xOrigin = -1;
-
-static int yOrigin = -1;
 
 static int ntri = 0;
 static ITRIANGLE *v;
@@ -51,50 +23,18 @@ static XYZ *p = NULL;
 //Camera
 static float cam_x;
 static float cam_y;
-static float old_cam_y = 0.0f, old_cam_x = 0.0f;
 static float mouse_pos_x;
 static float mouse_pos_y;
 static float height_c;
 static float width_c;
-static float camX = 0.0f;
-static float camZ = 0.0f;
-static float theta = 0.0f;
-static float phi = 0.0f;
-static vec3 (forward) = {0.0f, 0.0f, 0.0f};
-static vec3 (up) = {0.0f, 1.0f, 0.0f};
-static vec3 (left) = {1.0f, 1.0f, 1.0f};
-static vec3 (position) = {0.0f, 0.0f, 0.0f};
-static vec3 (orientation) = {1.0f, 1.0f, 1.0f};
-static float fov = 45.0f;
-static int firstMouse = 1;
-
-
-
-// Step translation
-static float max_step = 0.125f;
-static float min_step = 0.0625f;
-static float current_step = 0.125f;
-
-// Step rotation
-static float max_step_rot = 0.02f;
-static float min_step_rot = 0.01f;
-static float current_step_rot = 0.01f;
-
-
-// QUATERNION
-static vec3 Position = {0.0f, 1.0f, 0.0f};
-static versor Orientation = {0, 0, 0, -1};
-
-enum camera_movement{FORWARD, BACKWARD, LEFT, RIGHT};
-const float SPEED = 10.0f;
-const float SENSITIVITY = 0.01f;
-const float ZOOM = 45.0f;
-float RightAngle = 0.0f;
-float UpAngle = 0.0f;
-
-float MovementSpeed;
-float MouseSensitivity;
-float Zoom;
+static vec3 _position = {0.0f, 0.0f, 0.0f};
+static vec3 _target;
+static vec3 _forward;
+static vec3 _left;
+static float _theta = 0;
+static float _phi = 0;
+static float realspeed = 0.05f;
+static float sensivity = 0.05f;
 
 void camera();
 
@@ -130,27 +70,17 @@ void display()
     glMatrixMode(GL_MODELVIEW);                         // To operate on model-view matrix
     glLoadIdentity();                                   // Reset the model-view matrix
     camera();
+    //printf("%f, %f, %f\n", position[0], position[1], position[2]);
 
+    gluLookAt(_position[0], _position[1], _position[2],
+        _target[0],
+        _target[1],
+        _target[2],
+        0, 0, 1);
 
-    
+    //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-
-    /*gluLookAt(position[0], position[1], position[2],
-        position[0]+forward[0],
-        position[1]+forward[1],
-        position[2]+forward[2],
-        up[0], up[1], up[2]);*/
-    mat4 M;
-
-    GetViewMatrix(M);
-    //printf("%f, %f, %f\n", M[3][0], M[3][1], M[3][2]);
-
-
-    glMultMatrixf(*M);
-
-    glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
-
-    Draw_Points(river2,image);
+    //Draw_Points(river2,image);
     Draw_Triangles(p, v, ntri,bp,image);
     
     glPopMatrix();
@@ -174,7 +104,7 @@ void reshape(GLsizei width, GLsizei height)
     glMatrixMode(GL_PROJECTION); // To operate on the Projection matrix
     glLoadIdentity();            // Reset
     // Enable perspective projection with fovy, aspect, zNear and zFar
-    gluPerspective(fov, aspect, 0.1f, 100.0f);
+    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
     height_c = height;
     width_c = width;
     mouse_pos_x = width / 2;
@@ -203,17 +133,6 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
         motion.right = 1;
         glutPostRedisplay();
         break;
-    case 'k':
-        z -= current_step;
-        glutPostRedisplay();
-        break;
-    case 'i':
-        z += current_step;
-        glutPostRedisplay();
-        break;
-    /*case 73:
-        z += current_step;
-        break;*/
     case 27:
         glutLeaveMainLoop();
     }
@@ -240,89 +159,6 @@ void keyboard_up(unsigned char key, int a __attribute__((unused)), int b __attri
     }
 }
 
-void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
-{
-    //float fraction = 0.1f; //rotate speed
-    switch (key)
-    {
-    case GLUT_KEY_LEFT:
-        angle_Yaw -= current_step_rot;
-        lx = sin(angle_Yaw);
-        lz = -cos(angle_Yaw);
-        break;
-    case GLUT_KEY_RIGHT:
-        angle_Yaw += current_step_rot;
-        lx = sin(angle_Yaw);
-        lz = -cos(angle_Yaw);
-        break;
-    case GLUT_KEY_UP:
-        angle_Pitch += current_step_rot;
-        ly = tan(angle_Pitch);
-        break;
-    case GLUT_KEY_DOWN:
-        angle_Pitch -= current_step_rot;
-        ly = tan(angle_Pitch);
-        break;
-    case GLUT_KEY_SHIFT_L:
-        current_step = max_step;
-        current_step_rot = max_step_rot;
-        break;
-    case GLUT_KEY_CTRL_L:
-        current_step = min_step;
-        current_step_rot = min_step_rot;
-        break;
-    }
-}
-
-void mouseButton(int button, int state, int xx, int yy) {
-
-    // only start motion if the left button is pressed
-    if (button == GLUT_LEFT_BUTTON)
-    {
-
-        // when the button is released
-        if (state == GLUT_UP) {
-            ang+=gammaAngle;
-            yOrigin = -1;
-        }
-        else  {// state = GLUT_DOWN
-            yOrigin = yy;
-        }
-    }
-
-    if (button == GLUT_RIGHT_BUTTON) {
-
-        // when the button is released
-        if (state == GLUT_UP) {
-            angle += deltaAngle;
-            xOrigin = -1;
-        }
-        else  {// state = GLUT_DOWN
-            xOrigin = xx;
-        }
-    }
-}
-
-void GetViewMatrix(mat4 res)
-{
-  versor reverseOrient;
-  glm_quat_conjugate(Orientation, reverseOrient);
-  mat4 rot;
-  glm_quat_mat4(Orientation, rot);
-
-  rot[3][0] = -(rot[0][0] * Position[0] + rot[1][0] * Position[1] + rot[2][0] * Position[3]);
-  rot[3][1] = -(rot[0][1] * Position[0] + rot[1][1] * Position[1] + rot[2][1] * Position[3]);
-  rot[3][2] = -(rot[0][2] * Position[0] + rot[1][2] * Position[1] + rot[2][2] * Position[3]);
-  rot[3][3] = 1;
-
-  glm_mat4_copy(rot, res);
-
-
-  /*mat4 translation;
-  //
-
-  glm_mat4_mul(rot, translation, res);*/
-}
 
 void timer(int time)
 {
@@ -331,165 +167,74 @@ void timer(int time)
   glutTimerFunc(time/60,timer, 0);
 }
 
+void VectorsFromAngles()
+{
+  vec3 up = {0.0f, 0.0f, 1.0f};
+  if(_phi > 89.0f)
+    _phi =  89.0f;
+  if(_phi < -89.0f)
+    _phi = -89.0f;
+
+  float temp = cos(_phi*PI/180);
+  _forward[2] = sin(_phi*PI/180);
+  _forward[0] = temp*cos(_theta*PI/180);
+  _forward[1] = temp*sin(_theta*PI/180);
+
+  glm_vec3_cross(up, _forward, _left);
+  glm_vec3_normalize(_left);
+
+  glm_vec3_add(_position, _forward, _target);
+}
+
 void mouse_handler(int x, int y)
 {
+  cam_x = ((width_c/2) - x)*sensivity;
+  cam_y = ((height_c / 2) - y)*sensivity;
 
-  cam_x = ((width_c/2) - x)*0.05f;
-  cam_y = ((height_c / 2) - y)*0.05f;
-
-  RightAngle += cam_x;
-  UpAngle += cam_y;
-
-  updateCameraVectors();
+  _theta += cam_x;
+  _phi += cam_y;
 
 
-  //rotateX(cam_x);
-  //rotateY(cam_y);
-
-  /*angle_Yaw += cam_x;
-  angle_Pitch -= cam_y;
-
-  if(angle_Pitch > 89.0f)
-    angle_Pitch =  89.0f;
-  if(angle_Pitch < -89.0f)
-    angle_Pitch = -89.0f;
-
-  vec3 direction;
-  direction[0] = cos(glm_rad(angle_Yaw)) * cos(glm_rad(angle_Pitch));
-  direction[1] = sin(glm_rad(angle_Pitch));
-  direction[2] = sin(glm_rad(angle_Yaw)) * cos(glm_rad(angle_Pitch));
-  glm_vec3_normalize_to(direction, forward);*/
-
-  //printf("%f, %f\n", cam_x, cam_y);
+  VectorsFromAngles();
 }
-
-void updateCameraVectors()
-{
-  versor aroundY;
-  versor aroundX;
-  vec3 v1 = {0, 1, 0};
-  vec3 v2 = {1, 0, 0};
-  glm_quatv(aroundY, glm_rad(-RightAngle), v1);
-  glm_quatv(aroundX, glm_rad(UpAngle), v2);
-
-  glm_quat_mul(aroundX, aroundY, Orientation);
-}
-
-
-void rotateY(float angle)
-{
-  double radians = glm_rad(angle);
-  vec3 v1;
-  vec3 v2;
-  glm_vec3_scale(left, (float)sin(radians), v1);
-  glm_vec3_scale(forward, (float)cos(radians), v2);
-  vec3 v3;
-  glm_vec3_add(v1, v2, v3);
-  glm_vec3_normalize_to(v3, forward);
-  vec3 dest;
-  glm_vec3_cross(up, forward, dest);
-  glm_vec3_normalize_to(dest, left);
-}
-
-/*void rotate(float angleX, float angleY)
-{
-  float newX = fmod((position[0] + angleX),360.0f);
-  float newY = fmod((position[1] + angleY),360.0f);
-
-  printf("%f, %f, %f\n", position[0], position[1], position[2]);
-
-  position[0] = newX;
-  position[1] = newY;
-}*/
-
 
 void camera()
 {
-  versor q1 = {0, 0, 0, -1};
-  versor temp;
-  glm_quat_conjugate(Orientation, temp);
-  versor temp2;
-  versor qF;
-  glm_quat_mul(Orientation, q1, temp2);
-  glm_quat_mul(temp2, temp, qF);
-  vec3 Front = {qF[0], qF[1], qF[2]};
-  vec3 temp3;
-  vec3 v1 = {0, 1, 0};
-  glm_vec3_cross(Front, v1, temp3);
-  vec3 Right;
-  glm_vec3_normalize_to(temp3, Right);
-  
-
-
-
-
   if(motion.forward == 1)
   {
-    vec3 forw;
-    glm_vec3_scale(Front, 0.05f, forw);
-    glm_vec3_add(Position, forw, Position);
+    vec3 temp;
+    glm_vec3_scale(_forward, realspeed, temp);
+    glm_vec3_add(_position, temp, _position);
   }
   if(motion.backward == 1)
   {
-    vec3 back;
-    Front[0] = -Front[0];
-    Front[1] = -Front[1];
-    Front[2] = -Front[2];
-    glm_vec3_scale(Front, 0.05f, back);
-    glm_vec3_add(Position, back, Position);
-    printf("%f\n", Front[1]);
+    vec3 temp;
+    glm_vec3_scale(_forward, realspeed, temp);
+    temp[0] = -temp[0];
+    temp[1] = -temp[1];
+    temp[2] = -temp[2];
+    glm_vec3_add(_position, temp, _position);
   }
   if(motion.left == 1)
   {
-    vec3 left;
-    Right[0] = -Right[0];
-    Right[1] = -Right[1];
-    Right[2] = -Right[2];
-    glm_vec3_scale(Right, 0.05f, left);
-    glm_vec3_add(Position, left, Position);
+    vec3 temp;
+    glm_vec3_scale(_left, realspeed, temp);
+    glm_vec3_add(_position, temp, _position);
   }
   if(motion.right == 1)
   {
-    vec3 righ;
-    glm_vec3_scale(Right, 0.05f, righ);
-    glm_vec3_add(Position, righ, Position);
+    vec3 temp;
+    glm_vec3_scale(_left, realspeed, temp);
+    temp[0] = -temp[0];
+    temp[1] = -temp[1];
+    temp[2] = -temp[2];
+    glm_vec3_add(_position, temp, _position);
   }
 
-  /*if(angle_Pitch >= 70)
-    angle_Pitch = 70;
-  if(angle_Pitch <= -60)
-    angle_Pitch = -60;
-
-  //glRotatef(-angle_Pitch, 1.0, 0.0, 0.0);
-  //glRotatef(-angle_Yaw, 0.0, 1.0, 0.0);
-  glTranslatef(-camX, 0.0, -camZ);*/
+  glm_vec3_add(_position, _forward, _target);
 }
 
-/*void mouseMove(int xx __attribute__((unused)), int yy) {
 
-    // this will only be true when the left button is down
-    if (yOrigin >= 0) {
-
-        // update gammaAngle
-
-        gammaAngle = (yy - yOrigin) * 0.01f;
-
-        lz = -cos(ang+gammaAngle);
-        ly = sin(ang+gammaAngle);
-
-        glutPostRedisplay();
-    }
-
-    if (xOrigin >= 0) {
-
-        // update deltaAngle
-        deltaAngle = (xx - xOrigin) * 0.001f;
-        // update camera's direction
-        lx = -cos(angle+deltaAngle);
-        ly = sin(angle+deltaAngle);
-        glutPostRedisplay();
-    }
-}*/
 
 int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     int **river)
@@ -530,7 +275,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
 
     glutInit(&argc, argv);                // Initialize GLUT
     glutInitDisplayMode(GLUT_DOUBLE);     // Enable double buffered mode
-    glutInitWindowSize(640, 480);         // Set the window's initial width & height
+    glutInitWindowSize(1280, 720);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
@@ -541,11 +286,6 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     glutKeyboardUpFunc(keyboard_up);
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
-
-    glutMouseFunc(mouseButton);
-    //glutMotionFunc(mouseMove);
-
-    glutSpecialFunc(SpecialKeys);
     initGL();       // Our own OpenGL initialization
     
     glutMainLoop(); // Enter the infinite event-processing loop
