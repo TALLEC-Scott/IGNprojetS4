@@ -27,7 +27,7 @@ static float mouse_pos_x;
 static float mouse_pos_y;
 static float height_c;
 static float width_c;
-static vec3 _position = {0.0f, 0.0f, 0.0f};
+static vec3 _position = {0.0f, -0.5f, 1.5f};
 static vec3 _target;
 static vec3 _forward;
 static vec3 _left;
@@ -70,7 +70,7 @@ void display()
     glMatrixMode(GL_MODELVIEW);                         // To operate on model-view matrix
     glLoadIdentity();                                   // Reset the model-view matrix
     camera();
-    //printf("%f, %f, %f\n", position[0], position[1], position[2]);
+    //printf("%f, %f, %f\n", _target[0], _target[1], _target[2]);
 
     gluLookAt(_position[0], _position[1], _position[2],
         _target[0],
@@ -133,6 +133,9 @@ void keyboard(unsigned char key, int a __attribute__((unused)), int b __attribut
         motion.right = 1;
         glutPostRedisplay();
         break;
+    case GLUT_KEY_SHIFT_L:
+        realspeed = 0.05f;
+        break;
     case 27:
         glutLeaveMainLoop();
     }
@@ -159,6 +162,19 @@ void keyboard_up(unsigned char key, int a __attribute__((unused)), int b __attri
     }
 }
 
+void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((unused))) //camera rotation
+{
+    switch (key)
+    {
+    case GLUT_KEY_SHIFT_L:
+        realspeed = 0.05f;
+        break;
+    case GLUT_KEY_CTRL_L:
+        realspeed = 0.02f;
+        break;
+
+    }
+}
 
 void timer(int time)
 {
@@ -284,6 +300,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     glutIdleFunc(display); // Register callback handler for window re-size event
     glutKeyboardFunc(keyboard);
     glutKeyboardUpFunc(keyboard_up);
+    glutSpecialFunc(SpecialKeys);
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
     initGL();       // Our own OpenGL initialization
