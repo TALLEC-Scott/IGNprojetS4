@@ -166,7 +166,7 @@
           </packing>
         </child>
         <child>
-          <!-- n-columns=2 n-rows=8 -->
+          <!-- n-columns=2 n-rows=9 -->
           <object class="GtkGrid">
             <property name="width-request">50</property>
             <property name="visible">True</property>
@@ -181,7 +181,7 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">7</property>
+                <property name="top-attach">8</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -202,7 +202,7 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
+                <property name="top-attach">7</property>
                 <property name="width">2</property>
               </packing>
             </child>
@@ -312,6 +312,30 @@ Analysis</property>
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">4</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="model_screen_size">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <property name="active">0</property>
+                <items>
+                  <item id="&lt;Enter ID&gt;" translatable="yes">1920x1080</item>
+                  <item translatable="yes">1600x1200</item>
+                  <item translatable="yes">1440x900</item>
+                  <item translatable="yes">1366x768</item>
+                  <item translatable="yes">1280x1024</item>
+                  <item translatable="yes">1152x864</item>
+                  <item translatable="yes">1024x768</item>
+                  <item translatable="yes">800x600</item>
+                  <item translatable="yes">640x480</item>
+                </items>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">6</property>
                 <property name="width">2</property>
               </packing>
             </child>

@@ -202,6 +202,7 @@ gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
 
         // deactivate the scales and modelisation button
         gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
     }
@@ -225,6 +226,7 @@ something went wrong\n");
         gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
+        gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), TRUE);
        
         // closes the secondary window
         gtk_widget_hide(GTK_WIDGET(ui->rectif.window));
@@ -636,6 +638,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
     gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), TRUE);
 
     gtk_widget_show(GTK_WIDGET(ui->res_scale));
 
@@ -797,6 +800,29 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
     return TRUE;
 }
 
+gboolean on_size_changed(GtkComboBox *box, gpointer user_data)
+{
+    Ui *ui = user_data;
+
+    gchar *size = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(box));
+    gchar *save = size;
+
+    char *separator = NULL;
+
+    long w = strtol(size, &separator, 10);
+
+    size = separator + 1;
+
+    long h = strtol(size, &separator, 10);
+
+    ui->model_w = w;
+    ui->model_h = h;
+
+    free(save);
+
+    return TRUE;
+}
+
 int main (int argc, char *argv[])
 {
     // App only launches whitout parameters
@@ -890,6 +916,8 @@ int main (int argc, char *argv[])
                 builder, "coord_text_buff"));
     GtkImage *res_scale = GTK_IMAGE(gtk_builder_get_object(builder,
                 "res_scale"));
+    GtkComboBoxText *model_screen_size = GTK_COMBO_BOX_TEXT(
+            gtk_builder_get_object(builder, "model_screen_size"));
 
 
     // Initialise data structure
@@ -917,6 +945,9 @@ int main (int argc, char *argv[])
         .scrl_in = scrl_in,
         .res_scale = res_scale,
         .output_label = output_label,
+        .model_screen_size = model_screen_size,
+        .model_w = 1920,
+        .model_h = 1080,
         .colors =
         {
             .wcb = wcb,
@@ -1000,6 +1031,10 @@ int main (int argc, char *argv[])
     g_signal_connect(rectif_cancel, "clicked", G_CALLBACK(on_rectif_cancel),
             &ui);
     g_signal_connect(rectif_done, "clicked", G_CALLBACK(on_rectif_done), &ui);
+    g_signal_connect(model_screen_size, "changed", G_CALLBACK(on_size_changed),
+            &ui);
+
+    g_signal_emit_by_name(model_screen_size, "changed");
 
     // Events
     gtk_widget_set_events(output_event_box, GDK_BUTTON_PRESS_MASK);
