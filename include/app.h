@@ -64,9 +64,12 @@ typedef struct {
     GtkScale            *zoom_scale;
     GtkImage            *res_scale;
     GtkLabel            *output_label;
+    GtkComboBoxText     *model_screen_size;
     double      rotation;
     double      zoom;
     int         state;
+    long        model_w;
+    long        model_h;
     gboolean    is_analysis_auto;
     gboolean    analysis_done;
     gboolean    is_step;
