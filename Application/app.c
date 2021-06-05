@@ -792,9 +792,12 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
     SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
     process_array(ui->river, ui->h, image->h, image->w);
+    process_array(ui->trail, ui->h, image->h, image->w);
+    process_array(ui->road_major, ui->h, image->h, image->w);
+    process_array(ui->road_minor, ui->h, image->h, image->w);
 
-
-    execute_function(ui->argc, ui->argv, image, ui->bp, ui->river);
+    execute_function(ui->argc, ui->argv, image, ui->bp, ui->river, ui->trail,
+        ui->road_major, ui->road_minor);
 
     SDL_FreeSurface(image);
     return TRUE;
