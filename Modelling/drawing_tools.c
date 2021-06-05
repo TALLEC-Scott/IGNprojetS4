@@ -208,7 +208,7 @@ void Print_Arr_of_Coord(int nb_points, _3D_Coord arr[])
 void Draw_Points(int **bp, SDL_Surface *image)
 {
     glBegin(GL_POINTS);
-    glColor3f(0.0f, 1.0f, 0.5f);
+    glColor3f(1.0f, 0.99f, 0.0f);
     int max = biggest_height(image, bp);
     float max_dim_size = biggest_dim_size(image);
 
@@ -218,6 +218,7 @@ void Draw_Points(int **bp, SDL_Surface *image)
         {
             if (bp[i][j] != -1)
             {
+              //bp[i][j] += 5;
                 glVertex3f(((float)i / max_dim_size) * 2 - image->w / max_dim_size, ((float)j / max_dim_size) * 2 + (image->h / max_dim_size),
                            (float)bp[i][j] / (float)max);
             }
@@ -226,6 +227,128 @@ void Draw_Points(int **bp, SDL_Surface *image)
 
     glEnd();
 }
+
+void Draw_Points_Add(int **bp, int **array, SDL_Surface *image, float r,
+    float g, float b)
+{
+    int max = biggest_height(image, bp);
+    float max_dim_size = biggest_dim_size(image);
+
+    for (int i = 0; i < image->w; i++)
+    {
+        for (int j = 0; j < image->h; j++)
+        {
+            if (bp[i][j] != -1 && array[i][j] != -1)
+            {
+              Draw_Cube(max, max_dim_size, i, j, bp[i][j], r, g, b, 5, image);
+            }
+        }
+    }
+
+}
+
+void Draw_Cube(int max, float max_dim_size, int x, int y, int z, float r, float g, float b, int gap, SDL_Surface *image)
+{
+
+  glBegin(GL_QUADS);
+
+  int i1 = gap + x;
+  int i2 = x - gap;
+  int i3 = gap + y;
+  int i4 = y - gap;
+  int i5 = gap + z + 5;
+  int i6 = z - gap + 5;
+  glColor3f(r, g, b);
+   // Top face (y = 1.0f)
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+
+
+  // Bottom face (y = -1.0f)
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+
+  // Front face  (z = 1.0f)
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+
+
+  // Back face (z = -1.0f)
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+
+
+      // Left face (x = -1.0f)
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i5 / (float)max);
+
+
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i4 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i2 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+  glVertex3f(((float)i1 / max_dim_size) * 2 - image->w / max_dim_size,
+      ((float)i3 / max_dim_size) * 2 + (image->h / max_dim_size),
+      (float)i6 / (float)max);
+
+  glEnd();
+}
+
 
 void Get_Triangles(int **bp, SDL_Surface *image, _3D_Coord arr[])
 {

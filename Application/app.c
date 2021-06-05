@@ -795,7 +795,8 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
         process_array(ui->road_minor, ui->h, image->h, image->w);
 
         execute_function(ui->argc, ui->argv, image, ui->bp, ui->river, ui->trail,
-        ui->road_major, ui->road_minor);
+        ui->road_major, ui->road_minor, ui->model.width, ui->model.height,
+        ui->model.type);
         SDL_FreeSurface(image);
     }
 

@@ -7,12 +7,14 @@
 
 #define PI 3.14159
 
-
 void VectorsFromAngles();
 
 /* Global variables */
 static int **bp;
 static int **river2;
+static int **trail2;
+static int **road_major2;
+static int **road_minor2;
 
 static SDL_Surface *image;
 
@@ -35,6 +37,7 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
+static int first = 1;
 
 void camera();
 
@@ -58,7 +61,6 @@ void initGL()
     glShadeModel(GL_SMOOTH);                           // Enable smooth shading
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
     glutSetCursor(GLUT_CURSOR_NONE); 
-    
 }
 
 /* Handler for window-repaint event. Called back when the window is created, displaced or resized. 
@@ -80,9 +82,15 @@ void display()
 
     //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-    //Draw_Points(river2,image);
-    Draw_Triangles(p, v, ntri,bp,image);
     
+
+    Draw_Triangles(p, v, ntri,bp,image);
+
+    Draw_Points_Add(bp, river2, image, 0.0f, 0.0f, 1.0f);
+    Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f);
+    //Draw_Points_Add(bp, road_major2, image, 1.0f, 1.0f, 0.0f);
+   // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
+
     glPopMatrix();
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 
@@ -253,12 +261,16 @@ void camera()
 
 
 int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
-    int **river)
+    int **river, int **trail, int **road_major, int **road_minor,
+    int w_size, int h_size, int modelization_mode)
 {
 
     image = im; //it's to use SDL_Surface *im as a global ref
     bp = bps;
     river2 = river;
+    trail2 = trail;
+    road_major2 = road_major;
+    road_minor2 = road_minor;
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -268,7 +280,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     List_of_Points(bp, image, &arr);
 
     int nb_points = att.nb_points;
-    
+
     int nv = 0;
 
     for (int i = 0; i < nb_points; i++)
@@ -282,16 +294,15 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
 
     p = realloc(p, (nv + 3) * sizeof(XYZ));
     v = malloc(3 * nv * sizeof(ITRIANGLE));
-    qsort(p, nv, sizeof(XYZ), XYZCompare);
+    qsort(p, nv, sizeof(XYZ), XYZCompare); 
     Triangulate(nv, p, v, &ntri);
-    //Draw_Points(bp, im);
 
   
     //Print_Arr_of_Coord(att.nb_points, x);
 
     glutInit(&argc, argv);                // Initialize GLUT
     glutInitDisplayMode(GLUT_DOUBLE);     // Enable double buffered mode
-    glutInitWindowSize(1280, 720);         // Set the window's initial width & height
+    glutInitWindowSize(w_size, h_size);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
@@ -303,8 +314,9 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     glutSpecialFunc(SpecialKeys);
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
-    initGL();       // Our own OpenGL initialization
-    
+    initGL();       // Our own OpenGL initialization 
+
+
     glutMainLoop(); // Enter the infinite event-processing loop
     //glutDestroyWindow(window);
     //free_bm(bp, image);
