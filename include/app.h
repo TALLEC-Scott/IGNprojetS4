@@ -47,6 +47,15 @@ typedef struct {
 } Rectif;
 
 typedef struct {
+    GtkWidget           *dialog;
+    GtkComboBoxText     *screen_size;
+    GtkComboBoxText     *dropdown_type;
+    int     type;
+    long    width;
+    long    height;
+} Model;
+
+typedef struct {
     GtkWindow           *window;
     GtkScrolledWindow   *scrl_out;
     GtkScrolledWindow   *scrl_in;
@@ -64,12 +73,9 @@ typedef struct {
     GtkScale            *zoom_scale;
     GtkImage            *res_scale;
     GtkLabel            *output_label;
-    GtkComboBoxText     *model_screen_size;
     double      rotation;
     double      zoom;
     int         state;
-    long        model_w;
-    long        model_h;
     gboolean    is_analysis_auto;
     gboolean    analysis_done;
     gboolean    is_step;
@@ -77,6 +83,7 @@ typedef struct {
     Image       image_output;
     Colors      colors;
     Rectif      rectif;
+    Model       model;
     int         **bp;
     int         **tab;
     int         **h;

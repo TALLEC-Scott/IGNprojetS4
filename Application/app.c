@@ -202,7 +202,6 @@ gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
 
         // deactivate the scales and modelisation button
         gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), FALSE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), FALSE);
     }
@@ -226,7 +225,6 @@ something went wrong\n");
         gtk_widget_set_sensitive(GTK_WIDGET(ui->rotate_scale), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->zoom_scale), TRUE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
-        gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), TRUE);
        
         // closes the secondary window
         gtk_widget_hide(GTK_WIDGET(ui->rectif.window));
@@ -638,9 +636,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
 
     gtk_widget_set_sensitive(GTK_WIDGET(ui->rectif_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(ui->modelise), TRUE);
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->model_screen_size), TRUE);
 
-    gtk_widget_show(GTK_WIDGET(ui->res_scale));
 
     //SDL_FreeSurface(test);
 
@@ -788,18 +784,23 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
 {
     Ui *ui = user_data;
 
-    // point matrix: ui->bp (double pointer)
-    SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
+    if (gtk_dialog_run(GTK_DIALOG(ui->model.dialog)) == GTK_RESPONSE_OK)
+    {
+        // point matrix: ui->bp (double pointer)
+        SDL_Surface *image = SDL_LoadBMP(ui->image_input.filename);
 
-    process_array(ui->river, ui->h, image->h, image->w);
-    process_array(ui->trail, ui->h, image->h, image->w);
-    process_array(ui->road_major, ui->h, image->h, image->w);
-    process_array(ui->road_minor, ui->h, image->h, image->w);
+        process_array(ui->river, ui->h, image->h, image->w);
+        process_array(ui->trail, ui->h, image->h, image->w);
+        process_array(ui->road_major, ui->h, image->h, image->w);
+        process_array(ui->road_minor, ui->h, image->h, image->w);
 
-    execute_function(ui->argc, ui->argv, image, ui->bp, ui->river, ui->trail,
+        execute_function(ui->argc, ui->argv, image, ui->bp, ui->river, ui->trail,
         ui->road_major, ui->road_minor);
+        SDL_FreeSurface(image);
+    }
 
-    SDL_FreeSurface(image);
+    gtk_widget_hide(ui->model.dialog);
+
     return TRUE;
 }
 
@@ -818,10 +819,19 @@ gboolean on_size_changed(GtkComboBox *box, gpointer user_data)
 
     long h = strtol(size, &separator, 10);
 
-    ui->model_w = w;
-    ui->model_h = h;
+    ui->model.width = w;
+    ui->model.height = h;
 
     free(save);
+
+    return TRUE;
+}
+
+gboolean on_model_type_changed(GtkComboBox *box, gpointer user_data)
+{
+    Ui *ui = user_data;
+
+    ui->model.type = gtk_combo_box_get_active(box);
 
     return TRUE;
 }
@@ -863,6 +873,8 @@ int main (int argc, char *argv[])
                 "dlg_file_choose"));
     GtkWidget *color_dialog = GTK_WIDGET(gtk_builder_get_object(builder,
                 "color_dialog"));
+    GtkWidget *model_dialog = GTK_WIDGET(gtk_builder_get_object(builder,
+                "model_dialog"));
     GtkSwitch *switch_auto_analysis = GTK_SWITCH(gtk_builder_get_object(builder,
                 "switch_auto_analysis"));
     GtkSwitch *switch_auto_rectif = GTK_SWITCH(gtk_builder_get_object(builder,
@@ -921,6 +933,8 @@ int main (int argc, char *argv[])
                 "res_scale"));
     GtkComboBoxText *model_screen_size = GTK_COMBO_BOX_TEXT(
             gtk_builder_get_object(builder, "model_screen_size"));
+    GtkComboBoxText *model_type = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(
+                builder, "model_type"));
 
 
     // Initialise data structure
@@ -948,9 +962,6 @@ int main (int argc, char *argv[])
         .scrl_in = scrl_in,
         .res_scale = res_scale,
         .output_label = output_label,
-        .model_screen_size = model_screen_size,
-        .model_w = 1920,
-        .model_h = 1080,
         .colors =
         {
             .wcb = wcb,
@@ -981,6 +992,15 @@ int main (int argc, char *argv[])
             .handler_id = 0,
             .x_pos = -1,
             .y_pos = -1
+        },
+        .model =
+        {
+            .dialog = model_dialog,
+            .screen_size = model_screen_size,
+            .dropdown_type = model_type,
+            .type = 0,
+            .width = 1920,
+            .height = 1080
         },
         .image_input =
         {
@@ -1035,6 +1055,8 @@ int main (int argc, char *argv[])
             &ui);
     g_signal_connect(rectif_done, "clicked", G_CALLBACK(on_rectif_done), &ui);
     g_signal_connect(model_screen_size, "changed", G_CALLBACK(on_size_changed),
+            &ui);
+    g_signal_connect(model_type, "changed", G_CALLBACK(on_model_type_changed),
             &ui);
 
     g_signal_emit_by_name(model_screen_size, "changed");
