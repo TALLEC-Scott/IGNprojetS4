@@ -34,6 +34,8 @@ static int ntri = 0;
 static ITRIANGLE *v;
 static XYZ *p = NULL;
 
+static int mod_mode;
+
 //Camera
 static float cam_x;
 static float cam_y;
@@ -49,6 +51,7 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
+static int first = 1;
 
 void camera();
 
@@ -63,9 +66,9 @@ struct Mo motion = {0, 0, 0, 0};
 char title[] = "3D Shapes";
 
 /* Initialize OpenGL Graphics */
-void initGL()
+void initGL(GdkRGBA * arr)
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);              // Set background color to black and opaque
+    glClearColor(arr->red, arr->green, arr->blue, arr->alpha );              // Set background color to black and opaque
     glClearDepth(1.0f);                                // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);                           // Enable depth testing for z-culling
     glDepthFunc(GL_LEQUAL);                            // Set the type of depth-test
@@ -273,11 +276,6 @@ void camera()
 }
 
 
-/*
-int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
-    int **river, int **trail, int **road_major, int **road_minor,
-    int w_size, int h_size, int modelization_mode)
-*/
 int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
     GdkRGBA background = {0, 0, 0, 0};
@@ -286,6 +284,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
             &background);
 
     image = im; //it's to use SDL_Surface *im as a global ref
+
     bp = ui->bp;
     river2 = ui->river;
     trail2 = ui->trail;
@@ -377,7 +376,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     glutSpecialFunc(SpecialKeys);
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
-    initGL();       // Our own OpenGL initialization 
+    initGL(&background);       // Our own OpenGL initialization 
 
 
     glutMainLoop(); // Enter the infinite event-processing loop
