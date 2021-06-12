@@ -127,10 +127,6 @@ gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
         gboolean state, gpointer user_data)
 {
     Ui *ui = user_data;
-   if (state == TRUE)
-       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
-   else
-       printf("rectif %d\n", gtk_switch_get_active(ui->rectif.switch_auto));
 
     return TRUE;
 }
@@ -175,8 +171,6 @@ gboolean on_area_press(GtkWidget *area,
     ui->rectif.x_pos = x;
     ui->rectif.y_pos = y;
 
-    printf("x = %f, y = %f\n", x, y);
-
     return TRUE;
 }
 
@@ -212,8 +206,8 @@ gboolean on_rectif_button(GtkToggleButton *tbutton, gpointer user_data)
         // Error a signal should have been connected
         if (ui->rectif.handler_id == 0)
         {
-            printf("huh oh, can't get click handler id,\
-something went wrong\n");
+            err(EXIT_FAILURE, "rectif_button off, a signal handler should "
+                    "have been connected.");
         }
         else
         {
@@ -373,13 +367,6 @@ gboolean on_color(GtkButton *button, gpointer user_data)
             ui->colors.river = color;
             ui->colors.river_was_set = TRUE;
         }
-        else
-            printf("How in Hell did you manage to click on a button that \
-doesn't exists ?!?\n");
-
-        
-        printf("color:\nr: %f\ng: %f\nb: %f\na: %f\n", color.red,
-                color.green, color.blue, color.alpha);
     }
 
     gtk_widget_hide(ui->color_dialog);
@@ -466,7 +453,15 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     {
         if (!isdigit(text[i]))
         {
-            printf("Altitude = Number, moron!\n");
+            GtkWidget *message = gtk_message_dialog_new(ui->window,
+                    GTK_DIALOG_MODAL,
+                    GTK_MESSAGE_WARNING,
+                    GTK_BUTTONS_OK,
+                    "Sorry dear user, but an altitude is given in numbers!");
+
+            gtk_dialog_run(GTK_DIALOG(message));
+
+            gtk_widget_destroy(message);
             return TRUE;
         }
     }
@@ -476,7 +471,6 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     // reads a number in the text buffer
     sscanf(text, "%d", &altitude);
 
-    printf("New altitude = %d\n", altitude);
     int x_int = (int)ui->rectif.x_pos;
     int y_int = (int)ui->rectif.y_pos;
 
@@ -484,7 +478,16 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     image_elevation = SDL_LoadBMP("Pictures/Results/image.bmp");
     if(image_elevation == NULL)
     {
-        printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+        GtkWidget *message = gtk_message_dialog_new(ui->window,
+                GTK_DIALOG_MODAL,
+                GTK_MESSAGE_WARNING,
+                GTK_BUTTONS_OK,
+                "SDL_LoadBMP image failed: %s", SDL_GetError());
+
+        gtk_dialog_run(GTK_DIALOG(message));
+
+        gtk_widget_destroy(message);
+
         return TRUE;
     }
 
@@ -539,14 +542,21 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         SDL_Surface *image;
         image = SDL_LoadBMP(ui->image_input.filename);
 
-        printf("filename: %s\n", ui->image_input.filename);
-
         //SDL_Surface *test;
         //test = SDL_LoadBMP("/home/yann/Documents/EPITA/Cours/2020_spe/s4/IGNprojetS4/Pictures/map_ign_2.bmp");
 
         if(image == NULL)
         {
-            printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
+            GtkWidget *message = gtk_message_dialog_new(ui->window,
+                    GTK_DIALOG_MODAL,
+                    GTK_MESSAGE_WARNING,
+                    GTK_BUTTONS_OK,
+                    "SDL_LoadBMP image failed: %s", SDL_GetError());
+
+            gtk_dialog_run(GTK_DIALOG(message));
+
+            gtk_widget_destroy(message);
+
             return TRUE;
         }
         
@@ -706,7 +716,6 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
             ui->state++;
             break;
         default:
-            printf("Step by step forward: state > 8 should not be possible\n");
             break;
     }
 
@@ -774,7 +783,6 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
             gtk_widget_hide(GTK_WIDGET(ui->res_scale));
             break;
         default:
-            printf("Step by step backward: state < 1 should not be possible\n");
             break;
     }
 
