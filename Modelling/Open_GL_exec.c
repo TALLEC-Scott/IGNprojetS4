@@ -266,6 +266,10 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
 */
 int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
+    GdkRGBA background = {0, 0, 0, 0};
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(ui->model.back_color),
+            &background);
 
     image = im; //it's to use SDL_Surface *im as a global ref
     bp = ui->bp;
