@@ -15,6 +15,18 @@ static int **river2;
 static int **trail2;
 static int **road_major2;
 static int **road_minor2;
+static _3D_Coord *points_river = NULL;
+static _3D_Coord *points_trail = NULL;
+static _3D_Coord *points_road_major = NULL;
+static _3D_Coord *points_road_minor = NULL;
+static int size_river = 10;
+static int real_size_river = 0;
+static int size_trail = 10;
+static int real_size_trail = 0;
+static int size_road_major = 10;
+static int real_size_road_major = 0;
+static int size_road_minor = 10;
+static int real_size_road_minor = 0;
 
 static SDL_Surface *image;
 
@@ -37,7 +49,6 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
-static int first = 1;
 
 void camera();
 
@@ -82,14 +93,19 @@ void display()
 
     //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-    
 
     Draw_Triangles(p, v, ntri,bp,image);
 
-    Draw_Points_Add(bp, river2, image, 0.0f, 0.0f, 1.0f);
-    Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f);
+    Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
+    Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
+    Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
+    Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
+
+
+
+    //Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f, points, size);
     //Draw_Points_Add(bp, road_major2, image, 1.0f, 1.0f, 0.0f);
-   // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
+    // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
 
     glPopMatrix();
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
@@ -297,7 +313,38 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     qsort(p, nv, sizeof(XYZ), XYZCompare); 
     Triangulate(nv, p, v, &ntri);
 
-  
+    points_river = calloc(10, sizeof(_3D_Coord));
+    if(points_river == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_river");
+    }
+    points_trail = calloc(10, sizeof(_3D_Coord));
+    if(points_trail == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_trail");
+    }
+    points_road_major = calloc(10, sizeof(_3D_Coord));
+    if(points_road_major == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_road_major");
+    }
+    points_road_minor = calloc(10, sizeof(_3D_Coord));
+    if(points_road_minor == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_road_minor");
+    }
+    real_size_river = Points_To_Lists(bp, river2, image, &points_river, &size_river);
+    real_size_trail = Points_To_Lists(bp, trail2, image, &points_trail, &size_trail);
+    real_size_road_major = Points_To_Lists(bp, road_major2, image, &points_road_major, &size_road_major);
+    real_size_road_minor = Points_To_Lists(bp, road_minor2, image, &points_road_minor, &size_road_minor);
+
+
+    /*printf("%i\n", points_river[0]);
+    printf("%i\n", points_river[1]);
+    printf("%i\n", points_river[2]);*/
+
+
+    //printf("add %i\n", points_river);
     //Print_Arr_of_Coord(att.nb_points, x);
 
     glutInit(&argc, argv);                // Initialize GLUT
