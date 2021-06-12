@@ -228,6 +228,110 @@ void Draw_Points(int **bp, SDL_Surface *image)
     glEnd();
 }
 
+void Draw_Points_with_color(int **bp, SDL_Surface *image)
+{
+    glBegin(GL_POINTS);
+    glColor3f(1.0f, 0.99f, 0.0f);
+    int max = biggest_height(image, bp);
+    float max_dim_size = biggest_dim_size(image);
+
+    for (int i = 0; i < image->w; i++)
+    {
+        for (int j = 0; j < image->h; j++)
+        {
+            if (bp[i][j] != -1)
+            {
+            switch(bp[i][j]){
+            	case 1500:
+            	glColor3f( 255/255., 0/255., 0/255.);
+            	break;
+            	
+            	case 1400:
+            	glColor3f( 255/255., 0/255., 0/255.);
+            	break;
+            	
+            	case 1300:
+            	glColor3f( 255/255., 127/255., 0/255.);
+            	break;
+            	
+            	case 1200:
+            	glColor3f( 255/255., 102/255., 0/255.);
+            	break;
+            	
+            	case 1100:
+            	glColor3f( 255/255., 153/255., 51/255.);
+            	break;
+            	
+            	case 1000:
+            	glColor3f( 255/255., 204/255., 102/255.);
+            	break;
+            	
+            	case 900:
+            	glColor3f( 255/255., 255/255, 153/255.);
+            	break;
+            	
+            	case 800:
+            	glColor3f( 204/255., 255/255., 153/255.);
+            	break;
+            	
+            	case 700:
+            	glColor3f( 153/255., 255/255., 153/255.);
+            	break;
+            	
+            	case 600:
+            	glColor3f( 102/255., 255/255., 153/255.);
+            	break;
+            	
+            	case 500:
+            	glColor3f( 0/255., 255/255., 153/255.);
+            	break;
+            	
+            	case 400:
+            	glColor3f( 0/255., 255/255., 255/255.);
+            	break;
+            	
+            	case 300:
+            	glColor3f( 0/255., 204/255., 255/255.);
+            	break;
+            	
+            	case 200:
+            	glColor3f( 0/255., 102/255., 204/255.);
+            	break;
+            	
+            	case 100:
+            	glColor3f( 0/255., 51/255., 204/255.);
+            	break;
+            	
+            	case 0:
+            	glColor3f( 0/255., 0/255., 153/255.);
+            	break;
+            	
+            	case -100:
+            	glColor3f( 0/255., 0/255., 102/255.);
+            	break;
+            	
+            	case -200:
+            	glColor3f( 0/255., 0/255., 77/255.);
+            	break;
+            	
+            	case -300:
+            	glColor3f( 0/255., 0/255., 26/255.);
+            	break;
+            	
+            	case -400:
+            	glColor3f( 0., 0., 0.);
+            	break;
+            	}
+            	
+                glVertex3f(((float)i / max_dim_size) * 2 - image->w / max_dim_size, ((float)j / max_dim_size) * 2 + (image->h / max_dim_size),
+                           (float)bp[i][j] / (float)max);
+            }
+        }
+    }
+
+    glEnd();
+}
+
 // Lists of points in order to draw all cube
 int Points_To_Lists(int **bp, int **array, SDL_Surface *image, _3D_Coord **points, int *size)
 {
@@ -402,22 +506,17 @@ void Get_Triangles(int **bp, SDL_Surface *image, _3D_Coord arr[])
     Triangulate(nv, p, v, &ntri);
 }
 
-void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image, int mode)
+void Draw_Triangle_Lines(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image)
 
 {
     int max = biggest_height(image, bp);
     float max_dim_size = biggest_dim_size(image);
 
-    glBegin(GL_TRIANGLES);
-    glColor3f(0.0f, 1.0f, 0.5f);
     for (int i = 0; i < ntri; i++)
-    {
-        if (mode == 0)
-        {
-            glColor3f(146/255., 109/255., 39/255.);
-        }
-        else
-        {
+    { glBegin(GL_LINES);
+    glColor3f(0.0f, 1.0f, 0.5f);
+        
+       
             if( ((float)p[v[i].p1].z == 1500) | ((float)p[v[i].p2].z == 1500) | ((float)p[v[i].p3].z == 1500))
           {
              glColor3f(128/255., 0/255., 0/255.);
@@ -499,7 +598,111 @@ void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image
           {
              glColor3f( 0., 0., 0.);
           }
-        }
+
+        //glColor3f((float) i/ntri, (float) i/ntri, (float) i/ntri);
+        glVertex3f(((float)p[v[i].p1].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p1].y / max_dim_size) * 2 + (image->h / max_dim_size),
+                   (float)p[v[i].p1].z / (float)max);
+        glVertex3f(((float)p[v[i].p2].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p2].y / max_dim_size) * 2 + (image->h / max_dim_size),
+                   (float)p[v[i].p2].z / (float)max);
+        glVertex3f(((float)p[v[i].p3].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p3].y / max_dim_size) * 2 + (image->h / max_dim_size),
+                   (float)p[v[i].p3].z / (float)max);
+                   glEnd();
+    }
+}
+
+void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image)
+
+{
+    int max = biggest_height(image, bp);
+    float max_dim_size = biggest_dim_size(image);
+
+    glBegin(GL_TRIANGLES);
+    glColor3f(0.0f, 1.0f, 0.5f);
+    for (int i = 0; i < ntri; i++)
+    {
+        
+       
+            if( ((float)p[v[i].p1].z == 1500) | ((float)p[v[i].p2].z == 1500) | ((float)p[v[i].p3].z == 1500))
+          {
+             glColor3f(128/255., 0/255., 0/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 1400) | ((float)p[v[i].p2].z == 1400) | ((float)p[v[i].p3].z == 1400))
+          {
+             glColor3f( 255/255., 0/255., 0/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 1300) | ((float)p[v[i].p2].z == 1300) | ((float)p[v[i].p3].z == 1300))
+          {
+             glColor3f( 255/255., 127/255., 0/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 1200) | ((float)p[v[i].p2].z == 1200) | ((float)p[v[i].p3].z == 1200))
+          {
+             glColor3f( 255/255., 102/255., 0/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 1100) | ((float)p[v[i].p2].z == 1100) | ((float)p[v[i].p3].z == 1100))
+          {
+             glColor3f( 255/255., 153/255., 51/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 1000) | ((float)p[v[i].p2].z == 1000) | ((float)p[v[i].p3].z == 1000))
+          {
+             glColor3f( 255/255., 204/255., 102/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 900) | ((float)p[v[i].p2].z == 900) | ((float)p[v[i].p3].z == 900))
+          {
+             glColor3f( 255/255., 255/255, 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 800) | ((float)p[v[i].p2].z == 800) | ((float)p[v[i].p3].z == 800))
+          {
+             glColor3f( 204/255., 255/255., 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 700) | ((float)p[v[i].p2].z == 700) | ((float)p[v[i].p3].z == 700))
+          {
+             glColor3f( 153/255., 255/255., 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 600) | ((float)p[v[i].p2].z == 600) | ((float)p[v[i].p3].z == 600))
+          {
+             glColor3f( 102/255., 255/255., 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 500) | ((float)p[v[i].p2].z == 500) | ((float)p[v[i].p3].z == 500))
+          {
+             glColor3f( 0/255., 255/255., 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 400) | ((float)p[v[i].p2].z == 400) | ((float)p[v[i].p3].z == 400))
+          {
+             glColor3f( 0/255., 255/255., 255/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 300) | ((float)p[v[i].p2].z == 300) | ((float)p[v[i].p3].z == 300))
+          {
+             glColor3f( 0/255., 204/255., 255/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 200) | ((float)p[v[i].p2].z == 200) | ((float)p[v[i].p3].z == 200))
+          {
+             glColor3f( 0/255., 102/255., 204/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 100) | ((float)p[v[i].p2].z == 100) | ((float)p[v[i].p3].z == 100))
+          {
+             glColor3f( 0/255., 51/255., 204/255.);
+          }
+          else if( ((float)p[v[i].p1].z == 0) | ((float)p[v[i].p2].z == 0) | ((float)p[v[i].p3].z == 0))
+          {
+             glColor3f( 0/255., 0/255., 153/255.);
+          }
+          else if( ((float)p[v[i].p1].z == -100) | ((float)p[v[i].p2].z == -100) | ((float)p[v[i].p3].z == -100))
+          {
+             glColor3f( 0/255., 0/255., 102/255.);
+          }
+          else if( ((float)p[v[i].p1].z == -200) | ((float)p[v[i].p2].z == -200) | ((float)p[v[i].p3].z == -200))
+          {
+             glColor3f( 0/255., 0/255., 77/255.);
+          }
+          else if( ((float)p[v[i].p1].z == -300) | ((float)p[v[i].p2].z == -300) | ((float)p[v[i].p3].z == -300))
+          {
+             glColor3f( 0/255., 0/255., 26/255.);
+          }
+
+          else if( ((float)p[v[i].p1].z == -400) | ((float)p[v[i].p2].z == -400) | ((float)p[v[i].p3].z == -400))
+          {
+             glColor3f( 0., 0., 0.);
+          }
 
         //glColor3f((float) i/ntri, (float) i/ntri, (float) i/ntri);
         glVertex3f(((float)p[v[i].p1].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p1].y / max_dim_size) * 2 + (image->h / max_dim_size),

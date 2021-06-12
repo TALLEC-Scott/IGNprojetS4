@@ -1,8 +1,9 @@
 #ifndef OPEN_GL_EXEC_H
 #define OPEN_GL_EXEC_H
+#include "triangulation.h"
 #include "drawing_tools.h"
 #include "MapColorisation.h"
-#include "triangulation.h"
+
 
 
 void initGL();

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <cglm/cglm.h>
 
+
 #define PI 3.14159
 
 void VectorsFromAngles();
@@ -94,10 +95,15 @@ void display()
         0, 0, 1);
 
     glTranslatef(2.0f, -1.0f, -1.0f); // Move right and into the screen
-
-
-    Draw_Triangles(p, v, ntri,bp,image, mod_mode);
-
+    
+    if (mod_mode == 0)
+    	Draw_Triangles(p, v, ntri,bp,image);
+    else if(mod_mode == 1)
+    	Draw_Points_with_color(bp,image);
+    else {
+    	Draw_Triangle_Lines(p,v,ntri,bp,image);
+    	//Draw_Triangles(p, v, ntri,bp,image);
+}
     Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
     Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
     Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
