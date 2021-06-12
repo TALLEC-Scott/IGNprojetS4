@@ -29,6 +29,7 @@ void free_bm(int **bp, SDL_Surface *image);
 Attributes attr(SDL_Surface *image, int **bp);
 void Print_Arr_of_Coord(int nb_points, _3D_Coord arr[]);
 void List_of_Points(int **bp, SDL_Surface *image,_3D_Coord **res);
-void Draw_Points_Add(int **bp, int **array, SDL_Surface *image, float r, float g, float b);
+void Draw_Points_Add(int **bp, SDL_Surface *image, float r, float g, float b, _3D_Coord *points, int size);
 void Draw_Cube(int max, float max_dim_size, int x, int y, int z, float r, float g, float b, int gap, SDL_Surface *image);
+int Points_To_Lists(int **bp, int **array, SDL_Surface *image, _3D_Coord **points, int *size);
 #endif

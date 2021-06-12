@@ -15,6 +15,18 @@ static int **river2;
 static int **trail2;
 static int **road_major2;
 static int **road_minor2;
+static _3D_Coord *points_river = NULL;
+static _3D_Coord *points_trail = NULL;
+static _3D_Coord *points_road_major = NULL;
+static _3D_Coord *points_road_minor = NULL;
+static int size_river = 10;
+static int real_size_river = 0;
+static int size_trail = 10;
+static int real_size_trail = 0;
+static int size_road_major = 10;
+static int real_size_road_major = 0;
+static int size_road_minor = 10;
+static int real_size_road_minor = 0;
 
 static SDL_Surface *image;
 
@@ -22,7 +34,7 @@ static int ntri = 0;
 static ITRIANGLE *v;
 static XYZ *p = NULL;
 
-static int mod_mode
+static int mod_mode;
 
 //Camera
 static float cam_x;
@@ -40,6 +52,7 @@ static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
 static int first = 1;
+
 void camera();
 
 struct Mo
@@ -53,9 +66,9 @@ struct Mo motion = {0, 0, 0, 0};
 char title[] = "3D Shapes";
 
 /* Initialize OpenGL Graphics */
-void initGL(float * arr)
+void initGL(GdkRGBA * arr)
 {
-    glClearColor(arr[0], arr[1], arr[2], 1.0f);              // Set background color to black and opaque
+    glClearColor(arr->red, arr->green, arr->blue, arr->alpha );              // Set background color to black and opaque
     glClearDepth(1.0f);                                // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);                           // Enable depth testing for z-culling
     glDepthFunc(GL_LEQUAL);                            // Set the type of depth-test
@@ -83,14 +96,19 @@ void display()
 
     //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
-    
-    if (
+
     Draw_Triangles(p, v, ntri,bp,image);
 
-    Draw_Points_Add(bp, river2, image, 0.0f, 0.0f, 1.0f);
-    Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f);
+    Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
+    Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
+    Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
+    Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
+
+
+
+    //Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f, points, size);
     //Draw_Points_Add(bp, road_major2, image, 1.0f, 1.0f, 0.0f);
-   // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
+    // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
 
     glPopMatrix();
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
@@ -260,14 +278,16 @@ void camera()
 }
 
 
-
-int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
-    int **river, int **trail, int **road_major, int **road_minor,
-    int w_size, int h_size, int modelization_mode, float * RGB_Background)
+int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
+    GdkRGBA background = {0, 0, 0, 0};
+
+    gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(ui->model.back_color),
+            &background);
 
     image = im; //it's to use SDL_Surface *im as a global ref
-    bp = ui->bps;
+
+    bp = ui->bp;
     river2 = ui->river;
     trail2 = ui->trail;
     road_major2 = ui->road_major;
@@ -298,12 +318,43 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     qsort(p, nv, sizeof(XYZ), XYZCompare); 
     Triangulate(nv, p, v, &ntri);
 
-  
+    points_river = calloc(10, sizeof(_3D_Coord));
+    if(points_river == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_river");
+    }
+    points_trail = calloc(10, sizeof(_3D_Coord));
+    if(points_trail == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_trail");
+    }
+    points_road_major = calloc(10, sizeof(_3D_Coord));
+    if(points_road_major == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_road_major");
+    }
+    points_road_minor = calloc(10, sizeof(_3D_Coord));
+    if(points_road_minor == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc points_road_minor");
+    }
+    real_size_river = Points_To_Lists(bp, river2, image, &points_river, &size_river);
+    real_size_trail = Points_To_Lists(bp, trail2, image, &points_trail, &size_trail);
+    real_size_road_major = Points_To_Lists(bp, road_major2, image, &points_road_major, &size_road_major);
+    real_size_road_minor = Points_To_Lists(bp, road_minor2, image, &points_road_minor, &size_road_minor);
+
+
+    /*printf("%i\n", points_river[0]);
+    printf("%i\n", points_river[1]);
+    printf("%i\n", points_river[2]);*/
+
+
+    //printf("add %i\n", points_river);
     //Print_Arr_of_Coord(att.nb_points, x);
 
     glutInit(&argc, argv);                // Initialize GLUT
     glutInitDisplayMode(GLUT_RGB |GLUT_DOUBLE| GLUT_DEPTH);     // Enable double buffered mode
-    glutInitWindowSize(w_size, h_size);         // Set the window's initial width & height
+    glutInitWindowSize(ui->model.width, ui->model.height);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
@@ -315,10 +366,10 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     glutSpecialFunc(SpecialKeys);
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
-    initGL();       // Our own OpenGL initialization 
+    initGL(&background);       // Our own OpenGL initialization 
 
 
-    glutMainLoop(RGB_Background); // Enter the infinite event-processing loop
+    glutMainLoop(); // Enter the infinite event-processing loop
     //glutDestroyWindow(window);
     //free_bm(bp, image);
     return 0;

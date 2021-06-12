@@ -228,23 +228,49 @@ void Draw_Points(int **bp, SDL_Surface *image)
     glEnd();
 }
 
-void Draw_Points_Add(int **bp, int **array, SDL_Surface *image, float r,
-    float g, float b)
+// Lists of points in order to draw all cube
+int Points_To_Lists(int **bp, int **array, SDL_Surface *image, _3D_Coord **points, int *size)
 {
-    int max = biggest_height(image, bp);
-    float max_dim_size = biggest_dim_size(image);
-
-    for (int i = 0; i < image->w; i++)
+  int res = 0;
+  for (int i = 0; i < image->w; i++)
     {
         for (int j = 0; j < image->h; j++)
         {
             if (bp[i][j] != -1 && array[i][j] != -1)
             {
-              Draw_Cube(max, max_dim_size, i, j, bp[i][j], r, g, b, 5, image);
+              res+= 1;
+              if(res > *size)
+              {
+                *size = *size * 2;
+
+                *points = realloc(*points, *size * sizeof(_3D_Coord));
+                if(points == NULL)
+                {
+                  errx(EXIT_FAILURE, "Invalid realloc point list");
+                }
+              }
+
+              (*points)[res-1].x = i;
+              (*points)[res-1].y = j;
+              (*points)[res-1].z = bp[i][j];
             }
         }
     }
+  return res;
+}
 
+void Draw_Points_Add(int **bp, SDL_Surface *image, float r,
+    float g, float b, _3D_Coord *points, int size)
+{
+    //printf("real size %i\n", size);
+    int max = biggest_height(image, bp);
+    float max_dim_size = biggest_dim_size(image);
+
+    for (int i = 0; i < size; i+=1)
+    {
+      //printf("Draw i %i\n", points[i]);
+      Draw_Cube(max, max_dim_size, points[i].x, points[i].y, points[i].z, r, g, b, 5, image);
+    }
 }
 
 void Draw_Cube(int max, float max_dim_size, int x, int y, int z, float r, float g, float b, int gap, SDL_Surface *image)
