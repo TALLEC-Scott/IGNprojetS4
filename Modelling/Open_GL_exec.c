@@ -301,7 +301,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     //Print_Arr_of_Coord(att.nb_points, x);
 
     glutInit(&argc, argv);                // Initialize GLUT
-    glutInitDisplayMode(GLUT_DOUBLE);     // Enable double buffered mode
+    glutInitDisplayMode(GLUT_RGB |GLUT_DOUBLE| GLUT_DEPTH);     // Enable double buffered mode
     glutInitWindowSize(w_size, h_size);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
