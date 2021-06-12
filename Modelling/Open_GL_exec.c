@@ -22,6 +22,8 @@ static int ntri = 0;
 static ITRIANGLE *v;
 static XYZ *p = NULL;
 
+static int mod_mode
+
 //Camera
 static float cam_x;
 static float cam_y;
@@ -82,7 +84,7 @@ void display()
     //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
 
     
-
+    if (
     Draw_Triangles(p, v, ntri,bp,image);
 
     Draw_Points_Add(bp, river2, image, 0.0f, 0.0f, 1.0f);
@@ -264,7 +266,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     int w_size, int h_size, int modelization_mode, float * RGB_Background)
 {
 
-    image = ui->im; //it's to use SDL_Surface *im as a global ref
+    image = im; //it's to use SDL_Surface *im as a global ref
     bp = ui->bps;
     river2 = ui->river;
     trail2 = ui->trail;
