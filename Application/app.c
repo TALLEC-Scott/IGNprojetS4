@@ -122,15 +122,6 @@ gboolean on_switch_auto_analysis(GtkWidget *switch_auto __attribute__((unused)),
     return TRUE;
 }
 
-// Handler for switch controlling automatic rectification
-gboolean on_switch_auto_rectif(GtkWidget *switch_auto __attribute__((unused)),
-        gboolean state, gpointer user_data)
-{
-    Ui *ui = user_data;
-
-    return TRUE;
-}
-
 // Handler for manual elevation rectification
 gboolean on_area_press(GtkWidget *area,
         GdkEventButton *event, gpointer user_data)
@@ -1063,8 +1054,6 @@ int main (int argc, char *argv[])
     g_signal_connect(modelise, "clicked", G_CALLBACK(on_modelise), &ui);
     g_signal_connect(switch_auto_analysis, "state-set",
             G_CALLBACK(on_switch_auto_analysis), &ui);
-    g_signal_connect(switch_auto_rectif, "state-set",
-            G_CALLBACK(on_switch_auto_rectif), &ui);
     g_signal_connect(rectif_button, "toggled", G_CALLBACK(on_rectif_button),
             &ui);
     g_signal_connect(color_ok, "clicked", G_CALLBACK(on_color_ok), &ui);

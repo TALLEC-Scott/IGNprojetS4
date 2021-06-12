@@ -96,7 +96,7 @@ void display()
     glTranslatef(2.0f, -1.0f, -1.0f); // Move right and into the screen
 
 
-    Draw_Triangles(p, v, ntri,bp,image);
+    Draw_Triangles(p, v, ntri,bp,image, mod_mode);
 
     Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
     Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
@@ -284,6 +284,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 
     image = im; //it's to use SDL_Surface *im as a global ref
 
+    mod_mode = gtk_combo_box_get_active(GTK_COMBO_BOX(ui->model.dropdown_type));
     bp = ui->bp;
     river2 = ui->river;
     trail2 = ui->trail;
