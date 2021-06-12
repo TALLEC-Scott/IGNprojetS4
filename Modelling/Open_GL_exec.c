@@ -38,7 +38,6 @@ static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
 static int first = 1;
-
 void camera();
 
 struct Mo
@@ -52,9 +51,9 @@ struct Mo motion = {0, 0, 0, 0};
 char title[] = "3D Shapes";
 
 /* Initialize OpenGL Graphics */
-void initGL()
+void initGL(float * arr)
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);              // Set background color to black and opaque
+    glClearColor(arr[0], arr[1], arr[2], 1.0f);              // Set background color to black and opaque
     glClearDepth(1.0f);                                // Set background depth to farthest
     glEnable(GL_DEPTH_TEST);                           // Enable depth testing for z-culling
     glDepthFunc(GL_LEQUAL);                            // Set the type of depth-test
@@ -262,15 +261,15 @@ void camera()
 
 int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     int **river, int **trail, int **road_major, int **road_minor,
-    int w_size, int h_size, int modelization_mode)
+    int w_size, int h_size, int modelization_mode, float * RGB_Background)
 {
 
-    image = im; //it's to use SDL_Surface *im as a global ref
-    bp = bps;
-    river2 = river;
-    trail2 = trail;
-    road_major2 = road_major;
-    road_minor2 = road_minor;
+    image = ui->im; //it's to use SDL_Surface *im as a global ref
+    bp = ui->bps;
+    river2 = ui->river;
+    trail2 = ui->trail;
+    road_major2 = ui->road_major;
+    road_minor2 = ui->road_minor;
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -317,7 +316,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     initGL();       // Our own OpenGL initialization 
 
 
-    glutMainLoop(); // Enter the infinite event-processing loop
+    glutMainLoop(RGB_Background); // Enter the infinite event-processing loop
     //glutDestroyWindow(window);
     //free_bm(bp, image);
     return 0;
