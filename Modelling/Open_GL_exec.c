@@ -259,18 +259,20 @@ void camera()
 }
 
 
-
+/*
 int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
     int **river, int **trail, int **road_major, int **road_minor,
     int w_size, int h_size, int modelization_mode)
+*/
+int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
 
     image = im; //it's to use SDL_Surface *im as a global ref
-    bp = bps;
-    river2 = river;
-    trail2 = trail;
-    road_major2 = road_major;
-    road_minor2 = road_minor;
+    bp = ui->bp;
+    river2 = ui->river;
+    trail2 = ui->trail;
+    road_major2 = ui->road_major;
+    road_minor2 = ui->road_minor;
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -302,7 +304,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, int **bps,
 
     glutInit(&argc, argv);                // Initialize GLUT
     glutInitDisplayMode(GLUT_RGB |GLUT_DOUBLE| GLUT_DEPTH);     // Enable double buffered mode
-    glutInitWindowSize(w_size, h_size);         // Set the window's initial width & height
+    glutInitWindowSize(ui->model.width, ui->model.height);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);

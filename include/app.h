@@ -50,6 +50,7 @@ typedef struct {
     GtkWidget           *dialog;
     GtkComboBoxText     *screen_size;
     GtkComboBoxText     *dropdown_type;
+    GtkColorButton      *back_color;
     int     type;
     long    width;
     long    height;

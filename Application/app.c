@@ -806,9 +806,12 @@ gboolean on_modelise(GtkButton *button __attribute__((unused)), gpointer user_da
         process_array(ui->road_major, ui->h, image->h, image->w);
         process_array(ui->road_minor, ui->h, image->h, image->w);
 
-        execute_function(ui->argc, ui->argv, image, ui->bp, ui->river, ui->trail,
+        execute_function(ui->argc, ui->argv, image, ui);
+                /*
+                ui->bp, ui->river, ui->trail,
         ui->road_major, ui->road_minor, ui->model.width, ui->model.height,
         ui->model.type);
+        */
         SDL_FreeSurface(image);
     }
 
@@ -948,6 +951,8 @@ int main (int argc, char *argv[])
             gtk_builder_get_object(builder, "model_screen_size"));
     GtkComboBoxText *model_type = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(
                 builder, "model_type"));
+    GtkColorButton *back_color = GTK_COLOR_BUTTON(gtk_builder_get_object(
+                builder, "back_color"));
 
 
     // Initialise data structure
@@ -1011,6 +1016,7 @@ int main (int argc, char *argv[])
             .dialog = model_dialog,
             .screen_size = model_screen_size,
             .dropdown_type = model_type,
+            .back_color = back_color,
             .type = 0,
             .width = 1920,
             .height = 1080
