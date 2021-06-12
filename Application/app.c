@@ -78,6 +78,7 @@ gboolean on_image_load(GtkButton *button __attribute((unused)), gpointer user_da
 
     // Finished with the "Open Image" dialog box, so hide it
     gtk_widget_hide(ui->dfc);
+    gtk_widget_hide(GTK_WIDGET(ui->res_scale));
     
     return TRUE;
 }
@@ -630,6 +631,7 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         ui->state = 9;
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), FALSE);
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), TRUE);
+        gtk_widget_show(GTK_WIDGET(ui->res_scale));
     }
 
     ui->analysis_done = TRUE;
@@ -700,6 +702,7 @@ gboolean on_step_forward(GtkButton *button, gpointer user_data)
             sprintf(file, "%simage.bmp", dir);
             gtk_label_set_text(ui->output_label, "Result");
             gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
+            gtk_widget_show(GTK_WIDGET(ui->res_scale));
             ui->state++;
             break;
         default:
@@ -768,6 +771,7 @@ gboolean on_step_backward(GtkButton *button, gpointer user_data)
             gtk_label_set_text(ui->output_label, "Holes");
             ui->state--;
             gtk_widget_set_sensitive(GTK_WIDGET(ui->step_f), TRUE);
+            gtk_widget_hide(GTK_WIDGET(ui->res_scale));
             break;
         default:
             printf("Step by step backward: state < 1 should not be possible\n");
