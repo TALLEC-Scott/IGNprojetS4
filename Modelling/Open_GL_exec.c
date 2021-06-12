@@ -41,7 +41,7 @@ static float mouse_pos_x;
 static float mouse_pos_y;
 static float height_c;
 static float width_c;
-static vec3 _position = {0.0f, -0.5f, 1.5f};
+static vec3 _position = {0.0f, 0.0f, 0.0f};
 static vec3 _target;
 static vec3 _forward;
 static vec3 _left;
@@ -91,7 +91,7 @@ void display()
         _target[2],
         0, 0, 1);
 
-    //glTranslatef(0.0f, 0.0f, 0.0f); // Move right and into the screen
+    glTranslatef(2.0f, -1.0f, -1.0f); // Move right and into the screen
 
 
     Draw_Triangles(p, v, ntri,bp,image);
@@ -100,8 +100,6 @@ void display()
     Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
     Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
     Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
-
-
 
     //Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f, points, size);
     //Draw_Points_Add(bp, road_major2, image, 1.0f, 1.0f, 0.0f);
