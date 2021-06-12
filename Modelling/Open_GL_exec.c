@@ -291,6 +291,18 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     trail2 = ui->trail;
     road_major2 = ui->road_major;
     road_minor2 = ui->road_minor;
+    points_river = NULL;
+    points_trail = NULL;
+    points_road_major = NULL;
+    points_road_minor = NULL;
+    size_river = 10;
+    real_size_river = 0;
+    size_trail = 10;
+    real_size_trail = 0;
+    size_road_major = 10;
+    real_size_road_major = 0;
+    size_road_minor = 10;
+    real_size_road_minor = 0;
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -371,5 +383,9 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     glutMainLoop(); // Enter the infinite event-processing loop
     //glutDestroyWindow(window);
     //free_bm(bp, image);
+    /*free(points_river);
+    free(points_trail);
+    free(points_road_major);
+    free(points_road_minor);*/
     return 0;
 }
