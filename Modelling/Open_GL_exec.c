@@ -51,7 +51,6 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
-static int first = 1;
 
 void camera();
 
@@ -377,7 +376,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     glutPassiveMotionFunc(mouse_handler);
     glutTimerFunc(0, timer, 0);
     initGL(&background);       // Our own OpenGL initialization 
-
+    glutSetCursor(GLUT_CURSOR_NONE);
 
     glutMainLoop(); // Enter the infinite event-processing loop
     //glutDestroyWindow(window);
