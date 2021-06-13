@@ -30,7 +30,7 @@ int is_looped(struct image_pict *image, int x1, int y1, int x2, int y2,int cpt, 
 int is_linked(struct image_pict *image, int x1, int y1, int x2, int y2);
 int euclidian(struct image_pict *image, vector_list *pts, int x, int y, size_t i_src, size_t i_dst, float i_mini, int max_dist);
 void link_pts(struct image_pict *image, vector_list *pts, int max_dist);
-void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h);
+void rebuilt_lines(SDL_Surface *image, int ***tabu, int **bp, int **tab2, int **h);
 void rebuilt_river(SDL_Surface *image, int **tab);
 void array_Draw_Line(struct image_pict *image, int x1, int y1, int x2, int y2, int pixel);
 SDL_Surface* BMP_To_BW(SDL_Surface *image);

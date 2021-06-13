@@ -66,6 +66,52 @@ void bmp_filter(SDL_Surface *image, int r, int g, int b,
   free(trail);*/
 }
 
+void rec_sampling(int ***arr, int w, int h, int **mark, int ngh[8][2], int count, int x, int y)
+{
+  int** array = *arr;
+  mark[x][y] = 1;
+  for (int i = 0; i<8; i++)
+  {
+  	int nw_x = x + ngh[i][0];
+  	int nw_y = y + ngh[i][1];
+	if (nw_x>=0 && nw_x<w && nw_y>=0 && nw_y<h 
+		&& mark[nw_x][nw_y] == 0 && array[nw_x][nw_y] != -1)
+	{
+		if (count == 5)
+		{
+			count = -1;
+		}
+		else
+		{
+			array[x][y] = -1;
+		}
+		rec_sampling(arr, w, h, mark, ngh, count+1, nw_x, nw_y);
+	}
+  }
+}
+
+//line point sampling 
+void sampling(int ***arr, int w, int h)
+{
+  int** array = *arr;
+  int **mark = NULL;
+  mark = (int**)calloc(w, sizeof(int*));
+  for(int i = 0; i < w; i++)
+	mark[i] = (int*)calloc(h, sizeof(int*));
+  int fd_ngh[8][2] = {{-1,-1},{0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0}};
+  for (int i = 0; i<w; i++)
+  {
+  	for (int j = 0; j<h; j++)
+  	{
+  		if (mark[i][j] == 0 && array[i][j] != -1)
+  			rec_sampling(arr, w, h, mark, fd_ngh, 0, i, j);
+  	}
+  }
+  for (int i=0; i<w; i++)
+	free(mark[i]);
+  free(mark);
+}
+
 // filter Converts all rgb values to HSV in order to filters colors
 void filter(SDL_Surface *image, int **array_topo, int **array_river,
     int **array_road_major, int **array_road_minor, int **array_trail, int r1,
@@ -188,7 +234,8 @@ void filter(SDL_Surface *image, int **array_topo, int **array_river,
         image->format->BitsPerPixel, image->format->Rmask,
         image->format->Gmask, image->format->Bmask, image->format->Amask);
     
-    rebuilt_lines(lines, array_topo, bp, tab, h);
+    rebuilt_lines(lines, &array_topo, bp, tab, h);
+    sampling(&bp, image->w, image->h);
 
     SDL_Surface *pic_river = SDL_CreateRGBSurface(0, image->w, image->h,
         image->format->BitsPerPixel, image->format->Rmask,

@@ -583,8 +583,9 @@ void link_pts(struct image_pict *image, vector_list *pts, int max_dist)
 }
 
 
-void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h)
+void rebuilt_lines(SDL_Surface *image, int ***tabu, int **bp, int **tab2, int **h)
 {
+  int** tab = *tabu;
   SDL_LockSurface(image);
   struct image_pict *pict = malloc(sizeof(struct image_pict));
   pict->pict = (int**)calloc(image->w, sizeof(int*));
@@ -620,6 +621,13 @@ void rebuilt_lines(SDL_Surface *image, int **tab, int **bp, int **tab2, int **h)
   thinning(pict, 1);
   bmp_create(image, pict->pict, "holes.bmp");
   Map_Colorisation(image, bp, tab2, h);
+  for (int i = 0; i<image->w; i++)
+  {
+  	for (int j = 0; j<image->h; j++)
+  	{
+  		tab[i][j] = pict->pict[i][j];
+  	}
+  }
   for(int i = 0; i < pict->w; i++)
   	free(pict->pict[i]);
   free(pict->pict);
