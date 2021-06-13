@@ -36,6 +36,7 @@ static ITRIANGLE *v;
 static XYZ *p = NULL;
 
 static int mod_mode;
+static int add_mode = 0;
 
 //Camera
 static float cam_x;
@@ -103,15 +104,15 @@ void display()
     else {
     	Draw_Triangle_Lines(p,v,ntri,bp,image);
     	//Draw_Triangles(p, v, ntri,bp,image);
-}
-    Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
-    Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
-    Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
-    Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
-
-    //Draw_Points_Add(bp, trail2, image, 0.58f, 0.30f, 0.0f, points, size);
-    //Draw_Points_Add(bp, road_major2, image, 1.0f, 1.0f, 0.0f);
-    // Draw_Points_Add(bp, road_minor2, image, 1.0f, 1.0f, 1.0f);
+}   
+    if(add_mode == 0 || add_mode == 2)
+      Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
+    if(add_mode == 0 || add_mode == 3)
+      Draw_Points_Add(bp, image, 0.58f, 0.30f, 0.0f, points_trail, real_size_trail);
+    if(add_mode == 0 || add_mode == 4)
+      Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
+    if(add_mode == 0 || add_mode == 5)
+      Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
 
     glPopMatrix();
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
@@ -202,7 +203,16 @@ void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((un
     case GLUT_KEY_CTRL_L:
         realspeed = 0.02f;
         break;
-
+    case GLUT_KEY_LEFT:
+        add_mode -= 1;
+        if(add_mode < 0)
+          add_mode = 5;
+        break;
+    case GLUT_KEY_RIGHT:
+        add_mode += 1;
+        if(add_mode > 5)
+          add_mode = 0;
+        break;
     }
 }
 
