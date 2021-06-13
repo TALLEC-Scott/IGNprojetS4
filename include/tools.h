@@ -8,6 +8,7 @@
 #include <math.h>
 #include "MapRebuiltHoles.h"
 #include "app.h"
+#include "Open_GL_exec.h"
 
 Uint32 BMP_Get_Pixel(SDL_Surface *image, int x, int y);
 void BMP_Put_Pixel(SDL_Surface *image, int x, int y, Uint32 pixel);
@@ -22,6 +23,7 @@ int is_black(SDL_Surface *image, int x, int y);
 size_t len_array_int(int *array);
 void bmp_test3(SDL_Surface *image, int **tab, int **h);
 void process_array(int **array, int **h2, int h, int w);
+void search_points(_3D_Coord *max_point, _3D_Coord *min_point, int **bp, SDL_Surface *image);
 
 
 typedef struct _2D_arrays {

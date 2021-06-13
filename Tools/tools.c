@@ -596,3 +596,48 @@ void process_array(int **array, int **h2, int h, int w)
   }
 }
 
+// search for the coords of the max and min point of array bp
+void search_points(_3D_Coord *max_point, _3D_Coord *min_point, int **bp, SDL_Surface *image)
+{
+  int min = -1;
+  int max = -1;
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(bp[i][j] != -1)
+      {
+        if(min == -1)
+        {
+          min = bp[i][j];
+          min_point->x = i;
+          min_point->y = j;
+          min_point->z = min;
+
+        }
+        if(max == -1)
+        {
+          max = bp[i][j];
+          max_point->x = i;
+          max_point->y = j;
+          max_point->z = max;
+        }
+
+        if(bp[i][j] > max)
+        {
+          max = bp[i][j];
+          max_point->x = i;
+          max_point->y = j;
+          max_point->z = max;
+        }
+        if(bp[i][j] < min)
+        {
+          min = bp[i][j];
+          min_point->x = i;
+          min_point->y = j;
+          min_point->z = min;
+        }
+      }
+    }
+  }
+}

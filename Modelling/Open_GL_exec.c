@@ -5,12 +5,14 @@
 #include <math.h>
 #include <cglm/cglm.h>
 
-
 #define PI 3.14159
 
 void VectorsFromAngles();
+void RenderString(float x, float y, float z, void *font, const unsigned char* string, float r, float b, float g);
 
 /* Global variables */
+
+// 3D model
 static int **bp;
 static int **river2;
 static int **trail2;
@@ -35,6 +37,13 @@ static int ntri = 0;
 static ITRIANGLE *v;
 static XYZ *p = NULL;
 
+// Informations
+static _3D_Coord max_point;
+static _3D_Coord min_point;
+static char *max_altitude = NULL;
+static char *min_altitude = NULL;
+
+// Mode
 static int mod_mode;
 static int add_mode = 0;
 
@@ -113,6 +122,19 @@ void display()
       Draw_Points_Add(bp, image, 1.0f, 1.0f, 0.0f, points_road_major, real_size_road_major);
     if(add_mode == 0 || add_mode == 5)
       Draw_Points_Add(bp, image, 1.0f, 1.0f, 1.0f, points_road_minor, real_size_road_minor);
+
+    int max = biggest_height(image, bp);
+    float max_dim_size = biggest_dim_size(image);
+
+    RenderString(((float)min_point.x/max_dim_size) * 2 - image->w / max_dim_size,
+        ((float)min_point.y / max_dim_size) * 2 + (image->h / max_dim_size),
+        (float)min_point.z / (float)max,
+        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)min_altitude, 1.0f, 0.0f, 0.0f);
+    RenderString(((float)max_point.x/max_dim_size) * 2 - image->w / max_dim_size,
+        ((float)max_point.y / max_dim_size) * 2 + (image->h / max_dim_size),
+        (float)max_point.z / (float)max,
+        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 1.0f, 0.0f, 0.0f);
+    //RenderString(0.0f, 0.0f, GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)"Hello", 1.0f, 0.0f, 0.0f);
 
     glPopMatrix();
     glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
@@ -223,6 +245,14 @@ void timer(int time)
   glutTimerFunc(time/60,timer, 0);
 }
 
+void RenderString(float x, float y, float z, void *font, const unsigned char* string, float r, float b, float g)
+{  
+  glColor3f(r, g, b); 
+  glRasterPos3f(x, y, z+0.05f);
+
+  glutBitmapString(font, string);
+}
+
 void VectorsFromAngles()
 {
   vec3 up = {0.0f, 0.0f, 1.0f};
@@ -318,6 +348,9 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     real_size_road_major = 0;
     size_road_minor = 10;
     real_size_road_minor = 0;
+    max_altitude = NULL;
+    min_altitude = NULL;
+
 
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
@@ -364,11 +397,29 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     {
       errx(EXIT_FAILURE, "could not malloc points_road_minor");
     }
+    min_altitude = calloc(10, sizeof(char));
+    if(min_altitude == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc min_altitude");
+    }
+    max_altitude = calloc(10, sizeof(char));
+    if(max_altitude == NULL)
+    {
+      errx(EXIT_FAILURE, "could not malloc max_altitude");
+    }
+
+
+
+
     real_size_river = Points_To_Lists(bp, river2, image, &points_river, &size_river);
     real_size_trail = Points_To_Lists(bp, trail2, image, &points_trail, &size_trail);
     real_size_road_major = Points_To_Lists(bp, road_major2, image, &points_road_major, &size_road_major);
     real_size_road_minor = Points_To_Lists(bp, road_minor2, image, &points_road_minor, &size_road_minor);
 
+    search_points(&max_point, &min_point, bp, image);
+
+    sprintf(min_altitude, "%d", min_point.z);
+    sprintf(max_altitude, "%d", max_point.z);
 
     /*printf("%i\n", points_river[0]);
     printf("%i\n", points_river[1]);
