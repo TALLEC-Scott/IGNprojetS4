@@ -262,7 +262,7 @@ void VectorsFromAngles()
     _phi = -89.0f;
 
   float temp = cos(_phi*PI/180);
-  _forward[2] = sin(_phi*PI/180);
+  _forward[2] = sin(_phi*PI/180); // pitch
   _forward[0] = temp*cos(_theta*PI/180);
   _forward[1] = temp*sin(_theta*PI/180);
 
