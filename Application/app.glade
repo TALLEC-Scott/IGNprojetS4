@@ -559,7 +559,7 @@ Analysis</property>
         <child>
           <object class="GtkImage" id="res_scale">
             <property name="can-focus">False</property>
-            <property name="pixbuf">../Pictures/needed/scale2.png</property>
+            <property name="pixbuf">../Pictures/needed/scale3.png</property>
           </object>
           <packing>
             <property name="left-attach">3</property>
