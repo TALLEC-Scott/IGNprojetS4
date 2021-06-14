@@ -6,7 +6,7 @@ CFLAGS = $(shell pkg-config --cflags sdl2 gtk+-3.0) -rdynamic -Wall -Wextra -Wno
 LDFLAGS =
 LDLIBS = -lm -lGL -lGLU -lglut -Wno-stringop-overflow $(shell pkg-config --libs sdl2 gtk+-3.0)
 
-EXE = app
+EXE = 223D
 SRC = ${wildcard Application/app.c MapProcessing/*.c Modelling/*.c Tools/*.c} 
 OBJ = ${SRC:.c=.o}
 
