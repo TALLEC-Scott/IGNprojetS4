@@ -513,7 +513,7 @@ void Draw_Triangle_Lines(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *
     float max_dim_size = biggest_dim_size(image);
 
     for (int i = 0; i < ntri; i++)
-    { glBegin(GL_LINES);
+    { glBegin(GL_LINE_STRIP);
     glColor3f(0.0f, 1.0f, 0.5f);
         
        

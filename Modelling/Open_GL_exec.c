@@ -47,6 +47,9 @@ static char *min_altitude = NULL;
 static int mod_mode;
 static int add_mode = 0;
 
+//Window
+static int window;
+
 //Camera
 static float cam_x;
 static float cam_y;
@@ -211,7 +214,7 @@ void keyboard_up(unsigned char key, int a __attribute__((unused)), int b __attri
         motion.right = 0;
         break;
     case 27:
-        glutLeaveMainLoop();
+        glutDestroyWindow(window);
     }
 }
 
@@ -434,6 +437,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     glutInitWindowSize(ui->model.width, ui->model.height);         // Set the window's initial width & height
     glutInitWindowPosition(500, 50);      // Position the window's initial top-left corner
     glutCreateWindow(title); // Create window with the given title
+    window = glutGetWindow();
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
     glutDisplayFunc(display);             // Register callback handler for window re-paint event
     glutReshapeFunc(reshape);
