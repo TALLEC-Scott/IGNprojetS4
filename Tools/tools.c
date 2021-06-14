@@ -727,3 +727,17 @@ int get_max(int **bp, SDL_Surface *image)
   }
   return max;
 }
+
+void array(int **array, SDL_Surface *image)
+{
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(is_black(image, i, j))
+      {
+        array[i][j] = 1;
+      }
+    }
+  }
+}
