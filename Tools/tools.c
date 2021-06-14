@@ -156,7 +156,49 @@ void BMP_Test(SDL_Surface *image, int **tab)
 
 }
 
-void bmp_test2(SDL_Surface *image, int **tab)
+void bmp_automatic_color(SDL_Surface *image, int **tab)
+{
+  SDL_LockSurface(image);
+
+  int min = get_min(tab, image);
+  int max = get_max(tab, image);
+  int total = (max - min) / 100;
+  int scale = 1;
+  if(total != 0)
+  {
+    scale = 280 / total;
+  }
+  if(scale > 40)
+  {
+    scale = 30;
+  }
+
+  double s = 1.0f;
+  double v = 1.0f;
+  double h = 1.0f;
+
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      int label = tab[i][j];
+      int temp = (max - label) / 100;
+      int value = (temp * scale);
+      h = (((double)100/(double)360) * value) / (double)100;
+      double r = 0;
+      double g = 0;
+      double b = 0;
+
+      gtk_hsv_to_rgb(h, s, v, &r, &g, &b);
+
+      BMP_Put_Pixel(image, i, j, (SDL_MapRGB(image->format, (int)(r*255), (int)(g*255), (int)(b*255))));
+    }
+  }
+  SDL_UnlockSurface(image);
+  SDL_SaveBMP(image, "Pictures/Results/elevation.bmp");
+}
+
+/*void bmp_test2(SDL_Surface *image, int **tab)
 {
   SDL_LockSurface(image);
   for(int i = 0; i < image->w; i++)
@@ -253,7 +295,7 @@ void bmp_test2(SDL_Surface *image, int **tab)
   SDL_UnlockSurface(image);
   SDL_SaveBMP(image, "Pictures/Results/elevation.bmp");
 
-}
+}*/
 
 
 double Max(double r, double g, double b)
@@ -640,4 +682,48 @@ void search_points(_3D_Coord *max_point, _3D_Coord *min_point, int **bp, SDL_Sur
       }
     }
   }
+}
+
+int get_min(int **bp, SDL_Surface *image)
+{
+  int min = 0;
+  int first = 0;
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(bp[i][j] != -1 && !first)
+      {
+        min = bp[i][j];
+        first = 1;
+      }
+      if(bp[i][j] != -1 && bp[i][j] < min)
+      {
+        min = bp[i][j];
+      }
+    }
+  }
+  return min;
+}
+
+int get_max(int **bp, SDL_Surface *image)
+{
+  int max = 0;
+  int first = 0;
+  for(int i = 0; i < image->w; i++)
+  {
+    for(int j = 0; j < image->h; j++)
+    {
+      if(bp[i][j] != -1 && !first)
+      {
+        max = bp[i][j];
+        first = 1;
+      }
+      if(bp[i][j] != -1 && bp[i][j] > max)
+      {
+        max = bp[i][j];
+      }
+    }
+  }
+  return max;
 }

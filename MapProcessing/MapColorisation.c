@@ -160,7 +160,8 @@ void Map_Colorisation(SDL_Surface *image, int **bp, int **tab, int **h)
   }
 
   //map_set_altitude(h, tab, 0, 400, 1500, image->w, image->h, 0);
-  bmp_test2(image, h);
+  //bmp_test2(image, h);
+  bmp_automatic_color(image, h);
 
 
   /* FREE */
@@ -275,8 +276,8 @@ void map_set_altitude(SDL_Surface *image, int **h2, int **tab2, int x, int y, in
       free(list);
     }
   }
-
-  bmp_test2(image, h2);
+  bmp_automatic_color(image, h2);
+  //bmp_test2(image, h2);
 
   for(int i = 0; i < w; i++)
   {

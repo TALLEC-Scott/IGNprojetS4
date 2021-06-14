@@ -24,6 +24,9 @@ size_t len_array_int(int *array);
 void bmp_test3(SDL_Surface *image, int **tab, int **h);
 void process_array(int **array, int **h2, int h, int w);
 void search_points(_3D_Coord *max_point, _3D_Coord *min_point, int **bp, SDL_Surface *image);
+int get_max(int **bp, SDL_Surface *image);
+int get_min(int **bp, SDL_Surface *image);
+void bmp_automatic_color(SDL_Surface *image, int **tab);
 
 
 typedef struct _2D_arrays {
