@@ -238,6 +238,16 @@ void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((un
         if(add_mode > 5)
           add_mode = 0;
         break;
+    case GLUT_KEY_DOWN:
+        mod_mode -= 1;
+        if(mod_mode < 0)
+          mod_mode = 2;
+        break;
+    case GLUT_KEY_UP:
+        mod_mode += 1;
+        if(mod_mode > 2)
+          mod_mode = 0;
+        break;
     }
 }
 
