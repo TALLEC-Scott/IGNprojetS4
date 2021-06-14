@@ -136,7 +136,7 @@ void display()
     RenderString(((float)max_point.x/max_dim_size) * 2 - image->w / max_dim_size,
         ((float)max_point.y / max_dim_size) * 2 + (image->h / max_dim_size),
         (float)max_point.z / (float)max,
-        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 1.0f, 0.0f, 0.0f);
+        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 1.0f, 0.6f, 0.0f);
     //RenderString(0.0f, 0.0f, GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)"Hello", 1.0f, 0.0f, 0.0f);
 
     glPopMatrix();
@@ -248,7 +248,8 @@ void timer(int time)
   glutTimerFunc(time/60,timer, 0);
 }
 
-void RenderString(float x, float y, float z, void *font, const unsigned char* string, float r, float b, float g)
+void RenderString(float x, float y, float z, void *font, const unsigned char* string,
+    float r, float b, float g)
 {  
   glColor3f(r, g, b); 
   glRasterPos3f(x, y, z+0.05f);
