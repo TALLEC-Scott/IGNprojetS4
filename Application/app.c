@@ -420,8 +420,9 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
     Ui *ui = user_data;
     
     const gchar *text = gtk_entry_buffer_get_text(ui->rectif.coord_text_buff);
+    size_t len = strlen(text);
     
-    if (ui->rectif.x_pos == -1 || strlen(text) == 0)
+    if (ui->rectif.x_pos == -1 || len == 0)
     {
         GtkWidget *message = gtk_message_dialog_new(ui->window,
                 GTK_DIALOG_MODAL,
@@ -440,7 +441,7 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
 
 
     // Tests if the text is a number, exits if false
-    for (size_t i = 0; i < strlen(text); i++)
+    for (size_t i = 0; i < len; i++)
     {
         if (!isdigit(text[i]))
         {
@@ -449,6 +450,19 @@ gboolean on_rectif_ok(GtkButton *b __attribute__((unused)), gpointer user_data)
                     GTK_MESSAGE_WARNING,
                     GTK_BUTTONS_OK,
                     "Sorry dear user, but an altitude is given in numbers!");
+
+            gtk_dialog_run(GTK_DIALOG(message));
+
+            gtk_widget_destroy(message);
+            return TRUE;
+        }
+        else if (len - i <= 2 && text[i] != '0')
+        {
+            GtkWidget *message = gtk_message_dialog_new(ui->window,
+                    GTK_DIALOG_MODAL,
+                    GTK_MESSAGE_WARNING,
+                    GTK_BUTTONS_OK,
+                    "Sorry dear user, but altitudes must be multiples of 100");
 
             gtk_dialog_run(GTK_DIALOG(message));
 
@@ -634,6 +648,8 @@ gboolean on_launch(GtkButton *bt __attribute__((unused)), gpointer user_data)
         gtk_widget_set_sensitive(GTK_WIDGET(ui->step_b), TRUE);
         gtk_widget_show(GTK_WIDGET(ui->res_scale));
     }
+
+    gtk_label_set_text(ui->output_label, "Result");
 
     ui->analysis_done = TRUE;
 

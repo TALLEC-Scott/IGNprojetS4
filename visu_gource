@@ -1,0 +1,11 @@
+[display]
+fullscreen=true
+
+[gource]
+#background-colour=251D04
+highlight-dirs=true
+logo=siteWeb/images/elf&mer.png
+seconds-per-day=0.5
+time-scale=4
+title=Projet 223D
+

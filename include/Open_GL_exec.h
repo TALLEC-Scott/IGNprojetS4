@@ -4,9 +4,15 @@
 #include "drawing_tools.h"
 #include "MapColorisation.h"
 
-
+typedef struct wordCoord
+{
+  int x;
+  int y;
+  char *word;
+} wordCoord;
 
 void initGL();
+void initOCR();
 void display();
 void reshape(GLsizei width, GLsizei height);
 void keyboard(unsigned char key, int a, int b);

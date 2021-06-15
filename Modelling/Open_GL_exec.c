@@ -2,8 +2,11 @@
 #include <GL/glut.h> // GLUT, include glu.h and gl.h
 #include <GL/freeglut.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <cglm/cglm.h>
+#include <tesseract/capi.h>
+#include <leptonica/allFers.h>
 
 #define PI 3.14159
 
@@ -68,7 +71,18 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
+
 static Attributes att;
+
+//OCR
+const char *imgPath = "Pictures/Results/name.bmp"; //Path to the bmp containing our names
+static char *ocrTXT; //The text we got with our OCR
+static wordCoord *wArr; //The array containing the different mountain names
+static size_t arrLen = 0; //The size of wArr
+static int canDisp = 1; //The variable that indicates if it's possible to display the names. Set to 0 if the OCR or SDL failed.
+static int Twidth = 50;
+static int Theight = 20;
+
 void camera();
 
 struct Mo
@@ -92,6 +106,53 @@ void initGL(GdkRGBA * arr)
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
     glutSetCursor(GLUT_CURSOR_NONE); 
     glEnable(GL_TEXTURE_2D);
+}
+
+//put the names of the mountains in ocrTXT
+void initOCR()
+{
+  TessBaseAPI *handle;
+  PIX *pic;
+
+  if ((pic = pixRead(imgPath)) == NULL)
+    {
+      printf("Tesseract: Couldn't read image\n");
+      canDisp = 0;
+      return;
+    }
+
+  handle = TessBaseAPICreate();
+  if (TessBaseAPIInit3(handle,NULL,"fra") != 0)
+    {
+      printf("Tesseract: Couldn't initialize Tesseract\n");
+      pixDestroy(&pic);
+      canDisp = 0;
+      return;
+    }
+
+  TessBaseAPISetImage2(handle,pic);
+  if (TessBaseAPIRecognize(handle,NULL) != 0)
+    {
+      printf("Tesseract: Couldn't recognize\n");
+      pixDestroy(&pic);
+      TessBaseAPIEnd(handle);
+      TessBaseAPIDelete(handle);
+      canDisp = 0;
+      return;
+    }
+  if ((ocrTXT = TessBaseAPIGetUTF8Text(handle)) == NULL)
+    {
+      printf("Tesseract: Error getting text\n");
+      pixDestroy(&pic);
+      TessBaseAPIEnd(handle);
+      TessBaseAPIDelete(handle);
+      canDisp = 0;
+      return;
+    }
+
+  TessBaseAPIEnd(handle);
+  TessBaseAPIDelete(handle);
+  pixDestroy(&pic);
 }
 
 /* Handler for window-repaint event. Called back when the window is created, displaced or resized. 
@@ -138,11 +199,20 @@ void display()
     RenderString(((float)min_point.x/max_dim_size) * 2 - image->w / max_dim_size,
         ((float)min_point.y / max_dim_size) * 2 + (image->h / max_dim_size),
         (float)min_point.z / (float)max,
-        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)min_altitude, 1.0f, 0.0f, 0.0f);
+        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)min_altitude, 0.5f, 0.16f, 0.86f);
     RenderString(((float)max_point.x/max_dim_size) * 2 - image->w / max_dim_size,
         ((float)max_point.y / max_dim_size) * 2 + (image->h / max_dim_size),
         (float)max_point.z / (float)max,
-        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 1.0f, 0.0f, 0.0f);
+        GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 0.5f, 0.16f, 0.86f);
+
+    for (size_t i = 0; i < arrLen; i++)
+      {
+	RenderString(((float)wArr[i].x/max_dim_size) * 2 - image->w / max_dim_size,
+		     ((float)wArr[i].y/max_dim_size) * 2 - (image->h / max_dim_size),
+		     (float)bp[wArr[i].x][wArr[i].y] / (float)max,
+		     GLUT_BITMAP_TIMES_ROMAN_24,
+		     (unsigned char*) wArr[i].word,1.0f,1.0f,1.0f);
+      }
     //RenderString(0.0f, 0.0f, GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)"Hello", 1.0f, 0.0f, 0.0f);
 
     glPopMatrix();
@@ -244,6 +314,16 @@ void SpecialKeys(int key, int a __attribute__((unused)), int b __attribute__((un
         if(add_mode > 5)
           add_mode = 0;
         break;
+    case GLUT_KEY_DOWN:
+        mod_mode -= 1;
+        if(mod_mode < 0)
+          mod_mode = 2;
+        break;
+    case GLUT_KEY_UP:
+        mod_mode += 1;
+        if(mod_mode > 2)
+          mod_mode = 0;
+        break;
     }
 }
 
@@ -254,9 +334,10 @@ void timer(int time)
   glutTimerFunc(time/60,timer, 0);
 }
 
-void RenderString(float x, float y, float z, void *font, const unsigned char* string, float r, float b, float g)
-{  
-  glColor3f(r, g, b); 
+void RenderString(float x, float y, float z, void *font, const unsigned char* string,
+    float r, float b, float g)
+{
+  glColor3f(r, g, b);
   glRasterPos3f(x, y, z+0.05f);
 
   glutBitmapString(font, string);
@@ -271,7 +352,7 @@ void VectorsFromAngles()
     _phi = -89.0f;
 
   float temp = cos(_phi*PI/180);
-  _forward[2] = sin(_phi*PI/180);
+  _forward[2] = sin(_phi*PI/180); // pitch
   _forward[0] = temp*cos(_theta*PI/180);
   _forward[1] = temp*sin(_theta*PI/180);
 
@@ -478,6 +559,91 @@ glEnable(GL_TEXTURE_2D);
 
     sprintf(min_altitude, "%d", min_point.z);
     sprintf(max_altitude, "%d", max_point.z);
+
+    initOCR();
+
+    if(SDL_Init(SDL_INIT_VIDEO) == -1)
+      canDisp = 0;
+
+    if (canDisp)
+      {
+	SDL_Surface *ocr = SDL_LoadBMP(imgPath);
+    
+	if (!ocr)
+	  canDisp = 0;
+      
+
+	if (canDisp)
+	  {
+	    char *boolMat = calloc(ocr->h*ocr->w,sizeof(char));
+
+	    for (int i = 0; i < ocr->h; i++)
+	      for (int j = 0; j < ocr->w; j++)
+		boolMat[i*ocr->w + j] = 1;
+
+	    for (size_t i = 0; ocrTXT[i] != 0; i++)
+	      if (ocrTXT[i] == '\n')
+		arrLen++;
+
+	    wArr = calloc(arrLen,sizeof(struct wordCoord));
+
+	    size_t begin = 0;
+
+	    size_t num = 0;
+
+	    for (size_t i = 0; ocrTXT[i] != 0; i++)
+	      if (ocrTXT[i] == '\n')
+		{
+		  size_t wSize = i-begin+1;
+		  char *nw = calloc(wSize,sizeof(char));
+
+		  for (size_t j = 0; j < wSize; j++)
+		    nw[j] = ocrTXT[begin + j];
+
+		  nw[wSize - 1] = 0;
+
+		  wArr[num].word = nw;
+
+		  num++;
+
+		  begin = i+1;
+		}
+
+	    size_t wordNum = 0;
+	    for (int y = 0; y < ocr->h; y++)
+	      for (int x = 0; x < ocr->w; x++)
+		{
+		  Uint32 pixel = BMP_Get_Pixel(ocr,x,y);
+		  Uint8 r,g,b;
+		  SDL_GetRGB(pixel, ocr->format, &r, &g, &b);
+
+		  if (r==0 && g == 0 && b == 0 && boolMat[y*ocr->w+x])
+		    {
+		      wArr[wordNum].x = (int)x;
+		      wArr[wordNum].y = (int)y;
+
+		      wordNum++;
+		  
+		      for (int yy = 0; yy <= Theight && y+yy < ocr->h; yy++)
+			{
+			  for (int xx = 0; xx <= Twidth && x-xx >= 0; xx++)
+			    {
+			      boolMat[(y+yy)*ocr->w + x-xx] = 0;
+			    }
+
+			  for (int xx = 1;xx <= Twidth && x+xx < ocr->w;xx++)
+			    {
+			      boolMat[(y+yy)*ocr->w + x+xx] = 0;
+			    }
+			}
+		    }
+		}
+
+	    free(boolMat);
+	  }
+
+	SDL_FreeSurface(ocr);
+      }
 
     /*printf("%i\n", points_river[0]);
     printf("%i\n", points_river[1]);
