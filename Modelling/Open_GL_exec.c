@@ -6,7 +6,7 @@
 #include <math.h>
 #include <cglm/cglm.h>
 #include <tesseract/capi.h>
-#include <leptonica/allFers.h>
+#include <leptonica/allheaders.h>
 
 #define PI 3.14159
 
@@ -17,6 +17,7 @@ void RenderString(float x, float y, float z, void *font, const unsigned char* st
 
 // 3D model
 static int **bp;
+static int **h;
 static int **river2;
 static int **trail2;
 static int **road_major2;
@@ -183,7 +184,8 @@ void display()
     else {
     	Draw_Triangle_Lines(p,v,ntri,bp,image);
     	//Draw_Triangles(p, v, ntri,bp,image);
-}   
+    }
+
     if(add_mode == 0 || add_mode == 2)
       Draw_Points_Add(bp, image, 0.0f, 0.0f, 1.0f, points_river, real_size_river);
     if(add_mode == 0 || add_mode == 3)
@@ -205,14 +207,18 @@ void display()
         (float)max_point.z / (float)max,
         GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)max_altitude, 0.5f, 0.16f, 0.86f);
 
-    for (size_t i = 0; i < arrLen; i++)
-      {
-	RenderString(((float)wArr[i].x/max_dim_size) * 2 - image->w / max_dim_size,
-		     ((float)wArr[i].y/max_dim_size) * 2 - (image->h / max_dim_size),
-		     (float)bp[wArr[i].x][wArr[i].y] / (float)max,
-		     GLUT_BITMAP_TIMES_ROMAN_24,
-		     (unsigned char*) wArr[i].word,1.0f,1.0f,1.0f);
-      }
+    
+    if (canDisp)
+    {
+        for (size_t i = 0; i < arrLen; i++)
+          {
+            RenderString(((float)wArr[i].x/max_dim_size) * 2 - image->w / max_dim_size,
+                         ((float)wArr[i].y/max_dim_size) * 2 + (image->h / max_dim_size),
+                         (float)h[wArr[i].x][wArr[i].y] / (float)max,
+                         GLUT_BITMAP_TIMES_ROMAN_24,
+                         (unsigned char*) wArr[i].word,1.0f,1.0f,1.0f);
+          }
+    }
     //RenderString(0.0f, 0.0f, GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)"Hello", 1.0f, 0.0f, 0.0f);
 
     glPopMatrix();
@@ -469,6 +475,7 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 
     mod_mode = gtk_combo_box_get_active(GTK_COMBO_BOX(ui->model.dropdown_type));
     bp = ui->bp;
+    h = ui->h;
     river2 = ui->river;
     trail2 = ui->trail;
     road_major2 = ui->road_major;
@@ -609,34 +616,39 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 
 	    size_t wordNum = 0;
 	    for (int y = 0; y < ocr->h; y++)
-	      for (int x = 0; x < ocr->w; x++)
+            {
+                for (int x = 0; x < ocr->w; x++)
 		{
-		  Uint32 pixel = BMP_Get_Pixel(ocr,x,y);
-		  Uint8 r,g,b;
-		  SDL_GetRGB(pixel, ocr->format, &r, &g, &b);
+                    Uint32 pixel = BMP_Get_Pixel(ocr,x,y);
+		    Uint8 r,g,b;
+		    SDL_GetRGB(pixel, ocr->format, &r, &g, &b);
 
-		  if (r==0 && g == 0 && b == 0 && boolMat[y*ocr->w+x])
+		    if (r==0 && g == 0 && b == 0 && boolMat[y*ocr->w+x])
 		    {
-		      wArr[wordNum].x = (int)x;
-		      wArr[wordNum].y = (int)y;
+		        wArr[wordNum].x = (int)x;
+		        wArr[wordNum].y = (int)y;
 
-		      wordNum++;
+		        wordNum++;
 		  
-		      for (int yy = 0; yy <= Theight && y+yy < ocr->h; yy++)
+		        for (int yy = 0; yy <= Theight && y+yy < ocr->h; yy++)
 			{
-			  for (int xx = 0; xx <= Twidth && x-xx >= 0; xx++)
+			    for (int xx = 0; xx <= Twidth && x-xx >= 0; xx++)
 			    {
-			      boolMat[(y+yy)*ocr->w + x-xx] = 0;
+			        boolMat[(y+yy)*ocr->w + x-xx] = 0;
 			    }
 
-			  for (int xx = 1;xx <= Twidth && x+xx < ocr->w;xx++)
+			    for (int xx = 1;xx <= Twidth && x+xx < ocr->w;xx++)
 			    {
-			      boolMat[(y+yy)*ocr->w + x+xx] = 0;
+			        boolMat[(y+yy)*ocr->w + x+xx] = 0;
 			    }
 			}
 		    }
+                    if (wordNum == arrLen)
+                      break;
 		}
-
+                if (wordNum == arrLen)
+                    break;
+            }
 	    free(boolMat);
 	  }
 
