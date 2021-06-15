@@ -409,7 +409,7 @@ void camera()
 
   glm_vec3_add(_position, _forward, _target);
 }
-
+/*
 GLuint LoadTexture( const char * filename )
 {
   GLuint texture;
@@ -453,12 +453,10 @@ GLuint LoadTexture( const char * filename )
 
   return texture;
 }
-
+*/
 
 int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
-glEnable(GL_TEXTURE_2D);
-    texture_ = LoadTexture("Pictures/texture.bmp");
 
     
     GdkRGBA background = {0, 0, 0, 0};
