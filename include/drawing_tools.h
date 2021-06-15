@@ -26,7 +26,7 @@ typedef struct _3D_Coord
 void Draw_Points(int **bp, SDL_Surface *image);
 void Draw_Points_with_color(int **bp, SDL_Surface *image);
 void Get_Triangles(int **bp, SDL_Surface *image, _3D_Coord arr[]);
-void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image);
+void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image, Attributes att);
 void Draw_Triangle_Lines(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image);
 void free_bm(int **bp, SDL_Surface *image);
 Attributes attr(SDL_Surface *image, int **bp);

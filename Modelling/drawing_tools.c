@@ -54,6 +54,8 @@ Attributes attr(SDL_Surface *image, int **bp)
     {
         for (int j = 0; j < image->h; j++)
         {
+        	if ( i == 0 || j == 0 || i == image->w -1 || j == image->h -1)
+                	nb_points++;
             if (bp[i][j] != -1)
             {
                 nb_points++;
@@ -175,6 +177,7 @@ void Draw_Top_Line(int **map, int range, SDL_Surface *image){
 
 void List_of_Points(int **bp, SDL_Surface *image, _3D_Coord **res)
 {
+	Attributes att = attr(image, bp);
     _3D_Coord *_res = *res;
     int index = 0;
     _3D_Coord co;
@@ -182,7 +185,16 @@ void List_of_Points(int **bp, SDL_Surface *image, _3D_Coord **res)
     {
         for (int j = 0; j < image->h; j++)
         {
-
+        
+        
+        	if ( i == 0 || j == 0 || i == image->w -1 || j == image->h -1)
+                {
+                co.x = i;
+                co.y = j;
+                co.z = att.smallest-100;
+                _res[index] = co;
+                index++;
+                }
             if (bp[i][j] != -1)
             {
                 co.x = i;
@@ -190,6 +202,8 @@ void List_of_Points(int **bp, SDL_Surface *image, _3D_Coord **res)
                 co.z = bp[i][j];
                 _res[index] = co;
                 index++;
+                
+                	
             }
         }
     }
@@ -478,7 +492,34 @@ void Draw_Cube(int max, float max_dim_size, int x, int y, int z, float r, float 
 
   glEnd();
 }
+/*
+void Draw_Edges(_3D_Coord arr[], SDL_Surface *image)
+{
+	Attributes att = attr(image, bp);
+	int nb_points = att.nb_points;
+	gl_Begin(GL_QUADS);
+	bool firstx = false;
+	bool firsy = false;
+	bool lastx = false;
+	bool last y = false;
+	for (int i = 0; i < image->w; i++)
+    {
+    	
+        for (int j = 0; j < image->h; j++)
+	
+		if (bp[i][j] != -1)
+			{
+				
+			}
+	for(int i =0; i<nb_points; i++)
+	{
+		
+		
+	}
 
+
+}
+*/
 
 void Get_Triangles(int **bp, SDL_Surface *image, _3D_Coord arr[])
 {
@@ -610,19 +651,37 @@ void Draw_Triangle_Lines(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *
     }
 }
 
-void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image)
+void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image, Attributes att)
 
 {
     int max = biggest_height(image, bp);
     float max_dim_size = biggest_dim_size(image);
 
+    
+    glBegin(GL_QUADS);
+    glColor3f(1.0,0.5,.25);
+        glVertex3f(-1.0,1.6,(att.smallest -100)/ (float)max);
+        glVertex3f(-1.0,0.5,(att.smallest -100)/ (float)max);
+        glVertex3f(1.0,0.5,(att.smallest -100)/ (float)max);
+        glVertex3f(1.0,1.6,(att.smallest -100)/ (float)max);
+        
+  
+        
+    glEnd();
+    
+
     glBegin(GL_TRIANGLES);
-    glColor3f(0.0f, 1.0f, 0.5f);
+  //  glColor3f(1.0f, 1.0f, 1.5f);
     for (int i = 0; i < ntri; i++)
     {
+    
+    	if( ((float)p[v[i].p1].z == (att.smallest -100)) | ((float)p[v[i].p2].z == (att.smallest -100)) | ((float)p[v[i].p3].z == (att.smallest -100)))
+    	{
+    	glColor3f(1.0,0.5,.25);
+    	}
         
        
-            if( ((float)p[v[i].p1].z == 1500) | ((float)p[v[i].p2].z == 1500) | ((float)p[v[i].p3].z == 1500))
+           else if( ((float)p[v[i].p1].z == 1500) | ((float)p[v[i].p2].z == 1500) | ((float)p[v[i].p3].z == 1500))
           {
              glColor3f(128/255., 0/255., 0/255.);
           }
@@ -703,12 +762,23 @@ void Draw_Triangles(XYZ *p, ITRIANGLE *v, int ntri, int **bp, SDL_Surface *image
           {
              glColor3f( 0., 0., 0.);
           }
+          
+         
+
+
+    
 
         //glColor3f((float) i/ntri, (float) i/ntri, (float) i/ntri);
         glVertex3f(((float)p[v[i].p1].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p1].y / max_dim_size) * 2 + (image->h / max_dim_size),
                    (float)p[v[i].p1].z / (float)max);
+                   
+                           glTexCoord2d(((float)p[v[i].p2].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p2].y / max_dim_size) * 2 + (image->h / max_dim_size));
+        
         glVertex3f(((float)p[v[i].p2].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p2].y / max_dim_size) * 2 + (image->h / max_dim_size),
                    (float)p[v[i].p2].z / (float)max);
+                           
+                           glTexCoord2d(((float)p[v[i].p3].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p3].y / max_dim_size) * 2 + (image->h / max_dim_size));
+                           
         glVertex3f(((float)p[v[i].p3].x / max_dim_size) * 2 - image->w / max_dim_size, ((float)p[v[i].p3].y / max_dim_size) * 2 + (image->h / max_dim_size),
                    (float)p[v[i].p3].z / (float)max);
     }

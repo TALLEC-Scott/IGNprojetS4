@@ -50,6 +50,9 @@ static int add_mode = 0;
 //Window
 static int window;
 
+//Texture 
+
+static GLuint texture_;
 //Camera
 static float cam_x;
 static float cam_y;
@@ -65,7 +68,7 @@ static float _theta = 0;
 static float _phi = 0;
 static float realspeed = 0.05f;
 static float sensivity = 0.05f;
-
+static Attributes att;
 void camera();
 
 struct Mo
@@ -88,6 +91,7 @@ void initGL(GdkRGBA * arr)
     glShadeModel(GL_SMOOTH);                           // Enable smooth shading
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Nice perspective corrections
     glutSetCursor(GLUT_CURSOR_NONE); 
+    glEnable(GL_TEXTURE_2D);
 }
 
 /* Handler for window-repaint event. Called back when the window is created, displaced or resized. 
@@ -110,7 +114,9 @@ void display()
     glTranslatef(2.0f, -1.0f, -1.0f); // Move right and into the screen
     
     if (mod_mode == 0)
-    	Draw_Triangles(p, v, ntri,bp,image);
+    {    glBindTexture (GL_TEXTURE_2D, texture_);
+    	Draw_Triangles(p, v, ntri,bp,image,att);
+    	}
     else if(mod_mode == 1)
     	Draw_Points_with_color(bp,image);
     else {
@@ -323,13 +329,62 @@ void camera()
   glm_vec3_add(_position, _forward, _target);
 }
 
+GLuint LoadTexture( const char * filename )
+{
+  GLuint texture;
+  int width, height;
+  unsigned char * data;
+
+  FILE * file;
+  file = fopen( filename, "rb" );
+
+  if ( file == NULL ) return 0;
+  width = 1024;
+  height = 512;
+  data = (unsigned char *)malloc( width * height * 3 );
+  //int size = fseek(file,);
+  fread( data, width * height * 3, 1, file );
+  fclose( file );
+
+  for(int i = 0; i < width * height ; ++i)
+  {
+    int index = i*3;
+    unsigned char B,R;
+    B = data[index];
+    R = data[index+2];
+
+    data[index] = R;
+    data[index+2] = B;
+  }
+
+  glGenTextures( 1, &texture );
+  glBindTexture( GL_TEXTURE_2D, texture );
+  glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_MODULATE );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST );
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, 4, GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR); // Linear Filtering
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR); // Linear Filtering
+  
+
+  free( data );
+
+  return texture;
+}
+
 
 int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
 {
+glEnable(GL_TEXTURE_2D);
+    texture_ = LoadTexture("Pictures/texture.bmp");
+
+    
     GdkRGBA background = {0, 0, 0, 0};
 
     gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(ui->model.back_color),
             &background);
+            
 
     image = im; //it's to use SDL_Surface *im as a global ref
 
@@ -358,8 +413,8 @@ int execute_function(int argc, char **argv, SDL_Surface *im, Ui *ui)
     if (image == NULL)
         printf("SDL_LoadBMP image failed: %s\n", SDL_GetError());
 
-    Attributes att = attr(image, bp);
-    _3D_Coord *arr = malloc(att.nb_points * sizeof(_3D_Coord));
+    att = attr(image, bp);
+    _3D_Coord *arr = malloc((att.nb_points)* sizeof(_3D_Coord));
     List_of_Points(bp, image, &arr);
 
     int nb_points = att.nb_points;
