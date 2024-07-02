@@ -1,4 +1,4 @@
-# IGNprojetS4
+# Topography IGN Project
 
 ### Description
 The goal of this project is to convert a topographic map into an explorable 3D model. This involves processing the map to extract topographic lines, assigning relief, modeling the map, implementing a free-moving camera, and creating a graphical interface and website.
