@@ -58,9 +58,25 @@ The goal of this project is to convert a topographic map into an explorable 3D m
 ### License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-### Acknowledgments
-- Scott Tallec
-- Yann Boudry
-- Vincent Libeskind
-- Azeline Aillet
-- Pierre-Corentin Auger
+### Authors
+- [Scott Tallec](https://github.com/TALLEC-Scott)
+- [Vincent Libeskind](https://github.com/VincentKobz)
+- [Yann Boudry](https://github.com/yannboudry)
+- [Azeline Aillet](https://github.com/Azeline)
+- [Pierre-Corentin Auger](https://github.com/PierreCorentin)
+
+### Screenshots
+
+
+2D Elevation Extrapolation
+![map_ign_3 (1)](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/4258887c-c66d-40fc-bf16-671473e31362)
+![elevation (1)](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/13d3b941-3edd-4033-b6ae-6054298fda87)
+
+3D Model View
+![points](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/05c306c6-6354-4f7b-a4fe-c07e6dcc2b25)
+![lines](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/5b0a4176-1011-4903-8a85-d9ee732a6d5c)
+![standard](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/c0237c7c-4ba1-4a03-846e-46dc3ef8478b)
+
+Main Interface
+![main_screen_start](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/1dd73b39-8150-46f6-b104-0d9b66159d16)
+![main_screen_end](https://github.com/TALLEC-Scott/IGNprojetS4/assets/63871153/decfb1fd-1ec9-4fe0-87b5-528eb5b6b293)
