@@ -9,7 +9,7 @@ The goal of this project is to convert a topographic map into an explorable 3D m
 - **3D Modeling:** Converts map data into a 3D model using OpenGL.
 - **Free Camera Movement:** Allows navigation through the 3D model.
 - **Graphical Interface:** User-friendly interface for loading maps, viewing analysis, and interacting with the model.
-- **Website:** Presents the project and its development process.
+- **Website:** Presents the project and its development process. [here](https://yannboudry.github.io/index.html)
 
 ### Installation
 1. **Clone the repository:**
